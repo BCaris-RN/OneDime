@@ -3,73 +3,155 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>OneDime Tracker</title>
+    <title>OneDime | Work log</title>
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:wght@400;600;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css" />
     <script type="module" src="/app.js"></script>
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <header class="topbar">
-      <a class="brand" href="/app">OneDime</a>
+      <a class="brand" href="/app">OneDime<span class="brand-dot" aria-hidden="true">.</span></a>
       <div class="player-strip">
-        <span id="player-name">Loading...</span>
-        <form method="post" action="/logout">
-          <button type="submit" class="ghost-button">Logout</button>
-        </form>
+        <span id="player-name">Loading…</span>
+        <button type="button" class="ghost-button" id="theme-toggle" aria-label="Switch to dark mode">Dark mode</button>
+        <button type="button" class="text-button" id="logout">Log out</button>
       </div>
     </header>
-    <main class="shell">
-      <nav class="tabs" aria-label="OneDime sections">
-        <a href="#tracker" class="active">Tracker</a>
-        <a href="#quests">Quests</a>
-        <a href="#leaderboard">Leaderboard</a>
-        <a href="#playbook">Playbook</a>
-        <a href="#help">Help</a>
+    <main class="shell" id="main">
+      <div class="workspace-heading"><div><p class="eyebrow">The first-dollar quest game</p><h1>Your progress</h1></div><p id="level-summary" class="level-summary">Loading your progress…</p></div>
+      <dl class="metrics" aria-label="Player statistics">
+        <div><dt>Logged</dt><dd id="total-amount">—</dd></div>
+        <div><dt>Verified</dt><dd id="verified-amount">—</dd></div>
+        <div><dt>This week</dt><dd id="week-amount">—</dd></div>
+        <div><dt>Minutes</dt><dd id="total-minutes">—</dd></div>
+        <div><dt>Day streak</dt><dd id="streak">—</dd></div>
+        <div><dt>Rested pool</dt><dd id="rested-pool">—</dd></div>
+      </dl>
+      <nav class="tabs" role="tablist" aria-label="OneDime sections">
+        <button type="button" role="tab" id="tab-log" aria-controls="panel-log" aria-selected="true" tabindex="0" data-tab="log">Log</button>
+        <button type="button" role="tab" id="tab-quests" aria-controls="panel-quests" aria-selected="false" tabindex="-1" data-tab="quests">Quests</button>
+        <button type="button" role="tab" id="tab-leaderboard" aria-controls="panel-leaderboard" aria-selected="false" tabindex="-1" data-tab="leaderboard">Leaderboard</button>
+        <button type="button" role="tab" id="tab-playbook" aria-controls="panel-playbook" aria-selected="false" tabindex="-1" data-tab="playbook">Playbook</button>
+        <button type="button" role="tab" id="tab-help" aria-controls="panel-help" aria-selected="false" tabindex="-1" data-tab="help">Help</button>
       </nav>
-
-      <section id="tracker" class="workspace-section">
-        <div>
-          <p class="eyebrow">Tracker</p>
-          <h1>Today starts empty.</h1>
+      <p id="message" role="status" aria-live="polite" class="message"></p>
+      <section id="panel-log" role="tabpanel" aria-labelledby="tab-log" tabindex="0">
+        <section class="goal-hero" aria-labelledby="goal-title"><div class="goal-coin" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="goal-ring" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg><div class="coin-face"><b id="goal-percent">0%</b><span>of goal</span></div></div><div><p class="eyebrow">Current goal</p><h2 id="goal-title">Earn your first dime</h2><p id="goal-sub" class="muted"></p><p class="field-help">Your personal goal uses logged earnings. The rung race requires verified earnings.</p></div></section>
+        <div class="log-layout">
+          <section class="entry-workspace" aria-labelledby="log-heading">
+            <p class="eyebrow">Add an entry</p><h2 id="log-heading">What did you work on?</h2>
+            <form id="entry-form" class="entry-form">
+              <label class="full-width">Site or platform<input id="platform" name="platform" required maxlength="80" list="platform-options" autocomplete="off" placeholder="Where you worked" /></label>
+              <label>Date<input id="worked-on" name="workedOn" type="date" required /></label>
+              <label>Minutes<input id="minutes" name="minutes" type="number" min="0" max="2147483647" step="1" value="0" required inputmode="numeric" /></label>
+              <label class="full-width">Earned (USD)<input id="amount" name="amount" type="text" inputmode="decimal" pattern="[0-9]+([.][0-9]{1,2})?" value="0.00" required aria-describedby="amount-help" /></label>
+              <p id="amount-help" class="field-help full-width">Up to $10,000 per entry. Logged earnings await verification before they count toward rungs.</p>
+              <label class="full-width">Private note <span class="optional">(optional)</span><textarea id="note" name="note" rows="2" maxlength="2000"></textarea></label>
+              <div class="button-row full-width"><button class="primary-button" type="submit">Log it</button><button class="ghost-button" id="log-time-only" type="button">Log time only, $0</button></div>
+            </form>
+          </section>
+          <div class="log-context">
+            <section class="clock-workspace" aria-labelledby="clock-heading"><p class="eyebrow">Work clock</p><h2 id="clock-heading">Keep track of your minutes.</h2><p id="clock-elapsed" class="clock-elapsed" aria-label="Elapsed work time">0:00:00</p><p id="clock-status" class="muted">No clock running.</p>
+              <form id="clock-form"><label>Site or platform<input id="clock-platform" required maxlength="80" list="platform-options" placeholder="Where you are working" /></label><div class="button-row"><button class="ghost-button" id="clock-in" type="submit">Clock in</button><button class="ghost-button" id="clock-out" type="button" disabled>Clock out</button></div></form>
+              <p class="field-help">Clocking out fills the entry form. Review it, add earnings, then save.</p>
+            </section>
+            <section class="rung-workspace" aria-labelledby="rung-heading"><p class="eyebrow">The rung race</p><h2 id="rung-heading">First verified total wins.</h2><p class="muted" id="next-rung">Loading next rung…</p><ol id="rung-list" class="rung-list"></ol><p class="field-help">Each rung has one winner. Receipt verification and payouts arrive in a later phase.</p></section>
+          </div>
         </div>
-        <div class="tracker-grid">
-          <div class="metric">
-            <span>Logged</span>
-            <strong>$0.00</strong>
-          </div>
-          <div class="metric">
-            <span>Minutes</span>
-            <strong>0</strong>
-          </div>
-          <div class="metric">
-            <span>XP</span>
-            <strong>0</strong>
-          </div>
-          <div class="metric">
-            <span>Next rung</span>
-            <strong>$0.10</strong>
-          </div>
-        </div>
+        <section class="workspace-section" aria-labelledby="history-heading"><div class="section-heading"><h2 id="history-heading">Your entries</h2><button type="button" class="text-button" id="refresh">Refresh</button></div><p id="entries-empty" class="muted">No entries yet. Add your first work session above.</p><div class="table-scroll"><table id="entries-table" hidden><caption class="sr-only">Your work entries</caption><thead><tr><th scope="col">Date / site</th><th scope="col">Time</th><th scope="col">Earned</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead><tbody id="entries-body"></tbody></table></div></section>
+        <section class="workspace-section" aria-labelledby="sites-heading"><h2 id="sites-heading">Your site rates</h2><p class="field-help">Effective hourly rate counts only sessions where you logged minutes, including earnings awaiting verification.</p><ul id="site-rates" class="plain-list"></ul></section>
       </section>
-
-      <section id="quests" class="workspace-section">
-        <p class="eyebrow">Quests</p>
-        <h2>No quests completed yet.</h2>
-      </section>
-
-      <section id="leaderboard" class="workspace-section">
-        <p class="eyebrow">Leaderboard</p>
-        <h2>Rankings unlock after entries exist.</h2>
-      </section>
-
-      <section id="playbook" class="workspace-section">
-        <p class="eyebrow">Playbook</p>
-        <h2>Pilot playbook copy will slot in here.</h2>
-      </section>
-
-      <section id="help" class="workspace-section">
-        <p class="eyebrow">Help</p>
-        <h2>Support copy will follow the pilot reference.</h2>
-      </section>
+      <section id="panel-quests" role="tabpanel" aria-labelledby="tab-quests" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Quests</p><h2 id="quest-level">Level 1 · Rookie</h2><p id="quest-xp" class="muted">0 XP</p><div id="xp-progress" class="xp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="xp-fill"></i></div><p id="quests-status" class="muted">Loading quests…</p><ul id="quest-list" class="plain-list"></ul></div></section>
+      <section id="panel-leaderboard" role="tabpanel" aria-labelledby="tab-leaderboard" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Leaderboard</p><h2>The verified standings.</h2><p class="muted">Joining shares your display name, verified earnings by site, XP, level, and rung wins with other players. Your notes stay private.</p><button type="button" class="primary-button" id="leaderboard-toggle" disabled>Loading…</button><p id="leaderboard-empty" class="muted"></p><h3 class="board-heading">First to each rung</h3><div class="table-scroll"><table><thead><tr><th scope="col">Bonus quest</th><th scope="col">Claimed by</th><th scope="col">When</th></tr></thead><tbody id="race-body"></tbody></table></div><p class="field-help">Only opted-in winners appear here. Private winners retain their claims.</p><h3 class="board-heading">Top earners</h3><ol id="leaderboard-list" class="leaderboard-list"></ol><h3 class="board-heading">Top earner on each site</h3><ul id="site-leaders" class="plain-list"></ul></div></section>
+      <section id="panel-playbook" role="tabpanel" aria-labelledby="tab-playbook" tabindex="0" hidden><div class="reading-column workspace-section playbook-copy">
+    <section>
+      <h2>The one rule</h2>
+      <p>Automate everything around the work, never the work. All five sites pay for a human doing the task and actively catch bots and AI-written answers. A ban costs the unpaid balance and the account. Every tip below makes <em>you</em> faster instead.</p>
+    </section>
+    <section>
+      <h2>The daily loop</h2>
+      <ul>
+        <li><b>Early morning:</b> Prolific first. US East Coast and UK studies drop while it's still early in Hawaii, and the good ones fill in minutes.</li>
+        <li><b>Gaps between studies:</b> transcription on Rev or TranscribeMe. Keep Prolific alerts on so you can switch the moment a study appears.</li>
+        <li><b>Evening:</b> a second Prolific check, then SideShift content in one batch.</li>
+        <li><b>Microworkers:</b> only when nothing else is available, and capped at 20 minutes.</li>
+        <li><b>Every session:</b> clock in, clock out, log it. The streak counts time-only days too.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>More money for less time</h2>
+      <ul>
+        <li><b>Choose the file, not the queue.</b> On transcription, preview the first 30 seconds. Take clear audio with one or two speakers and skip heavy accents, crosstalk and noise. You're paid per audio minute, so a bad file can cut your hourly rate by more than half.</li>
+        <li><b>Text expansion.</b> Map short codes to the tags you type all day, such as [inaudible], [crosstalk] and speaker labels. macOS Text Replacements or the free tool espanso both work.</li>
+        <li><b>Learn the editor hotkeys</b> for play, pause and rewind 2 seconds until your hands never leave the keyboard. Then buy a USB foot pedal with your earnings, not before.</li>
+        <li><b>Typing speed compounds.</b> Ten minutes a day on a typing trainer. Every added word per minute raises every transcription hour from then on.</li>
+        <li><b>Prolific screeners.</b> Answer every About You question. More completed screeners means you qualify for more studies, especially specialist and AI-evaluation ones where your science background counts.</li>
+        <li><b>Return fast, never rush.</b> If a study is broken or underpays, return it right away. Returning doesn't hurt you. Failing attention checks does.</li>
+        <li><b>SideShift as an assembly line.</b> One fixed filming spot, one light, one script skeleton (hook, demo, why it helps, call to action). Film three takes in one sitting and reuse the pitch message to brands.</li>
+        <li><b>Weekly cut.</b> Every Sunday, check the per-hour table. Drop time from whichever site sits at the bottom.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Back office on autopilot</h2>
+      <ul>
+        <li>One PayPal account and one personal email across every site.</li>
+        <li>Turn on every payout notification so deposits come to you instead of you checking dashboards.</li>
+        <li>This is 1099 income. Set aside part of every payout for taxes from day one.</li>
+        <li>Keep site passwords in a password manager. Never use a tool that auto-accepts tasks or fills in answers.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>The bigger play</h2>
+      <p>These sites get the first dime. Your science background is what pays real money. Apply to AI-evaluation contractor roles, and keep growing Haline and frontend-craft, which earn while you're doing something else.</p>
+    </section></div></section>
+      <section id="panel-help" role="tabpanel" aria-labelledby="tab-help" tabindex="0" hidden><div class="reading-column workspace-section playbook-copy">
+    <section>
+      <h2>What OneDime is</h2>
+      <p>OneDime is a quest game and scoreboard for remote gig work. You log what you earn and how long it took on sites like Prolific, Rev, TranscribeMe, SideShift and Microworkers. It turns that into goals, streaks, levels and an honest per-hour ranking of every site you use.</p>
+      <p>The idea is simple: the hardest dollar is the first one. The first goal is a single dime, so you get a win early. Then the ladder keeps you climbing, and the numbers show you where your time is actually worth the most.</p>
+    </section>
+    <section>
+      <h2>Get started in four steps</h2>
+      <ol style="margin:0;padding-left:20px;display:grid;gap:6px">
+        <li>Open <b>Quests</b> and work through the setup quests for each site. Checking one off gives you XP right away.</li>
+        <li>When you sit down to work, go to <b>Log</b>, pick the site, and press <b>Clock in</b>.</li>
+        <li>When you stop, press <b>Clock out</b>. The minutes fill in for you. Type what you earned and press <b>Log it</b>.</li>
+        <li>Check the <b>Playbook</b> for the daily routine and ways to earn more per hour.</li>
+      </ol>
+    </section>
+    <section>
+      <h2>How each part works</h2>
+      <ul>
+        <li><b>The coin</b> shows progress toward your current goal. Goals go $0.10, $1, $10, $50, $100, $250, $500, $1,000, and the next one unlocks as soon as you pass the last.</li>
+        <li><b>Streak</b> counts days in a row with at least one entry. Days where you worked but earned nothing count too, using <b>Log time only, $0</b>. Approvals and tests take time before money shows up, and that effort still counts.</li>
+        <li><b>Level and XP:</b> 1 XP per minute worked, 10 XP per dollar earned, plus each quest's reward, 100 XP per rung claimed, and any rested bonus. Total XP is rounded down to a whole number. Each level takes a little more XP than the last.</li>
+        <li><b>Which site pays you best</b> divides what you earned by the time you logged on each site. Only sessions with minutes count, so time your sessions for honest numbers.</li>
+        <li><b>Rested XP:</b> each full day without an entry adds 25 to your pool, capped at 100. Minutes earn double while the pool lasts, using one pool XP per bonus XP.</li>
+        <li><b>History</b> shows your recent entries. Use <b>Delete</b> to fix a mistake, then log it again.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>The leaderboard</h2>
+      <ul>
+        <li><b>Joining is optional.</b> When you join, other players see your display name, verified total, XP, level and verified earnings by site. Your log entries and notes stay private.</li>
+        <li><b>Bonus quests:</b> each rung of the goal ladder ($0.10, $1, $10 and up) can be claimed once, by the first player whose verified total reaches it. Claiming one is worth +100 XP.</li>
+        <li><b>Rankings</b> show the top earners overall and the top earner on each site.</li>
+        <li><b>Verified earnings only:</b> logged entries await verification before they count toward rungs or public earnings. A rung claim stays with its winner, including after leaving the leaderboard.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Questions</h2>
+      <ul>
+        <li><b>Does it connect to my gig accounts?</b> No. You enter everything yourself. That keeps your logins private and keeps you inside every site's rules.</li>
+        <li><b>Can it do the work for me?</b> No, on purpose. These sites pay for a human and ban accounts that use bots or AI answers. OneDime makes you faster instead.</li>
+        <li><b>Where is my data?</b> Your log, quests, time zone and running clock are stored in this app under your PayPal sandbox identity. Other players cannot read your entries or notes.</li>
+        <li><b>What if I close the page while clocked in?</b> The timer keeps counting. Come back and clock out whenever you finish.</li>
+        <li><b>Is the per-hour number before taxes?</b> Yes. Gig income is usually self-employment income, so set some aside from every payout.</li>
+      </ul>
+    </section><section><h2>Your time zone</h2><form id="time-zone-form"><label>Your time zone<input id="time-zone" required maxlength="100" aria-describedby="zone-help" /></label><p id="zone-help" class="field-help">Initially set from your browser. Use an IANA name such as Pacific/Honolulu.</p><button type="submit" class="ghost-button">Save time zone</button></form></section><p>Use Tab to move between controls, and arrow keys, Home or End to switch focused tabs. PayPal remains in sandbox mode.</p></div></section>
+    <datalist id="platform-options"><option value="Prolific"></option><option value="Rev"></option><option value="TranscribeMe"></option><option value="SideShift"></option><option value="Microworkers"></option><option value="Other"></option></datalist>
     </main>
   </body>
 </html>

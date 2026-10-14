@@ -7,11 +7,17 @@ import { createPayPalRouter, type PayPalIdentityClient } from "./auth/paypal.js"
 import { SessionStore } from "./auth/session.js";
 import { prisma as defaultPrisma } from "./db/client.js";
 import type { PrismaClient } from "@prisma/client";
+import { ZodError } from "zod";
+import { createGameRouter } from "./game/router.js";
+import type { QuestDefinition } from "./game/catalog.js";
 
 type CreateAppOptions = {
   config?: AppConfig;
   prisma?: PrismaClient;
   paypalClient?: PayPalIdentityClient;
+  now?: () => Date;
+  quests?: readonly QuestDefinition[];
+  writeLimit?: { count: number; windowMs: number };
 };
 
 const publicDir = path.join(process.cwd(), "public");
@@ -24,7 +30,7 @@ export function createApp(options: CreateAppOptions = {}) {
 
   app.disable("x-powered-by");
   app.use(express.urlencoded({ extended: false }));
-  app.use(express.json());
+  app.use(express.json({ limit: "32kb" }));
 
   app.get("/health", (_request, response) => {
     response.status(200).json({ ok: true });
@@ -62,11 +68,13 @@ export function createApp(options: CreateAppOptions = {}) {
         return;
       }
 
-      response.json({
+      response.set("Cache-Control", "no-store").json({
         player: {
           id: currentSession.player.id,
           displayName: currentSession.player.displayName,
-          email: currentSession.player.email
+          email: currentSession.player.email,
+          timeZone: currentSession.player.timeZone,
+          leaderboardOptIn: currentSession.player.leaderboardOptIn
         }
       });
     } catch (error) {
@@ -74,23 +82,26 @@ export function createApp(options: CreateAppOptions = {}) {
     }
   });
 
+  const gameRouter = createGameRouter({ prisma, config, sessions, now: options.now, quests: options.quests, writeLimit: options.writeLimit });
+  app.use("/api", gameRouter);
+  app.post("/logout", gameRouter);
+
   app.get("/app", sessions.requirePlayer(), (_request, response) => {
     response.sendFile(path.join(publicDir, "app.html"));
-  });
-
-  app.post("/logout", async (request, response, next) => {
-    try {
-      await sessions.destroySession(request, response);
-      response.redirect("/");
-    } catch (error) {
-      next(error);
-    }
   });
 
   app.use(express.static(publicDir));
 
   app.use((error: Error, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
-    console.error(error.message);
+    if (error instanceof ZodError) {
+      response.status(400).json({ error: "invalid_input", issues: error.issues.map(({ path, message }) => ({ path, message })) });
+      return;
+    }
+    if ("status" in error && (error.status === 400 || error.status === 413)) {
+      response.status(error.status).json({ error: error.status === 413 ? "body_too_large" : "invalid_json" });
+      return;
+    }
+    console.error("Request failed.");
     response.status(500).send("Something went wrong.");
   });
 

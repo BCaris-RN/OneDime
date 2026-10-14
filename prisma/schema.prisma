@@ -14,6 +14,10 @@ model Player {
   email        String?
   createdAt    DateTime        @default(now()) @map("created_at")
   lastSeenAt   DateTime        @default(now()) @map("last_seen_at")
+  leaderboardOptIn Boolean    @default(false) @map("leaderboard_opt_in")
+  timeZone     String?         @map("time_zone")
+  clockPlatform String?        @map("clock_platform")
+  clockStartedAt DateTime?     @map("clock_started_at") @db.Timestamptz
   logEntries   LogEntry[]
   payouts      Payout[]
   questProgress QuestProgress[]
