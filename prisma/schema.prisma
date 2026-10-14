@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id           String          @id @default(uuid()) @db.Uuid
+  paypalUserId String          @unique @map("paypal_user_id")
+  displayName  String?         @map("display_name")
+  email        String?
+  createdAt    DateTime        @default(now()) @map("created_at")
+  lastSeenAt   DateTime        @default(now()) @map("last_seen_at")
+  logEntries   LogEntry[]
+  payouts      Payout[]
+  questProgress QuestProgress[]
+  receipts     Receipt[]
+  rungClaims   RungClaim[]
+  sessions     Session[]
+
+  @@map("players")
+}
+
+model Session {
+  id        String   @id
+  playerId  String   @map("player_id") @db.Uuid
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model OauthState {
+  state     String   @id
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([expiresAt])
+  @@map("oauth_states")
+}
+
+model LogEntry {
+  id          String    @id @default(uuid()) @db.Uuid
+  playerId    String    @map("player_id") @db.Uuid
+  platform    String
+  amountCents Int       @map("amount_cents")
+  minutes     Int
+  workedOn    DateTime  @map("worked_on") @db.Date
+  note        String?
+  verified    Boolean   @default(false)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  player      Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  receipts    Receipt[]
+
+  @@index([playerId])
+  @@index([workedOn])
+  @@map("log_entries")
+}
+
+model QuestProgress {
+  playerId    String   @map("player_id") @db.Uuid
+  questId     String   @map("quest_id")
+  completedAt DateTime @default(now()) @map("completed_at")
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@id([playerId, questId])
+  @@map("quest_progress")
+}
+
+model RungClaim {
+  rungCents Int      @id @map("rung_cents")
+  playerId   String   @map("player_id") @db.Uuid
+  claimedAt  DateTime @default(now()) @map("claimed_at")
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+  @@map("rung_claims")
+}
+
+model Receipt {
+  id            String    @id @default(uuid()) @db.Uuid
+  playerId      String    @map("player_id") @db.Uuid
+  logEntryId    String?   @map("log_entry_id") @db.Uuid
+  status        String
+  extractedJson Json?     @map("extracted_json")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  logEntry      LogEntry? @relation(fields: [logEntryId], references: [id], onDelete: SetNull)
+  player        Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+  @@index([logEntryId])
+  @@map("receipts")
+}
+
+model Payout {
+  id            String   @id @default(uuid()) @db.Uuid
+  playerId      String   @map("player_id") @db.Uuid
+  rungCents     Int      @map("rung_cents")
+  paypalBatchId String?  @map("paypal_batch_id")
+  status        String
+  createdAt     DateTime @default(now()) @map("created_at")
+  player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+  @@index([rungCents])
+  @@map("payouts")
+}
