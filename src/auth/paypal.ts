@@ -182,13 +182,16 @@ class OAuthStateStore {
   }
 
   async consumeState(state: string): Promise<boolean> {
-    const stored = await this.prisma.oauthState.findUnique({ where: { state } });
-    if (!stored) {
-      return false;
-    }
+    const result = await this.prisma.oauthState.deleteMany({
+      where: {
+        state,
+        expiresAt: {
+          gt: new Date()
+        }
+      }
+    });
 
-    await this.prisma.oauthState.delete({ where: { state } });
-    return stored.expiresAt.getTime() > Date.now();
+    return result.count === 1;
   }
 }
 

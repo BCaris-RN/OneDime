@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22 <23"
+    "node": ">=24 <25"
   },
   "scripts": {
     "build": "npm run build:server && npm run build:client",
@@ -25,7 +25,7 @@
   "devDependencies": {
     "@testcontainers/postgresql": "^12.2.1",
     "@types/express": "^5.0.5",
-    "@types/node": "^22.19.0",
+    "@types/node": "^24.19.2",
     "@types/supertest": "^6.0.3",
     "esbuild": "^0.28.2",
     "prisma": "6.12.0",

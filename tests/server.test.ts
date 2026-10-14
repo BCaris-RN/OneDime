@@ -1,6 +1,7 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { execSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AppConfig } from "../src/config.js";
@@ -117,6 +118,34 @@ describe("server", () => {
     expect(sessions[0].playerId).toBe(players[0].id);
   });
 
+  it("allows only one simultaneous callback to consume an OAuth state", async () => {
+    const state = await beginPayPalLogin();
+
+    const responses = await Promise.all([
+      request(app).get(`/auth/paypal/callback?code=first&state=${state}`),
+      request(app).get(`/auth/paypal/callback?code=second&state=${state}`)
+    ]);
+
+    expect(responses.map((response) => response.status).sort()).toEqual([302, 400]);
+    expect(paypalClient.exchangeCodeForToken).toHaveBeenCalledTimes(1);
+    await expect(prisma.player.count()).resolves.toBe(1);
+    await expect(prisma.session.count()).resolves.toBe(1);
+  });
+
+  it("stores a hash of the session ID instead of the raw cookie value", async () => {
+    const state = await beginPayPalLogin();
+    const response = await request(app)
+      .get(`/auth/paypal/callback?code=auth-code&state=${state}`)
+      .expect(302);
+    const rawSessionId = readRawSessionId(response.headers["set-cookie"]?.[0]);
+    const sessions = await prisma.session.findMany();
+
+    expect(rawSessionId).toBeTruthy();
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0].id).not.toBe(rawSessionId);
+    expect(sessions[0].id).toBe(sha256(rawSessionId));
+  });
+
   it("updates an existing player on a second login with the same PayPal user", async () => {
     const firstState = await beginPayPalLogin();
     await request(app).get(`/auth/paypal/callback?code=first&state=${firstState}`).expect(302);
@@ -192,6 +221,16 @@ async function beginPayPalLogin(): Promise<string> {
   const state = authorizationUrl.searchParams.get("state");
   expect(state).toBeTruthy();
   return state!;
+}
+
+function readRawSessionId(setCookie: string | undefined): string {
+  expect(setCookie).toBeDefined();
+  const encodedCookieValue = setCookie!.split(";")[0].split("=")[1];
+  return decodeURIComponent(encodedCookieValue).split(".")[0];
+}
+
+function sha256(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
 }
 
 async function resolveDatabaseUrl(): Promise<string> {

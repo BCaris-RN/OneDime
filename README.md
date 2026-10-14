@@ -15,7 +15,7 @@ OneDime is a small TypeScript/Express app with PayPal sandbox login, PostgreSQL-
 
 ## Local setup
 
-1. Install dependencies.
+1. Use Node.js 24 LTS, then install dependencies.
 
    ```bash
    npm ci
@@ -66,7 +66,7 @@ Run:
 npm test
 ```
 
-When `DATABASE_URL` is unset, tests start a temporary PostgreSQL container with Testcontainers. In CI, the workflow provides a PostgreSQL service and the tests use that database URL.
+When `DATABASE_URL` is unset, tests start a temporary PostgreSQL container with Testcontainers, so Docker Desktop must be running locally. In CI, the workflow provides a PostgreSQL service and the tests use that database URL.
 
 ## PayPal docs used
 

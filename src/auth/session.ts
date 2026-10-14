@@ -1,6 +1,6 @@
 import type { Player, PrismaClient } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type { AppConfig } from "../config.js";
 
 export const SESSION_COOKIE_NAME = "onedime_session";
@@ -26,7 +26,7 @@ export class SessionStore {
 
     await this.prisma.session.create({
       data: {
-        id: sessionId,
+        id: hashSessionId(sessionId),
         playerId,
         expiresAt
       }
@@ -50,7 +50,7 @@ export class SessionStore {
     }
 
     const session = await this.prisma.session.findUnique({
-      where: { id: sessionId },
+      where: { id: hashSessionId(sessionId) },
       include: { player: true }
     });
 
@@ -59,7 +59,7 @@ export class SessionStore {
     }
 
     if (session.expiresAt.getTime() <= Date.now()) {
-      await this.prisma.session.deleteMany({ where: { id: sessionId } });
+      await this.prisma.session.deleteMany({ where: { id: hashSessionId(sessionId) } });
       return null;
     }
 
@@ -85,7 +85,7 @@ export class SessionStore {
   async destroySession(request: Request, response: Response): Promise<void> {
     const sessionId = this.readSessionId(request);
     if (sessionId) {
-      await this.prisma.session.deleteMany({ where: { id: sessionId } });
+      await this.prisma.session.deleteMany({ where: { id: hashSessionId(sessionId) } });
     }
 
     response.clearCookie(SESSION_COOKIE_NAME, {
@@ -150,4 +150,8 @@ function safeEqual(left: string, right: string): boolean {
   }
 
   return timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+export function hashSessionId(sessionId: string): string {
+  return createHash("sha256").update(sessionId).digest("hex");
 }
