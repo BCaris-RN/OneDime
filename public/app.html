@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OneDime Tracker</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/app">OneDime</a>
+      <div class="player-strip">
+        <span id="player-name">Loading...</span>
+        <form method="post" action="/logout">
+          <button type="submit" class="ghost-button">Logout</button>
+        </form>
+      </div>
+    </header>
+    <main class="shell">
+      <nav class="tabs" aria-label="OneDime sections">
+        <a href="#tracker" class="active">Tracker</a>
+        <a href="#quests">Quests</a>
+        <a href="#leaderboard">Leaderboard</a>
+        <a href="#playbook">Playbook</a>
+        <a href="#help">Help</a>
+      </nav>
+
+      <section id="tracker" class="workspace-section">
+        <div>
+          <p class="eyebrow">Tracker</p>
+          <h1>Today starts empty.</h1>
+        </div>
+        <div class="tracker-grid">
+          <div class="metric">
+            <span>Logged</span>
+            <strong>$0.00</strong>
+          </div>
+          <div class="metric">
+            <span>Minutes</span>
+            <strong>0</strong>
+          </div>
+          <div class="metric">
+            <span>XP</span>
+            <strong>0</strong>
+          </div>
+          <div class="metric">
+            <span>Next rung</span>
+            <strong>$0.10</strong>
+          </div>
+        </div>
+      </section>
+
+      <section id="quests" class="workspace-section">
+        <p class="eyebrow">Quests</p>
+        <h2>No quests completed yet.</h2>
+      </section>
+
+      <section id="leaderboard" class="workspace-section">
+        <p class="eyebrow">Leaderboard</p>
+        <h2>Rankings unlock after entries exist.</h2>
+      </section>
+
+      <section id="playbook" class="workspace-section">
+        <p class="eyebrow">Playbook</p>
+        <h2>Pilot playbook copy will slot in here.</h2>
+      </section>
+
+      <section id="help" class="workspace-section">
+        <p class="eyebrow">Help</p>
+        <h2>Support copy will follow the pilot reference.</h2>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,84 @@
+export const PAYPAL_AUTH_URL = "https://www.sandbox.paypal.com/connect";
+export const PAYPAL_API_BASE_URL = "https://api-m.sandbox.paypal.com";
+export const PAYPAL_USERINFO_PATH = "/v1/identity/openidconnect/userinfo";
+export const PAYPAL_SCOPE = "openid profile email https://uri.paypal.com/services/paypalattributes";
+
+export type AppConfig = {
+  nodeEnv: string;
+  port: number;
+  databaseUrl?: string;
+  sessionSecret: string;
+  sessionTtlDays: number;
+  cookieSecure: boolean;
+  publicBaseUrl: string;
+  paypalClientId?: string;
+  paypalClientSecret?: string;
+  paypalRedirectUri: string;
+  paypalAuthUrl: string;
+  paypalApiBaseUrl: string;
+  paypalScope: string;
+};
+
+export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
+  const nodeEnv = env.NODE_ENV ?? "development";
+  const port = parseInteger(env.PORT, 3000);
+  const publicBaseUrl = env.PUBLIC_BASE_URL ?? `http://localhost:${port}`;
+  const paypalEnvironment = env.PAYPAL_ENVIRONMENT ?? "sandbox";
+  const paypalAuthUrl = env.PAYPAL_AUTH_URL ?? PAYPAL_AUTH_URL;
+  const paypalApiBaseUrl = env.PAYPAL_API_BASE_URL ?? PAYPAL_API_BASE_URL;
+  const sessionSecret = env.SESSION_SECRET;
+
+  if (paypalEnvironment !== "sandbox") {
+    throw new Error("Only PayPal sandbox is supported for this milestone.");
+  }
+
+  if (paypalAuthUrl !== PAYPAL_AUTH_URL || paypalApiBaseUrl !== PAYPAL_API_BASE_URL) {
+    throw new Error("PayPal endpoints must remain pointed at the sandbox environment.");
+  }
+
+  if (!sessionSecret || sessionSecret.length < 32) {
+    throw new Error("SESSION_SECRET must be set to at least 32 characters.");
+  }
+
+  return {
+    nodeEnv,
+    port,
+    databaseUrl: env.DATABASE_URL,
+    sessionSecret,
+    sessionTtlDays: parseInteger(env.SESSION_TTL_DAYS, 14),
+    cookieSecure: parseBoolean(env.COOKIE_SECURE, nodeEnv === "production"),
+    publicBaseUrl,
+    paypalClientId: blankToUndefined(env.PAYPAL_CLIENT_ID),
+    paypalClientSecret: blankToUndefined(env.PAYPAL_CLIENT_SECRET),
+    paypalRedirectUri:
+      blankToUndefined(env.PAYPAL_REDIRECT_URI) ?? `${publicBaseUrl}/auth/paypal/callback`,
+    paypalAuthUrl,
+    paypalApiBaseUrl,
+    paypalScope: env.PAYPAL_SCOPE ?? PAYPAL_SCOPE
+  };
+}
+
+function blankToUndefined(value: string | undefined): string | undefined {
+  if (!value || value.trim() === "") {
+    return undefined;
+  }
+
+  return value;
+}
+
+function parseInteger(value: string | undefined, fallback: number): number {
+  if (!value) {
+    return fallback;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function parseBoolean(value: string | undefined, fallback: boolean): boolean {
+  if (!value) {
+    return fallback;
+  }
+
+  return ["1", "true", "yes", "on"].includes(value.toLowerCase());
+}
