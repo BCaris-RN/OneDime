@@ -5,4 +5,5 @@ public/app.js
 .DS_Store
 coverage/
 .vitest/
+reference/
 

@@ -311,7 +311,7 @@ describe("Phase 2 game API", () => {
     expect(results.map((row) => row.status)).toEqual([201, 201]);
     await expect(prisma.logEntry.count()).resolves.toBe(2);
   });
-  it("clock out returns the pilot's rounded minutes for the form without auto-logging", async () => {
+  it("clock out returns whole minutes rounded down without auto-logging", async () => {
     const alice = await login("clock-alice");
     const bob = await login("clock-bob");
     await write(alice.cookie, "/api/clock/out").expect(409);
@@ -357,7 +357,7 @@ describe("Phase 2 game API", () => {
     expect(catalog.body.quests).toHaveLength(19);
     await request(productionCatalogApp).post("/api/quests/invented").set("Cookie", current.cookie).set("Origin", origin).send({}).expect(404);
   });
-  it.each([[0, 1], [45_000, 1], [90_000, 2]])("rounds clock duration %s ms to %s minutes as the pilot does", async (elapsed, expected) => {
+  it.each([[0, 0], [45_000, 0], [59_999, 0], [60_000, 1], [90_000, 1], [119_999, 1], [120_000, 2]])("floors clock duration %s ms to %s minutes", async (elapsed, expected) => {
     const current = await login("clock-round");
     await write(current.cookie, "/api/clock/in", { platform: "Prolific" }).expect(200);
     gameNow = new Date(gameNow.getTime() + elapsed);
@@ -376,6 +376,22 @@ describe("Phase 2 game API", () => {
     await action("leave").expect(200);
     expect((await stats()).body.xp).toBe(20);
     await expect(prisma.questProgress.count({ where: { playerId: current.player.id, questId: "lb-join" } })).resolves.toBe(1);
+  });
+  it("sorts leaderboard by verified total descending, then XP descending", async () => {
+    const low = await login("sort-low");
+    const highXp = await login("sort-high-xp");
+    const highTotal = await login("sort-high-total");
+    for (const [current, amountCents, minutes] of [[low, 100, 0], [highXp, 100, 60], [highTotal, 200, 0]] as const) {
+      await prisma.logEntry.create({ data: {
+        ...validEntry, playerId: current.player.id, amountCents, minutes,
+        verified: true, workedOn: new Date("2026-10-14")
+      } });
+      await write(current.cookie, "/api/leaderboard/join").expect(200);
+    }
+    const result = await request(app).get("/api/leaderboard").set("Cookie", low.cookie).expect(200);
+    expect(result.body.players.map((row: { displayName: string }) => row.displayName)).toEqual([
+      "Player sort-high-total", "Player sort-high-xp", "Player sort-low"
+    ]);
   });
   it("requires opt-in and whitelists leaderboard fields", async () => {
     const alice = await login("leader-alice");
@@ -408,6 +424,9 @@ describe("Phase 2 game API", () => {
     await prisma.$transaction((tx) => claimEligibleRungs(tx, current.player.id));
     await expect(prisma.rungClaim.count()).resolves.toBe(8);
     expect((await request(app).get("/api/me/stats").set("Cookie", current.cookie)).body.xp).toBe(10815);
+    const claims = await prisma.rungClaim.findMany({ orderBy: { rungCents: "asc" } });
+    await request(app).delete(`/api/entries/${entry.body.entry.id}`).set("Cookie", current.cookie).set("Origin", origin).send({}).expect(204);
+    expect(await prisma.rungClaim.findMany({ orderBy: { rungCents: "asc" } })).toEqual(claims);
   });
   it("two players crossing a rung simultaneously yield exactly one winner and no loser error", async () => {
     const alice = await login("race-alice");

@@ -9,6 +9,12 @@ function entry(day: string, minutes = 10, amountCents = 0): HistoryEntry {
 }
 
 describe("game rules", () => {
+  it.each([[199], [99, 100]])("floors dollar XP after summing logged cents: %j", (...amounts) => {
+    const stats = gameStats(amounts.map((amount) => entry("2026-10-14", 0, amount)), {
+      now: new Date("2026-10-14T20:00:00Z"), timeZone: "UTC"
+    });
+    expect(stats.xp).toBe(19);
+  });
   it.each([["0", 0], ["0.01", 1], ["0.10", 10], ["1.2", 120], ["9.99", 999], ["10000.00", 1_000_000]])("converts dollar input %s to integer cents", (input, cents) => {
     expect(dollarsToCents(input as string)).toBe(cents);
   });
@@ -74,9 +80,8 @@ describe("game rules", () => {
     expect(stats.sites[0].centsPerHour).toBeNull();
   });
   it("ports all 19 quest IDs, titles, descriptions, and XP exactly from the pilot", () => {
-    const pilot = readFileSync("reference/pilot.html", "utf8");
-    const expected = [...pilot.matchAll(/\{id:"([^"]+)",xp:(\d+),t:"([^"]+)",d:"([^"]+)"\}/g)]
-      .map(([, id, xp, title, description]) => ({ id, xp: Number(xp), title, description }));
+    // Only the public quest catalog is retained; the private HTML stays local.
+    const expected = JSON.parse(readFileSync("tests/fixtures/quests.json", "utf8"));
     expect(expected).toHaveLength(19);
     expect(QUESTS).toEqual(expected);
   });

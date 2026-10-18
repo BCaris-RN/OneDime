@@ -78,7 +78,7 @@ When `DATABASE_URL` is unset, tests start a temporary PostgreSQL container with 
 
 ## Waiting on Brandon
 
-- `reference/pilot.html` is now checked in as the source for Phase 2 quests, titles, game calculations, appearance, and Playbook/Help copy.
+- `reference/pilot.html` stays on disk as a private design reference; `reference/` is ignored by Git. Tests use only the sanitized public quest catalog in `tests/fixtures/quests.json`, so CI needs no private reference file. The earlier committed reference remains in Git history; removing it from the current tree does not purge history. Review that history before making the repository public.
 - Real PayPal sandbox client credentials and redirect URI must be added locally by Brandon.
 - Render deployment, public repository visibility, PR merge, payouts, webhooks, and live PayPal credentials are intentionally out of scope.
 
@@ -87,7 +87,7 @@ When `DATABASE_URL` is unset, tests start a temporary PostgreSQL container with 
 The Log, Quests, Leaderboard, Playbook, and Help tabs now use authenticated APIs. Log entries start unverified. Logging never verifies an entry or sends a payment.
 
 - Log, list, and delete your own entries. Earned amounts stay integer cents from validation through storage and responses. The form converts a dollar string into cents without floating-point rounding.
-- Clock in on one platform, reload while a clock is running, and clock out to fill the log form. Elapsed minutes follow the pilot: rounded to the nearest minute, with a minimum of one; clock out does not create an entry.
+- Clock in on one platform, reload while a clock is running, and clock out to fill the log form. Elapsed minutes are rounded down, including zero for sessions under one minute; clock out does not create an entry.
 - Whole-number XP, level and title, streak, rested pool, rolling seven-day totals, and site rates are calculated from history in the player's stored IANA time zone. The browser supplies the initial zone; Help lets the player change it.
 - Rested XP is replayed by calendar day, independent of entry order: +25 per complete idle day, capped at 100, spent only as a matching bonus on minutes. Same-day entries share the remaining pool. Deleting or backdating an entry recalculates the result.
 - Rungs are 10, 100, 1000, 5000, 10000, 25000, 50000, and 100000 cents. `claimEligibleRungs(tx, playerId)` sums verified rows inside a transaction and uses the global `rung_cents` primary key plus conflict-safe inserts. Losing a race produces no claim or database error. This is an internal integration point for Phase 3; HTTP input cannot set `verified`, a claim, or another player's ID.
@@ -133,7 +133,7 @@ Zod rejects unknown write fields, amounts outside 0–1,000,000 cents, fractiona
 
 ### Tests and review questions
 
-`npm run build` type-checks both server and browser TypeScript. `npm test` covers auth, exact pilot catalog parity, decimal-to-cents conversion, XP/levels/titles, rolling weeks, timed site rates, rested cap/drain/gaps/time zones/DST, streaks, ownership, input/CSRF checks, write limits, clock rounding and concurrent clocks, quest isolation/toggles and automatic join progress, verified-only rung eligibility, rollback, concurrent rung claims, and leaderboard privacy. CI runs the same build and tests on Node 24 with PostgreSQL 16.
+`npm run build` type-checks both server and browser TypeScript. `npm test` covers auth, exact pilot catalog parity, decimal-to-cents conversion, XP/levels/titles, rolling weeks, timed site rates, rested cap/drain/gaps/time zones/DST, streaks, ownership, input/CSRF checks, write limits, floored clock minutes and concurrent clocks, quest isolation/toggles and automatic join progress, verified-only rung eligibility, rollback, concurrent rung claims, and leaderboard privacy. CI runs the same build and tests on Node 24 with PostgreSQL 16.
 
 One interpretation remains for Lead review: the rested-XP rule does not define accrual before the first logged day. The implementation starts with zero, then accrues from gaps after that first day. This uses entry history alone, without a stored counter; confirm that interpretation.
 
