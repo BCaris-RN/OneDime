@@ -173,3 +173,38 @@ Sources checked live:
 - https://platform.claude.com/docs/en/about-claude/pricing
 - https://platform.claude.com/docs/en/build-with-claude/structured-outputs
 - https://platform.claude.com/docs/en/api/messages/create
+
+## M5: local demo and review preparation
+
+The README covers local setup, every environment variable, sandbox account placeholders,
+exports, routing, flags and provider limitations. Render settings are preparation only;
+all provider secrets are unsynchronized placeholders and payout/Google/demo flags stay off.
+No resources were deployed, credentials created or repository visibility changed.
+
+`npm run demo` builds and starts a disposable PostgreSQL container with fictional data,
+mocked identity and a loopback-only login. It never needs provider keys. The separate
+seed command requires an explicit flag, a local database and non-production mode. Seeding
+is repeatable and preserves other players. Test database overrides likewise reject remote
+hosts and database names other than `test` or names ending in `_test` before truncation.
+
+Final hardening bounds OAuth fetches, acknowledges durable routing before optional payout
+network work, reconciles early signed payout-item events, and quarantines retries past the
+provider's idempotency retention window. Payout metadata follows export date filters.
+New Phase 3 modules were formatted consistently without adding a formatter dependency.
+
+Fresh Node 24 `npm ci` passed; audit reported zero vulnerabilities. It emits a glob 10.5.0
+deprecation warning through development-only Testcontainers -> archiver. This maintenance
+warning remains; no forced transitive major-version override was applied. Build and all
+168 tests across seven files passed after the final logic changes.
+
+The populated five-app demo was checked at 1100, 390 and 320 pixels with no page overflow,
+including dark mode. Browser checks covered fractional-hour edit round trips, linking an
+existing First Dime entry without changing its amount, matching verification and PayPal
+badge, and downloading the complete workbook. The browser console reported no errors or
+warnings. M5 screenshots capture desktop, phone and dark-mode examples.
+
+Provider tests remain mocked. Real sandbox OAuth/Payouts/webhooks, real Anthropic
+connectivity and interactive Excel/Google Sheets import need operator checks with approved
+accounts and keys. CSV source labels do not authenticate a file with PayPal. Google Sheets
+OAuth is deferred; file exports are complete. Reviewer sign-off and merge approval remain
+outstanding. This is implementation completion, not a merged or deployed phase.

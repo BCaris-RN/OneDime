@@ -1,5 +1,9 @@
 import { mkdir, copyFile, writeFile } from "node:fs/promises";
-const fonts = [["jetbrains-mono", [600, 800]], ["atkinson-hyperlegible", [400, 700]], ["source-code-pro", [800]]];
+const fonts = [
+  ["jetbrains-mono", [600, 800]],
+  ["atkinson-hyperlegible", [400, 700]],
+  ["source-code-pro", [800]]
+];
 await mkdir("public/fonts", { recursive: true });
 let css = "";
 for (const [name, weights] of fonts) {

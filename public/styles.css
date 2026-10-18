@@ -192,3 +192,7 @@ textarea{font:400 16px var(--body);background:var(--lcd-2);color:var(--lcd-4);pa
 .export-options summary{cursor:pointer;font:800 .85rem var(--code);color:var(--head);padding:8px 0}.export-options[open] summary{margin-bottom:8px}
 
 .paypal-strip{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:.85rem;border-bottom:1px solid var(--divider);padding:8px 0}.paypal-badge{display:block;white-space:normal;max-width:220px;font-size:.75rem;overflow-wrap:anywhere;color:var(--head)}#paypal-review{min-width:0}#paypal-review p{overflow-wrap:anywhere}
+
+#app-first,#app-spotlight,#app-freelance,#app-market,#app-paypal,.log-layout,.log-context{grid-template-columns:minmax(0,1fr)}
+#app-first>*,#panel-log>*,.log-layout>*,.log-context>*{min-width:0}
+#panel-log{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;min-width:0}.table-scroll{width:100%}

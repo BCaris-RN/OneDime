@@ -18,7 +18,7 @@
       <div class="facebtns"><button type="button" id="btnB" aria-label="B: clock in or out" title="B: clock in or out">B</button><button type="button" id="btnA" aria-label="A: log a session" title="A: log a session">A</button></div>
     </div>
       <div class="player-strip">
-        <span id="player-name">Loadingâ€¦</span>
+        <span id="player-name">Loading…</span>
         <button type="button" class="ghost-button" id="theme-toggle" aria-label="Switch to dark mode">Dark mode</button>
         <button type="button" class="text-button" id="logout">Log out</button>
       </div>
@@ -37,12 +37,12 @@
       <p id="message" role="status" aria-live="polite" class="message"></p>
       <section id="panel-log" role="tabpanel" aria-labelledby="tab-log" tabindex="0">
         <section class="goal-hero" aria-labelledby="goal-title"><div class="goal-coin" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="goal-ring" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg><div class="coin-face"><b id="goal-percent">0%</b><span>of goal</span></div></div><div><p class="eyebrow">Current goal</p><h2 id="goal-title">Earn your first dime</h2><p id="goal-sub" class="muted"></p><p class="field-help">Your personal goal uses logged earnings. The rung race requires verified earnings.</p><p id="level-summary" class="level-summary">Loading your progress…</p></div></section>      <dl class="stats" aria-label="Player statistics">
-        <div><dt>Logged</dt><dd id="total-amount">â€”</dd></div>
-        <div><dt>Verified</dt><dd id="verified-amount">â€”</dd></div>
-        <div><dt>This week</dt><dd id="week-amount">â€”</dd></div>
-        <div><dt>Minutes</dt><dd id="total-minutes">â€”</dd></div>
-        <div><dt>Day streak</dt><dd id="streak">â€”</dd></div>
-        <div><dt>Rested pool</dt><dd id="rested-pool">â€”</dd></div>
+        <div><dt>Logged</dt><dd id="total-amount">—</dd></div>
+        <div><dt>Verified</dt><dd id="verified-amount">—</dd></div>
+        <div><dt>This week</dt><dd id="week-amount">—</dd></div>
+        <div><dt>Minutes</dt><dd id="total-minutes">—</dd></div>
+        <div><dt>Day streak</dt><dd id="streak">—</dd></div>
+        <div><dt>Rested pool</dt><dd id="rested-pool">—</dd></div>
       </dl>
             <section class="clock-workspace" aria-labelledby="clock-heading"><p class="eyebrow">Work clock</p><h2 id="clock-heading">Keep track of your minutes.</h2><p id="clock-elapsed" class="clock-elapsed" aria-label="Elapsed work time">0:00:00</p><p id="clock-status" class="muted">No clock running.</p>
               <form id="clock-form"><label>Site or platform<input id="clock-platform" required maxlength="80" list="platform-options" placeholder="Where you are working" /></label><div class="button-row"><button class="ghost-button" id="clock-in" type="submit">Clock in</button><button class="ghost-button" id="clock-out" type="button" disabled>Clock out</button></div></form>
@@ -63,14 +63,14 @@
           </section>
           <div class="log-context">
 
-            <section class="rung-workspace" aria-labelledby="rung-heading"><p class="eyebrow">The rung race</p><h2 id="rung-heading">First verified total wins.</h2><p class="muted" id="next-rung">Loading next rungâ€¦</p><ol id="rung-list" class="rung-list"></ol><p class="field-help">Each rung has one winner. Matched PayPal CSV payments can verify entries. Sandbox milestone bonuses are off by default.</p></section>
+            <section class="rung-workspace" aria-labelledby="rung-heading"><p class="eyebrow">The rung race</p><h2 id="rung-heading">First verified total wins.</h2><p class="muted" id="next-rung">Loading next rung…</p><ol id="rung-list" class="rung-list"></ol><p class="field-help">Each rung has one winner. Matched PayPal CSV payments can verify entries. Sandbox milestone bonuses are off by default.</p></section>
           </div>
         </div>
         <section class="workspace-section" aria-labelledby="history-heading"><div class="section-heading"><h2 id="history-heading">Your entries</h2><button type="button" class="text-button" id="refresh">Refresh</button></div><p id="entries-empty" class="muted">No entries yet. Add your first work session above.</p><div class="table-scroll"><table id="entries-table" hidden><caption class="sr-only">Your work entries</caption><thead><tr><th scope="col">Date / site</th><th scope="col">Time</th><th scope="col">Earned</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead><tbody id="entries-body"></tbody></table></div></section>
         <section class="workspace-section" aria-labelledby="sites-heading"><h2 id="sites-heading">Your site rates</h2><p class="field-help">Effective hourly rate counts only sessions where you logged minutes, including earnings awaiting verification.</p><ul id="site-rates" class="plain-list"></ul></section>
       </section>
-      <section id="panel-quests" role="tabpanel" aria-labelledby="tab-quests" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Quests</p><h2 id="quest-level">Level 1 Â· Rookie</h2><p id="quest-xp" class="muted">0 XP</p><div id="xp-progress" class="xp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="xp-fill"></i></div><p id="quests-status" class="muted">Loading questsâ€¦</p><ul id="quest-list" class="plain-list"></ul></div></section>
-      <section id="panel-leaderboard" role="tabpanel" aria-labelledby="tab-leaderboard" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Leaderboard</p><h2>The verified standings.</h2><p class="muted">Joining shares your display name, verified earnings by site, XP, level, and rung wins with other players. Your notes stay private.</p><button type="button" class="primary-button" id="leaderboard-toggle" disabled>Loadingâ€¦</button><p id="leaderboard-empty" class="muted"></p><h3 class="board-heading">First to each rung</h3><div class="table-scroll"><table><thead><tr><th scope="col">Bonus quest</th><th scope="col">Claimed by</th><th scope="col">When</th></tr></thead><tbody id="race-body"></tbody></table></div><p class="field-help">Only opted-in winners appear here. Private winners retain their claims.</p><h3 class="board-heading">Top earners</h3><ol id="leaderboard-list" class="leaderboard-list"></ol><h3 class="board-heading">Top earner on each site</h3><ul id="site-leaders" class="plain-list"></ul></div></section>
+      <section id="panel-quests" role="tabpanel" aria-labelledby="tab-quests" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Quests</p><h2 id="quest-level">Level 1 · Rookie</h2><p id="quest-xp" class="muted">0 XP</p><div id="xp-progress" class="xp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="xp-fill"></i></div><p id="quests-status" class="muted">Loading quests…</p><ul id="quest-list" class="plain-list"></ul></div></section>
+      <section id="panel-leaderboard" role="tabpanel" aria-labelledby="tab-leaderboard" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Leaderboard</p><h2>The verified standings.</h2><p class="muted">Joining shares your display name, verified earnings by site, XP, level, and rung wins with other players. Your notes stay private.</p><button type="button" class="primary-button" id="leaderboard-toggle" disabled>Loading…</button><p id="leaderboard-empty" class="muted"></p><h3 class="board-heading">First to each rung</h3><div class="table-scroll"><table><thead><tr><th scope="col">Bonus quest</th><th scope="col">Claimed by</th><th scope="col">When</th></tr></thead><tbody id="race-body"></tbody></table></div><p class="field-help">Only opted-in winners appear here. Private winners retain their claims.</p><h3 class="board-heading">Top earners</h3><ol id="leaderboard-list" class="leaderboard-list"></ol><h3 class="board-heading">Top earner on each site</h3><ul id="site-leaders" class="plain-list"></ul></div></section>
       <section id="panel-playbook" role="tabpanel" aria-labelledby="tab-playbook" tabindex="0" hidden><div class="reading-column workspace-section playbook-copy">
     <section>
       <h2>The one rule</h2>

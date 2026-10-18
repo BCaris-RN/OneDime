@@ -58,7 +58,8 @@ export class FetchPayPalIdentityClient implements PayPalIdentityClient {
         "Content-Type": "application/x-www-form-urlencoded",
         Accept: "application/json"
       },
-      body
+      body,
+      signal: AbortSignal.timeout(15000), redirect: "error"
     });
 
     if (!response.ok) {
@@ -74,7 +75,8 @@ export class FetchPayPalIdentityClient implements PayPalIdentityClient {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/json"
-      }
+      },
+      signal: AbortSignal.timeout(15000), redirect: "error"
     });
 
     if (!response.ok) {

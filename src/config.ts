@@ -47,6 +47,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
 
   if (nodeEnv === "production" && env.PAYOUTS_ENABLED === "true") throw new Error("Payouts may only be enabled locally.");
 
+  if (env.GOOGLE_SHEETS_ENABLED === "true") throw new Error("Google Sheets integration is not enabled; use file exports.");
   const aiBudget = Number(env.AI_MONTHLY_BUDGET_CENTS ?? "100");
   if (!Number.isSafeInteger(aiBudget) || aiBudget < 0 || aiBudget > 1000000) throw new Error("Invalid AI monthly budget.");
   return {
