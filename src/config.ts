@@ -17,6 +17,9 @@ export type AppConfig = {
   paypalAuthUrl: string;
   paypalApiBaseUrl: string;
   paypalScope: string;
+  anthropicApiKey?: string;
+  anthropicModel?: string;
+  aiMonthlyBudgetCents?: number;
   payoutsEnabled?: boolean;
   paypalWebhookId?: string;
 };
@@ -44,7 +47,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
 
   if (nodeEnv === "production" && env.PAYOUTS_ENABLED === "true") throw new Error("Payouts may only be enabled locally.");
 
+  const aiBudget = Number(env.AI_MONTHLY_BUDGET_CENTS ?? "100");
+  if (!Number.isSafeInteger(aiBudget) || aiBudget < 0 || aiBudget > 1000000) throw new Error("Invalid AI monthly budget.");
   return {
+    anthropicApiKey: blankToUndefined(env.ANTHROPIC_API_KEY),
+    anthropicModel: env.ANTHROPIC_MODEL ?? "claude-haiku-5-5",
+    aiMonthlyBudgetCents: aiBudget,
     payoutsEnabled: env.PAYOUTS_ENABLED === "true",
     paypalWebhookId: blankToUndefined(env.PAYPAL_WEBHOOK_ID),
     nodeEnv,

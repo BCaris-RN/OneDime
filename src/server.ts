@@ -19,6 +19,8 @@ import { HttpError } from "./http/errors.js";
 import { sandboxClient } from "./paypal/client.js";
 import { createPayoutService, type PayoutClient } from "./paypal/payouts.js";
 import { webhookHandler } from "./paypal/webhooks.js";
+import { createAIRouter } from "./ai/router.js";
+import type { AIClient } from "./ai/client.js";
 import { createActivityRouter } from "./paypal/router.js";
 import { createExportRouter } from "./exports/router.js";
 
@@ -27,6 +29,7 @@ type CreateAppOptions = {
   prisma?: PrismaClient;
   paypalClient?: PayPalIdentityClient;
   payoutClient?: PayoutClient;
+  aiClient?: AIClient;
   now?: () => Date;
   quests?: readonly QuestDefinition[];
   writeLimit?: { count: number; windowMs: number };
@@ -103,6 +106,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use("/api", gameRouter);
   app.use("/api", createActivityRouter(prisma, options.now ?? (() => new Date()), flushPayouts));
   app.locals.flushPayouts = flushPayouts;
+  app.use("/api", createAIRouter(prisma, config, options.now ?? (() => new Date()), options.aiClient));
   app.use("/api", createLedgerRouter(prisma, options.now ?? (() => new Date())));
   app.use("/api", createExportRouter(prisma, options.now ?? (() => new Date())));
   app.post("/logout", gameRouter);

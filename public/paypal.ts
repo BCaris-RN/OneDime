@@ -97,3 +97,14 @@ importForm.addEventListener("submit",event=>{event.preventDefault();if(submit.di
 });
 document.addEventListener("onedime:rendered",()=>{badges();void load();});
 void load();
+
+const suggestButton=button("Suggest routing",()=>{
+  suggestButton.disabled=true;void(async()=>{try{
+    const result=await request<{status:string;suggestions:{id:string;suggestion:Payment["suggestion"]}[]}>("/paypal/suggestions",{});
+    if(payload)for(const value of result.suggestions){const payment=payload.rows.find(row=>row.id===value.id);if(payment)payment.suggestion=value.suggestion;}
+    const messages:Record<string,string>={missing_key:"AI is not configured. Using the fixed payer map.",budget_reached:"The monthly AI budget is reached. Using the fixed payer map.",unsupported_model:"This model has no verified budget policy. Using the fixed payer map.",invalid:"No valid AI suggestion. Choose a workspace yourself.",failed:"AI is unavailable. Using the fixed payer map.",pending:"Suggestions are already being prepared. Try again shortly.",complete:"Suggestions ready. Review and confirm each payment.",cached:"Available suggestions loaded. Review and confirm each payment."};
+    aiStatus.textContent=messages[result.status]??"No suggestions available.";render();
+  }catch{aiStatus.textContent="Could not load suggestions. You can route payments manually.";}finally{suggestButton.disabled=false;}})();
+});
+const aiStatus=node("p");aiStatus.setAttribute("role","status");
+ai.append(node("p","Optional AI sends only payer name, net amount and payment kind to Claude. Email-like payer text is redacted. It suggests; you confirm, and the server decides."),suggestButton,aiStatus);
