@@ -1,143 +1,241 @@
-# OneDime
-
-OneDime is a small TypeScript/Express app with PayPal sandbox login, PostgreSQL-backed sessions, and a plain HTML/CSS/TypeScript frontend.
-
-## Week 1 scope
-
-- Express server with `GET /health`
-- PayPal sandbox OAuth/OpenID Connect login
-- PostgreSQL sessions with signed, httpOnly cookies
-- Prisma schema and checked-in migration for Week 1 through Week 3 tables
-- Plain frontend shell for landing and logged-in tracker views
-- Vitest coverage for auth/session/database constraints
-- GitHub Actions test workflow
-- Render Blueprint for a web service plus Postgres database
-
-## Local setup
-
-1. Use Node.js 24 LTS, then install dependencies.
-
-   ```bash
-   npm ci
-   ```
-
-2. Copy the environment template and fill in local sandbox values.
-
-   ```bash
-   cp .env.example .env
-   ```
-
-3. Start PostgreSQL and set `DATABASE_URL` in `.env`.
-
-4. Apply migrations.
-
-   ```bash
-   npm run db:migrate
-   ```
-
-5. Build and run the app.
-
-   ```bash
-   npm run build
-   npm start
-   ```
-
-6. Open `http://localhost:3000`.
-
-## Environment
-
-Secrets are loaded from `.env` only. Do not commit `.env`.
-
-- `DATABASE_URL`
-- `SESSION_SECRET`
-- `PAYPAL_CLIENT_ID`
-- `PAYPAL_CLIENT_SECRET`
-- `PAYPAL_REDIRECT_URI`
-- `PUBLIC_BASE_URL`
-- `COOKIE_SECURE`
-
-The PayPal integration is sandbox-only. The app rejects non-sandbox PayPal endpoint configuration.
-
-## Tests
-
-Run:
-
-```bash
-npm test
+```text
+    .-'''''''-.
+  .'  .-----.  '.        ___             ____  _
+ /   /  ONE  \   \      / _ \ _ __   ___|  _ \(_)_ __ ___   ___
+|   |  DIME   |   |    | | | | '_ \ / _ \ | | | | '_ ` _ \ / _ \
+ \   \  10c  /   /     | |_| | | | |  __/ |_| | | | | | | |  __/
+  '.  '-----'  .'       \___/|_| |_|\___|____/|_|_| |_| |_|\___|
+    '-.......-'        earn your first dime. level up for real.
 ```
 
-When `DATABASE_URL` is unset, tests start a temporary PostgreSQL container with Testcontainers, so Docker Desktop must be running locally. In CI, the workflow provides a PostgreSQL service and the tests use that database URL.
+# OneDime
 
-## PayPal docs used
+I built OneDime to make the first dime of independent income feel achievable, then
+make the next step visible. It is a private TypeScript/Express app with PostgreSQL,
+PayPal sandbox login and a plain HTML/CSS/TypeScript interface based on my handheld pilot.
 
-- PayPal Log in with PayPal integration guide: https://developer.paypal.com/log-in/build/
-- PayPal manual button build guide: https://developer.paypal.com/log-in/build-button/
-- PayPal Log in with PayPal scope reference: https://developer.paypal.com/log-in/references/
-- PayPal Identity API userinfo reference: https://developer.paypal.com/api/identity/v1/userinfo-get
-- PayPal REST API base URL guidance: https://developer.paypal.com/api/make-api-requests
+I keep money in integer cents so amounts survive validation, storage and calculations
+without decimal drift. Hours, minutes and miles use explicit scaled integers. Only
+First Dime entries earn XP, streaks, quests or rung claims. Verified totals decide
+rung eligibility and earnings rankings; general progression XP breaks leaderboard ties.
 
-## Waiting on Brandon
+## Run locally
 
-- `reference/pilot.html` stays on disk as a private design reference; `reference/` is ignored by Git. Tests use only the sanitized public quest catalog in `tests/fixtures/quests.json`, so CI needs no private reference file. The earlier committed reference remains in Git history; removing it from the current tree does not purge history. Review that history before making the repository public.
-- Real PayPal sandbox client credentials and redirect URI must be added locally by Brandon.
-- Render deployment, public repository visibility, PR merge, payouts, webhooks, and live PayPal credentials are intentionally out of scope.
+Use Node 24 and PostgreSQL 16. Install dependencies and build:
 
-## Phase 2: the game
-
-The Log, Quests, Leaderboard, Playbook, and Help tabs now use authenticated APIs. Log entries start unverified. Logging never verifies an entry or sends a payment.
-
-- Log, list, and delete your own entries. Earned amounts stay integer cents from validation through storage and responses. The form converts a dollar string into cents without floating-point rounding.
-- Clock in on one platform, reload while a clock is running, and clock out to fill the log form. Elapsed minutes are rounded down, including zero for sessions under one minute; clock out does not create an entry.
-- Whole-number XP, level and title, streak, rested pool, rolling seven-day totals, and site rates are calculated from history in the player's stored IANA time zone. The browser supplies the initial zone; Help lets the player change it.
-- Rested XP is replayed by calendar day, independent of entry order: +25 per complete idle day, capped at 100, spent only as a matching bonus on minutes. Same-day entries share the remaining pool. Deleting or backdating an entry recalculates the result.
-- Rungs are 10, 100, 1000, 5000, 10000, 25000, 50000, and 100000 cents. `claimEligibleRungs(tx, playerId)` sums verified rows inside a transaction and uses the global `rung_cents` primary key plus conflict-safe inserts. Losing a race produces no claim or database error. This is an internal integration point for Phase 3; HTTP input cannot set `verified`, a claim, or another player's ID.
-- The leaderboard defaults to opt-out. Its response explicitly lists only display name, verified total, XP, level, per-site verified totals, and timestamped rung wins. Notes, email fields, and unverified earning amounts are excluded. XP follows the handoff and includes logged work and earnings.
-- All 19 quest IDs, titles, descriptions, and XP rewards are ported exactly from the pilot and checked against that source by a regression test. Titles advance one per level and cap at Legend. Joining the leaderboard completes its 20-XP quest once, as in the pilot; leaving does not remove that progress. Unknown quest IDs are rejected.
-- The goal coin and personal goal ladder use logged earnings, as in the pilot. The competitive rung race and public earnings require verified entries, as the handoff specifies. XP is floored after summing its components; site rates exclude earnings from zero-minute entries.
-- The five tabs retain the pilot's copper/paper colors, goal coin, numeric type, progress bar, site suggestions, time-only logging, and Playbook/Help content. Help is adapted for PostgreSQL/PayPal sessions, verified earnings, privacy, and rested XP; the pilot's Claude account/local-storage claims are not presented as app behavior.
-
-### Running Phase 2 locally
-
-In `G:\one_dime`, use Node 24, configure your own local `.env` using the existing template, and start Docker/Postgres as described above. Then run:
-
-```bash
+```powershell
 npm ci
+Copy-Item .env.example .env
+```
+
+Fill the local `.env` privately. Set a local `DATABASE_URL`, a random `SESSION_SECRET`
+of at least 32 characters, and personal sandbox PayPal app credentials. Match the
+callback URL to the origin you will open; the default is
+`http://localhost:3000/auth/paypal/callback`. Keep `.env` out of Git.
+
+```powershell
 npm run db:migrate
 npm run build
 npm start
 ```
 
-Use the exact origin configured by `PUBLIC_BASE_URL` in the browser (default `http://localhost:3000`). Log in with your sandbox PayPal identity. No real sandbox keys are needed for tests, which mock the identity client and use a disposable database. This change does not create or change secrets.
+Open the configured `PUBLIC_BASE_URL`, then use **Log in with PayPal**. `npm run dev`
+watches the server; rebuild after editing browser TypeScript or font dependencies.
+The build self-hosts the three OFL fonts and their licenses; no Google Fonts request is needed.
 
-### API contract
+### Isolated fictional demo
 
-All routes below require a session. Writes require `Content-Type: application/json` and an `Origin` exactly matching `PUBLIC_BASE_URL`; absent/null/foreign origins and cross-site fetches are rejected. Writes share a per-player limit of 60 requests per minute, held in the local server process; a future multi-instance deployment needs a shared limiter. Logout uses the same safeguards. Private responses are not cached.
+```powershell
+npm run demo
+```
 
-| Route | Input or result |
+Docker Desktop must be running. This creates a disposable PostgreSQL 16 container,
+applies migrations, seeds fake data and binds only to `127.0.0.1:3403`. Open
+[the local demo](http://127.0.0.1:3403/demo-login). Stop with Ctrl+C to remove the container.
+The demo uses fake identity/session data, disabled payouts and no AI key. It does
+not contact PayPal or Anthropic. It does not demonstrate real PayPal authentication.
+All people, transaction IDs and financial events are fictional; platform names are
+labels and no third-party logos are included.
+
+To seed a separate existing local database, explicitly set `DEMO_SEED_ENABLED=true`
+outside production and run `npm run db:seed:demo`. The seed is repeatable, creates
+only the named fictional demo player and its fixed records, and does not clear other
+players. It refuses non-local database hosts. Use the isolated demo to sign into fake data.
+
+## Test and check
+
+```powershell
+npm run build
+npm test
+npm audit
+```
+
+Tests mock provider calls and use disposable PostgreSQL via Testcontainers when
+`DATABASE_URL` is unset. An explicit test URL must point to localhost and a database
+named `test` or `*_test`; the suite truncates its tables. Never point it at app data.
+GitHub Actions uses a local PostgreSQL 16 service and Node 24, then installs, builds and tests.
+
+Coverage includes ownership, input/origin/rate checks, game math and clock races,
+brand-deal payment concurrency, ledger calculations, exports/formula protection,
+CSV privacy and re-imports, routing/unlink behavior, payout idempotency and webhook
+failures/deduplication, AI schema/privacy/cache/budget races, and repeatable fake seed data.
+Exact checkpoint SHAs, test counts and CI evidence are in `STATUS.md` and PR #4.
+
+## Pick one workspace for each payment
+
+- **First Dime:** starter gigs and everything that does not fit below, including SideShift.
+- **Spotlight:** income that needs an audience: creator streams and brand deals, plus expenses.
+- **Freelance:** selling a skill to a client, with platform fees and net hourly rates.
+- **Market:** driving/delivery shifts, or selling goods with fees, supplier cost and shipping.
+- **PayPal:** connection status, private activity import and the review queue; it does not
+  add a second copy of earnings to the financial summaries.
+
+A payment belongs in exactly one workspace. Printify and Ninja Transfers are suppliers
+(item cost); Printify Shop is a store (where the buyer paid). First Dime alone feeds the game.
+Clock-out rounds down to whole minutes, including zero under one minute. Rested XP starts
+at zero and accrues from complete idle days after the first logged day.
+
+## Export and import files
+
+Every workspace has an **Export** disclosure with CSV and Excel options, a month filter
+or inclusive date range, and all time as the default. Money headers end in `_usd`; values
+are dollars with two decimal places. XLSX dates are typed dates and headers are frozen.
+Tab CSVs combine different record kinds with `record_type`. Market workbooks have two
+sheets, Delivery and Selling, each including its corresponding expenses.
+
+**Export everything** in PayPal produces an XLSX workbook with monthly Summary rows and
+one sheet per financial/activity/game table, or a ZIP of CSV files. Sessions, OAuth state,
+credentials, AI prompts and payout recipient emails are never exported. PayPal rows
+are reconciliation metadata and are not counted again in Summary. First Dime treats
+verified earnings as paid because it has no separate payout status.
+
+Summary uses work/sale dates for earnings and fees, payment dates when available for paid
+amounts, spend dates for expenses, and earned month for pending amounts. That last value
+is monthly; the pilot's pending headline is all-time. Net subtracts fees, supplier costs,
+shipping and expenses. Date-range filters apply to the relevant event dates.
+
+In Google Sheets, choose **File > Import > Upload** and select the file. In Excel, open
+`.xlsx`, or use **Data > From Text/CSV**. Formula-like text begins with a protective
+apostrophe; numeric amounts remain numbers, including negative net totals. Exports use
+one consistent database snapshot for the logged-in player and are limited to six per minute.
+Binary structure, numeric/date cells and frozen headers are tested; interactive import
+in actual Excel/Google accounts remains a manual check.
+
+## PayPal sandbox and activity review
+
+Import your own English-column PayPal activity CSV with US (`MM/DD/YYYY`) or ISO dates.
+The size limit is 512 KB and 1,000 rows. I store only date, payer name, gross, fee, net,
+currency, transaction ID and type. The file and extra columns are discarded. Re-imports
+are deduplicated per player. Only incoming USD payments with supported payment types and
+consistent gross/fee/net arithmetic can be routed; other rows remain visible as not counted.
+
+Confirm a suggested workspace, choose another, or link an existing owned record. Linking
+preserves your amount and shows a mismatch rather than fixing it automatically. First Dime,
+creator income and delivery use net; freelance/selling retain gross and fees separately.
+Every linked row shows its PayPal transaction ID. Deleting it unlinks the payment and
+preserves the import. An earned rung claim also survives entry deletion.
+
+CSV matching verifies a First Dime entry only when payer/platform matches the fixed map and
+the logged amount equals that transaction's gross or net, recording source `paypal_csv`.
+Linked First Dime entries show gross, fee and net without changing the logged amount.
+This is player-uploaded evidence; it
+is not an authenticated PayPal activity lookup and does not prove the file is genuine.
+
+### Sandbox test accounts: Brandon fills these privately
+
+| Purpose | Placeholder |
 | --- | --- |
-| `POST /api/entries` | `{ platform, workedOn: "YYYY-MM-DD", amountCents, minutes, note? }`; returns an unverified entry |
-| `GET /api/entries` | Own entries, optionally `?id=<uuid>`; someone else's ID returns 404 |
-| `DELETE /api/entries` | JSON `{ id }`; only own rows; `/api/entries/:id` with `{}` is also supported |
-| `POST /api/clock/in` | JSON `{ platform }`; 409 when already running |
-| `POST /api/clock/out` | JSON `{}`; `{ platform, minutes, workedOn }` for the form; 409 when absent |
-| `GET /api/clock` | Own active platform and start instant, or nulls |
-| `GET /api/me/stats` | Own totals, rolling seven-day week, streak, XP, level, rested pool/bonus, and per-site cents/hour |
-| `POST /api/me/time-zone` | JSON `{ timeZone }`; a valid IANA zone |
-| `GET /api/quests` | The exact 19-quest catalog and own completed quest IDs |
-| `POST /api/quests/:id` | JSON `{}` toggles an existing catalog quest for the player |
-| `POST /api/leaderboard/join` or `/leave` | JSON `{}` changes only the player's opt-in |
-| `GET /api/leaderboard` | Whitelisted summaries for opted-in players only |
-| `POST /api/logout` or `/logout` | JSON `{}` destroys the current session and clears its cookie |
+| Personal developer account | `<personal account, never employer>` |
+| OneDime sandbox business sender/app | `<sandbox business account>` |
+| Sandbox player login/recipient | `<sandbox personal account>` |
+| Registered callback | `<PUBLIC_BASE_URL>/auth/paypal/callback` |
+| Webhook listener | `<PUBLIC_BASE_URL>/api/paypal/webhook` |
+| Requested attributes | `openid profile email` and PayPal verification/account attributes |
 
-Zod rejects unknown write fields, amounts outside 0–1,000,000 cents, fractional/negative amounts or minutes, invalid dates/zones, future work dates, and oversized text. Minutes must fit a PostgreSQL integer. Dates represent the player's calendar date, while clock and claim timestamps are instants. Do not re-zone the entry's `workedOn` date when rendering it.
+Do not put emails, passwords or keys in this table or the PR. Persisted account verification
+is shown only when returned. A missing name uses a generic display name, never email.
 
-### Tests and review questions
+### Disabled milestone bonuses
 
-`npm run build` type-checks both server and browser TypeScript. `npm test` covers auth, exact pilot catalog parity, decimal-to-cents conversion, XP/levels/titles, rolling weeks, timed site rates, rested cap/drain/gaps/time zones/DST, streaks, ownership, input/CSRF checks, write limits, floored clock minutes and concurrent clocks, quest isolation/toggles and automatic join progress, verified-only rung eligibility, rollback, concurrent rung claims, and leaderboard privacy. CI runs the same build and tests on Node 24 with PostgreSQL 16.
+`PAYOUTS_ENABLED=false` sends nothing. If Brandon explicitly enables it locally later,
+a server-recorded rung claim creates a unique outbox row before any API call. The sandbox
+bonus is 10% of the rung, rounded down, minimum $0.10. It goes from OneDime's sandbox
+business credentials to the player's login email. Batch/item/recipient/amount stay stable
+on retries; leases prevent concurrent sends. Pending work is retried by the server each
+minute. Ambiguous attempts older than 29 days require manual review instead of risking
+PayPal's 30-day duplicate window. Do not enable this in production; startup rejects that.
 
-One interpretation remains for Lead review: the rested-XP rule does not define accrual before the first logged day. The implementation starts with zero, then accrues from gaps after that first day. This uses entry history alone, without a stored counter; confirm that interpretation.
+Webhooks use PayPal signature verification and deduplicate event IDs. Only tracked batches
+are updated. The browser cannot choose a payout, amount or recipient. These flows are
+mock-tested; actual sandbox authentication, payouts, app permissions and webhook delivery
+must be validated with Brandon's personal sandbox accounts before activation.
 
-The copied Oct 13 SDLC still lists rested XP as an open decision and Phase 1 as awaiting fixes. The operator's Oct 14 approval and Phase 2 handoff supersede that dated status; the supplied document is preserved unchanged.
+## AI reads and suggests; the server decides
 
-The phase PR is for review. Claude's review and Brandon's separate merge approval remain outstanding. Deployment, repository visibility, license, receipts, payouts, webhooks, and AI integration are unchanged.
+Optional routing suggestions use `claude-haiku-5-5`, verified against current Anthropic
+docs. A request sends only owned payer name, net amount and payment kind; email-like
+payer text is redacted. It sends no notes, emails, player IDs or other players' data.
+Names stay JSON data under a fixed instruction. There are no AI tools or automatic actions.
+The UI explains the data sent before the player requests suggestions.
 
+The server validates JSON, allowed app/platform/record combinations, indices and confidence.
+Below 0.7, invalid JSON, refusal or truncation gives no suggestion. Fixed-map matches skip
+AI. Suggestions cache privately per player/payer/model for 30 days. The shared UTC-month
+budget reserves two cents atomically per batch of at most ten names, with a 50 KB text
+request limit and 2,048 output tokens. That conservatively covers the checked model's
+short-context rates; usage also records tokens and rounded cost. Reservations are not
+refunded, so the cap can stop before actual invoice spend. Missing keys, exhausted budget,
+unsupported model overrides or provider failure use a visible fixed-map fallback.
+There is no player billing. Real provider calls remain untested; tests use mocks.
+
+## Environment variables
+
+Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not log them.
+
+| Variable | Default / purpose |
+| --- | --- |
+| `DATABASE_URL` | Required PostgreSQL URL; private |
+| `SESSION_SECRET` | Required private random value, at least 32 characters |
+| `NODE_ENV` | `development`; production enables secure-cookie default |
+| `PORT` | `3000` |
+| `PUBLIC_BASE_URL` | `http://localhost:<PORT>`; exact origin for writes/callbacks |
+| `COOKIE_SECURE` | `false` locally; production defaults true; Render sets true |
+| `SESSION_TTL_DAYS` | `14` |
+| `PAYPAL_ENVIRONMENT` | `sandbox`; every other value is rejected |
+| `PAYPAL_CLIENT_ID` | Personal sandbox business app ID; blank |
+| `PAYPAL_CLIENT_SECRET` | Sandbox app secret; blank |
+| `PAYPAL_REDIRECT_URI` | `<PUBLIC_BASE_URL>/auth/paypal/callback` |
+| `PAYPAL_AUTH_URL` | Optional; only `https://www.sandbox.paypal.com/connect` accepted |
+| `PAYPAL_API_BASE_URL` | Optional; only `https://api-m.sandbox.paypal.com` accepted |
+| `PAYPAL_SCOPE` | `openid profile email https://uri.paypal.com/services/paypalattributes` |
+| `PAYPAL_WEBHOOK_ID` | Sandbox webhook ID; blank |
+| `PAYOUTS_ENABLED` | `false`; local activation requires separate approval |
+| `ANTHROPIC_API_KEY` | Personal API key; blank, fixed-map fallback when missing |
+| `ANTHROPIC_MODEL` | `claude-haiku-5-5`; other IDs fall back until priced in code |
+| `AI_MONTHLY_BUDGET_CENTS` | `100`, shared monthly reservation cap; integer 0..1,000,000 |
+| `GOOGLE_SHEETS_ENABLED` | `false`; true is rejected because the stretch is deferred |
+| `GOOGLE_CLIENT_ID` | Blank; reserved, unused by file exports |
+| `GOOGLE_CLIENT_SECRET` | Blank; reserved, unused |
+| `TOKEN_ENCRYPTION_KEY` | Blank; reserved, no Google OAuth tokens are stored |
+| `DEMO_SEED_ENABLED` | `false`; explicit local seeding only |
+
+## Review and deployment boundaries
+
+`render.yaml` is preparation only. Its starter-plan setting is a placeholder for Brandon's
+hosting choice; no Render resources were created or deployed. Payouts, Google Sheets and
+seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
+Brandon accepted clean rewritten main `9953600` and owns GitHub Support cleanup of old PR refs.
+Do not merge old pre-cleanup history into this branch. No license has been selected or added.
+
+[The Phase 3 handoff](handoffs/week3-onedime-app.md) governs current scope; the older SDLC
+roadmap has been updated to reflect this implementation. [Implementation decisions and
+primary documentation](docs/phase3-decisions.md) record calculations, dependencies, scope
+choices and provider limitations. [Screenshots](docs/screenshots) use fictional data.
+
+Review and Brandon's merge approval are still required. This phase does not scrape,
+automate or log into gig platforms, implement receipt-image verification, award XP
+outside First Dime, use live PayPal, deploy or change repository visibility.
+
+## Built with
+
+Built by Brandon Caris with Claude (lead and reviewer) and Codex (implementation), on the PayPal Developer Platform.

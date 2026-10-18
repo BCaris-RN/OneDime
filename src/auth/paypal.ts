@@ -1,3 +1,7 @@
+/*  (o) OneDime | src/auth/paypal.ts
+ *  ----------------------------------------------------------
+ *  Sandbox identity and one-time OAuth state consumption.
+ */
 import type { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import { randomBytes } from "node:crypto";
@@ -54,7 +58,8 @@ export class FetchPayPalIdentityClient implements PayPalIdentityClient {
         "Content-Type": "application/x-www-form-urlencoded",
         Accept: "application/json"
       },
-      body
+      body,
+      signal: AbortSignal.timeout(15000), redirect: "error"
     });
 
     if (!response.ok) {
@@ -70,7 +75,8 @@ export class FetchPayPalIdentityClient implements PayPalIdentityClient {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/json"
-      }
+      },
+      signal: AbortSignal.timeout(15000), redirect: "error"
     });
 
     if (!response.ok) {
@@ -127,18 +133,20 @@ export function createPayPalRouter(options: PayPalRouterOptions): Router {
       }
 
       const now = new Date();
-      const displayName = identity.name ?? identity.email ?? "PayPal player";
+      const displayName = identity.name ?? "PayPal player";
       const player = await options.prisma.player.upsert({
         where: { paypalUserId },
         create: {
           paypalUserId,
           displayName,
           email: identity.email,
+          paypalVerified: identity.verified_account ?? null,
           lastSeenAt: now
         },
         update: {
           displayName,
           email: identity.email,
+          paypalVerified: identity.verified_account ?? null,
           lastSeenAt: now
         }
       });

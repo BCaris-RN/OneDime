@@ -1,3 +1,6 @@
+#  (o) OneDime | render.yaml
+#  ----------------------------------------------------------
+#  Prepared configuration only. Brandon decides deployment.
 services:
   - type: web
     name: onedime-web
@@ -28,6 +31,28 @@ services:
         value: "true"
       - key: PAYPAL_ENVIRONMENT
         value: sandbox
+      - key: SESSION_TTL_DAYS
+        value: "14"
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      - key: PAYOUTS_ENABLED
+        value: "false"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-haiku-5-5
+      - key: AI_MONTHLY_BUDGET_CENTS
+        value: "100"
+      - key: GOOGLE_SHEETS_ENABLED
+        value: "false"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: DEMO_SEED_ENABLED
+        value: "false"
 
 databases:
   - name: onedime-db

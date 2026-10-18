@@ -78,10 +78,10 @@ The dated build timeline lives in the [OneDime vision doc](https://claude.ai/cod
 
 | Phase | Branch | Scope | Status |
 | --- | --- | --- | --- |
-| 1. Foundation and login | week1-foundation | Repo, schema, Log in with PayPal, sessions, CI | Built. Three fixes before merge |
-| 2. The game | week2-game | Logging, XP, rested XP, streaks, quests, opt-in leaderboard, rung race | Handoff ready, starts after phase 1 merges |
-| 3. Money and AI | week3-money-ai | Receipt verifier, Payouts for claimed rungs, webhooks, earnings coach, first Render deploy | Not started |
+| 1. Foundation and login | week1-foundation | Repo, schema, Log in with PayPal, sessions, CI | Merged (PR #1) |
+| 2. The game | week2-game | Logging, XP, rested XP, streaks, quests, opt-in leaderboard, rung race | Merged with review corrections (PR #2 and PR #3) |
+| 3. OneDime app | week3-onedime-app | Pilot workspaces, exports, sandbox activity routing, disabled payouts, AI suggestions, deployment prep | Built in PR #4; review and merge pending; no deployment |
 | 4. Real players | week4-playtest | Play-test fixes, accessibility pass, README | Not started |
 | 5. Ship | week5-ship | Demo video, submission, repo public, license | Not started |
 
-**Open decisions for Brandon:** license (MIT or AGPL-3.0), Render plan (paid starter or free), and approval of the rested XP rule in phase 2.
+**Open decisions for Brandon:** license (MIT or AGPL-3.0), Render plan (paid starter or free), and enabling sandbox milestone payouts. Rested XP starting at zero after the first logged day is approved.

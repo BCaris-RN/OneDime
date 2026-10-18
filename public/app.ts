@@ -1,3 +1,6 @@
+import "./paypal.js";
+import "./exports.js";
+import "./workspaces.js";
 import type { GameStats } from "../src/game/rules.js";
 import type { QuestDefinition } from "../src/game/catalog.js";
 import { dollarsToCents } from "../src/game/money.js";
@@ -103,7 +106,7 @@ function renderEntries(entries: Entry[]) {
   element("entries-empty").hidden = entries.length > 0;
   element("entries-table").hidden = !entries.length;
   element("entries-body").replaceChildren(...entries.slice(0, 60).map((entry) => {
-    const row = node("tr");
+    const row = node("tr"); row.dataset.recordId=entry.id; row.dataset.recordType="first";
     const detail = node("td", entry.workedOn.slice(0, 10));
     detail.append(node("small", entry.platform));
     if (entry.note) detail.append(node("small", entry.note));
@@ -123,6 +126,7 @@ function renderEntries(entries: Entry[]) {
     row.append(detail, node("td", `${entry.minutes} min`), node("td", money(entry.amountCents)), node("td", entry.verified ? "Verified" : "Awaiting verification"), action);
     return row;
   }));
+  document.dispatchEvent(new Event("onedime:rendered"));
 }
 function renderClock(value: Clock) {
   clock = value;
@@ -216,7 +220,7 @@ async function initialize() {
   }
 }
 
-const tabs = [...document.querySelectorAll<HTMLButtonElement>("[role=tab]")];
+const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-tab]")];
 function setTab(id: string, focus = false) {
   const target = tabs.find((tab) => tab.dataset.tab === id) ?? tabs[0];
   for (const tab of tabs) {
@@ -292,3 +296,5 @@ element("logout").addEventListener("click", async () => {
 availability();
 setInterval(renderElapsed, 1000);
 void initialize();
+
+document.addEventListener("onedime:payment-routed",()=>void refresh());
