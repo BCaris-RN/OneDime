@@ -9,8 +9,10 @@ Updated Oct 17, 2026 (Hawaii).
 - Corrective PR: https://github.com/BCaris-RN/OneDime/pull/3 (open, not merged).
 - Local validation: build passed; 94 tests passed on Node 24.22.0/PostgreSQL 16;
   npm audit zero vulnerabilities; diff whitespace check passed.
-- Next: verify CI on the final PR head and record exact run evidence in the PR, then
-  await review and Brandon's merge. Phase 3 remains unstarted.
+- CI at `26daf2871927611d659032e5b797845c6dad8181`: push and PR workflows passed,
+  including all 94 tests. PR run: https://github.com/BCaris-RN/OneDime/actions/runs/39090969617.
+  Subsequent documentation-only checkpoint validation is tracked on the PR's final head.
+- Next: await review and Brandon's merge. Phase 3 remains unstarted.
 - Open security item: private pilot removed from tracked tree but remains in earlier
   Git history. Review history before making repository public.
 - Open operator decisions: license, Render plan, sandbox account details and real keys.
