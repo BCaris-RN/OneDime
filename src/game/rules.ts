@@ -33,8 +33,7 @@ function daysBetween(before: string, after: string): number {
 }
 
 // Replay dated entries only. No stored pool, wall-clock mutation, or order dependency.
-// Accrual begins after the first logged day; time before any history is unresolved
-// in the source handoff and is explicitly called out in the PR.
+// Approved rule: accrual begins after the first logged day, starting at zero.
 export function restedXp(history: readonly HistoryEntry[], today: string) {
   const minutesByDay = new Map<string, number>();
   for (const entry of history) {
@@ -84,8 +83,9 @@ export function gameStats(
   }), { amountCents: 0, minutes: 0, verifiedCents: 0 });
   const all = totals(entries);
   const rested = restedXp(entries, today);
-  const xp = Math.floor(all.minutes + all.amountCents / 10 + (options.questXp ?? 0) +
-    (options.claimedRungs ?? 0) * 100 + rested.bonus);
+  const dollarXp = Math.floor(all.amountCents / 10);
+  const xp = all.minutes + dollarXp + (options.questXp ?? 0) +
+    (options.claimedRungs ?? 0) * 100 + rested.bonus;
   const level = levelForXp(xp);
   const sites = [...new Set(entries.map((entry) => entry.platform))].sort().map((platform) => {
     const site = totals(entries.filter((entry) => entry.platform === platform));

@@ -129,7 +129,7 @@ export function createGameRouter(options: Options) {
       const current = await tx.player.findUniqueOrThrow({ where: { id: player(request).id } });
       if (!current.clockStartedAt) return null;
       const endedAt = now();
-      const minutes = Math.max(1, Math.round((endedAt.getTime() - current.clockStartedAt.getTime()) / 60_000));
+      const minutes = Math.max(0, Math.floor((endedAt.getTime() - current.clockStartedAt.getTime()) / 60_000));
       await tx.player.update({
         where: { id: current.id }, data: { clockStartedAt: null, clockPlatform: null }
       });
