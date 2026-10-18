@@ -102,7 +102,7 @@ const explain = node(
 );
 const warning = node(
   "p",
-  "CSV matching labels your First Dime entry with source paypal_csv when payer and net amount match. It does not authenticate the file with PayPal. Each payment belongs to one workspace."
+  "CSV matching labels your First Dime entry with source paypal_csv when payer/platform matches and your amount equals the payment's gross or net. It does not authenticate the file with PayPal. Each payment belongs to one workspace."
 );
 warning.className = "muted";
 const importForm = node("form"),
@@ -185,7 +185,7 @@ function badges() {
     if (payment) {
       const badge = node(
         "small",
-        `Paid via PayPal · ${payment.txn_id}${payment.mismatch ? " · Amount mismatch" : ""}`
+        `Paid via PayPal · ${payment.txn_id}${payment.routed_record_type === "first" ? ` · Gross ${money(payment.gross_cents)} · Fee ${money(payment.fee_cents)} · Net ${money(payment.net_cents)}` : ""}${payment.mismatch ? " · Amount mismatch" : ""}`
       );
       badge.className = "paypal-badge";
       row.querySelector("td")?.append(badge);

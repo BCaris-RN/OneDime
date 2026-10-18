@@ -29,3 +29,13 @@ No real provider keys used; operator must validate real sandbox/AI connectivity.
 Interactive Excel/Sheets import remains an operator check; file structures/downloads are tested.
 Development-only Testcontainers/archiver emits a glob 10.5.0 deprecation warning; audit is clean.
 Run `npm run demo` with Node 24 and Docker for a disposable fictional local demo.
+
+## PR #4 review follow-up: gross or net
+
+Brandon's override accepts either exact gross or exact net for a matching First Dime
+payer/platform. Logged amounts stay unchanged; linked entries show gross, fee and net.
+Other workspaces retain net matching. No correction flow was added.
+Build and 172 tests passed, including fee-bearing gross/net/other amounts and concurrent
+attempts to verify two entries with one transaction. Browser gross linking, visible
+fee details and 390px layout passed with synthetic data and no console errors.
+Final follow-up commit and exact-head CI results are recorded in PR #4.

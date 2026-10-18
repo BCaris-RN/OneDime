@@ -95,9 +95,12 @@ remain visible but cannot be counted. Transaction IDs deduplicate per player.
 The review queue creates a paid record or links an existing owned one. First Dime,
 Spotlight and delivery use the incoming net amount; freelance and selling preserve
 gross and fee separately. Linking never rewrites amounts; current mismatches are
-computed against net after platform fees (before supplier costs). Paid dates use the
+computed against net after platform fees (before supplier costs), except First Dime
+accepts gross or net under the post-review override below. Paid dates use the
 activity date. Fixed payer matches use exact normalized names, not substring matches.
-Only a matched First Dime platform and exact net amount set verified/source paypal_csv.
+Only a matched First Dime platform and an exact gross or net amount set verified/source
+paypal_csv (Brandon's post-review override). Linked entries display gross, fee and net;
+their logged amounts are preserved. The payment remains linked to only one record.
 CSV upload is player-provided evidence, not an authenticated PayPal transaction lookup;
 Help and the PayPal panel state that limitation.
 

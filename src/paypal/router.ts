@@ -11,7 +11,7 @@ import { localDay } from "../game/rules.js";
 import { ownRow } from "../ledger/store.js";
 import type { LedgerRow, TableKey } from "../ledger/catalog.js";
 import { parseActivity, incoming, fixedSuggestion } from "./activity.js";
-import { routePayment, routeSchema, transactions, recordNet } from "./routing.js";
+import { routePayment, routeSchema, transactions, paymentAmountMatches } from "./routing.js";
 export function createActivityRouter(
   prisma: PrismaClient,
   now: () => Date,
@@ -39,7 +39,7 @@ export function createActivityRouter(
                 );
           if (record)
             mismatch =
-              recordNet(row.routed_record_type!, record as unknown as LedgerRow) !== row.net_cents;
+              !paymentAmountMatches(row.routed_record_type!, record as unknown as LedgerRow, row);
         }
         return {
           ...row,

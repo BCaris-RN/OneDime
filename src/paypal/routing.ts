@@ -31,7 +31,7 @@ export async function transactions(prisma: Pick<PrismaClient, "$queryRaw">, play
   >`SELECT * FROM paypal_transactions WHERE player_id=${playerId}::uuid ORDER BY occurred_on DESC, created_at DESC`;
   return rows.map((row) => view(row) as unknown as Transaction);
 }
-export function recordNet(type: string, row: LedgerRow) {
+function recordNet(type: string, row: LedgerRow) {
   const n = (key: string) => Number(row[key] ?? 0);
   return type === "first"
     ? n("amountCents")
@@ -42,6 +42,11 @@ export function recordNet(type: string, row: LedgerRow) {
         : type === "shifts"
           ? n("pay_cents") + n("tips_cents")
           : n("price_cents") - n("fee_cents");
+}
+export function paymentAmountMatches(type: string, row: LedgerRow, payment: Activity) {
+  const amountCents = recordNet(type, row);
+  return amountCents === payment.net_cents ||
+    (type === "first" && amountCents === payment.gross_cents);
 }
 function newRecord(type: Route["record_type"], p: Transaction, platform: string) {
   if (type === "income")
@@ -130,7 +135,7 @@ export async function routePayment(
         })) as unknown as LedgerRow;
       }
       const expected = fixedSuggestion(p.payer);
-      if (expected?.platform === row.platform && recordNet("first", row) === p.net_cents) {
+      if (expected?.platform === row.platform && paymentAmountMatches("first", row, p)) {
         await tx.logEntry.update({
           where: { id: row.id },
           data: { verified: true, verificationSource: "paypal_csv" }
@@ -170,7 +175,7 @@ export async function routePayment(
         routed_record_type: input.record_type,
         routed_record_id: row.id
       },
-      mismatch: recordNet(input.record_type, row) !== p.net_cents
+      mismatch: !paymentAmountMatches(input.record_type, row, p)
     };
   });
 }

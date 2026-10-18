@@ -1275,6 +1275,109 @@ describe("Phase 2 game API", () => {
     });
     expect(await prisma.rungClaim.count()).toBe(claims);
   });
+  it.each([
+    ["gross", 1000, true],
+    ["net", 970, true],
+    ["another amount", 985, false],
+  ])(
+    "checks a fee-bearing payment against the logged %s amount",
+    async (_kind, amountCents, verified) => {
+      const alice = await login("paypal-fee-match");
+      const entry = (
+        await write(alice.cookie, "/api/entries", {
+          ...validEntry,
+          platform: "Prolific",
+          amountCents,
+        }).expect(201)
+      ).body.entry;
+      await write(alice.cookie, "/api/paypal/import", {
+        csv: activityCsv(
+          "FEE-MATCH",
+          "Hyperwallet",
+          "USD",
+          "10.00",
+          "-0.30",
+          "9.70",
+        ),
+      }).expect(200);
+      const payment = (await activity(alice.cookie)).body.rows[0];
+      const routed = await write(
+        alice.cookie,
+        `/api/paypal/transactions/${payment.id}/route`,
+        {
+          record_type: "first",
+          platform: "Prolific",
+          record_id: entry.id,
+        },
+      ).expect(200);
+      expect(routed.body.mismatch).toBe(!verified);
+      expect(
+        await prisma.logEntry.findUniqueOrThrow({ where: { id: entry.id } }),
+      ).toMatchObject({
+        amountCents,
+        verified,
+        verificationSource: verified ? "paypal_csv" : null,
+      });
+      expect((await activity(alice.cookie)).body.rows[0]).toMatchObject({
+        gross_cents: 1000,
+        fee_cents: 30,
+        net_cents: 970,
+        mismatch: !verified,
+      });
+    },
+  );
+  it("allows one payment to verify only one entry even when gross and net race", async () => {
+    const alice = await login("paypal-single-verification");
+    const entries = [];
+    for (const amountCents of [1000, 970]) {
+      entries.push(
+        (
+          await write(alice.cookie, "/api/entries", {
+            ...validEntry,
+            platform: "Prolific",
+            amountCents,
+          }).expect(201)
+        ).body.entry,
+      );
+    }
+    await write(alice.cookie, "/api/paypal/import", {
+      csv: activityCsv(
+        "ONLY-ONE",
+        "Hyperwallet",
+        "USD",
+        "10.00",
+        "-0.30",
+        "9.70",
+      ),
+    }).expect(200);
+    const payment = (await activity(alice.cookie)).body.rows[0];
+    const route = (recordId: string) =>
+      write(alice.cookie, `/api/paypal/transactions/${payment.id}/route`, {
+        record_type: "first",
+        platform: "Prolific",
+        record_id: recordId,
+      });
+    const responses = await Promise.all(
+      entries.map((entry) => route(entry.id)),
+    );
+    expect(responses.map((response) => response.status).sort()).toEqual([
+      200, 409,
+    ]);
+    const verifiedEntries = await prisma.logEntry.findMany({
+      where: { playerId: alice.player.id, verified: true },
+    });
+    expect(verifiedEntries).toHaveLength(1);
+    const loser = entries.find((entry) => entry.id !== verifiedEntries[0].id)!;
+    await route(loser.id).expect(409);
+    expect(
+      await prisma.logEntry.count({
+        where: { playerId: alice.player.id, verified: true },
+      }),
+    ).toBe(1);
+    expect((await activity(alice.cookie)).body.rows[0].routed_record_id).toBe(
+      verifiedEntries[0].id,
+    );
+  });
   it("does not verify unmatched payers or mismatched existing amounts", async () => {
     const alice = await login("paypal-match");
     const entry = (

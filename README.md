@@ -135,8 +135,10 @@ creator income and delivery use net; freelance/selling retain gross and fees sep
 Every linked row shows its PayPal transaction ID. Deleting it unlinks the payment and
 preserves the import. An earned rung claim also survives entry deletion.
 
-CSV matching verifies a First Dime entry only when the exact fixed payer/platform map and
-net amount agree, recording source `paypal_csv`. This is player-uploaded evidence; it
+CSV matching verifies a First Dime entry only when payer/platform matches the fixed map and
+the logged amount equals that transaction's gross or net, recording source `paypal_csv`.
+Linked First Dime entries show gross, fee and net without changing the logged amount.
+This is player-uploaded evidence; it
 is not an authenticated PayPal activity lookup and does not prove the file is genuine.
 
 ### Sandbox test accounts: Brandon fills these privately
