@@ -7,3 +7,5 @@ coverage/
 .vitest/
 reference/
 
+public/fonts/
+public/fonts.css

@@ -449,6 +449,72 @@ describe("Phase 2 game API", () => {
     })).rejects.toThrow("rollback fixture");
     await expect(prisma.rungClaim.count()).resolves.toBe(0);
   });
+  const workspaceCases = [
+    ["/spotlight/income", { platform: "YouTube", stream_type: "Ad revenue", amount_cents: 199, earned_on: "2026-10-14", status: "pending", content_minutes: 30, note: "private" }],
+    ["/spotlight/deals", { brand: "Fictional studio", platform: "TikTok", amount_cents: 5000, due_on: null, deliverables: "One clip", stage: "Agreed" }],
+    ["/spotlight/expenses", { app: "spotlight", item: "Microphone", amount_cents: 100, spent_on: "2026-10-14" }],
+    ["/freelance/expenses", { app: "freelance", item: "Tool", amount_cents: 100, spent_on: "2026-10-14" }],
+    ["/market/expenses", { app: "market_delivery", item: "Fuel", amount_cents: 100, spent_on: "2026-10-14" }],
+    ["/freelance/gigs", { platform: "Upwork", client: "Fictional client", project: "Demo", pricing: "fixed", gross_cents: 10000, fee_cents: 1000, hours_x100: 125, started_on: "2026-10-14", stage: "In progress" }],
+    ["/market/shifts", { platform: "DoorDash", worked_on: "2026-10-14", pay_cents: 1000, tips_cents: 199, minutes_online: 75, miles_x10: 123 }],
+    ["/market/sales", { store: "Printify Shop", item: "Demo print", sold_on: "2026-10-14", price_cents: 2000, fee_cents: 100, cost_cents: 700, ship_cents: 200, made_by: "Printify", status: "pending" }]
+  ] as const;
+  it.each(workspaceCases)("isolates reads, edits and deletes for %s", async (path, data) => {
+    const alice = await login("workspace-alice"); const bob = await login("workspace-bob");
+    await request(app).get(`/api${path}`).expect(401);
+    await request(app).post(`/api${path}`).set("Origin", origin).send(data).expect(401);
+    await request(app).post(`/api${path}`).set("Cookie", alice.cookie).set("Origin", "https://wrong.example").send(data).expect(403);
+    const created = await write(alice.cookie, `/api${path}`, data).expect(201);
+    const id = created.body.row.id;
+    expect((await request(app).get(`/api${path}`).set("Cookie", bob.cookie)).body.rows).toEqual([]);
+    await request(app).get(`/api${path}?id=${id}`).set("Cookie", bob.cookie).expect(404);
+    await request(app).patch(`/api${path}/${id}`).set("Cookie", bob.cookie).set("Origin", origin).send(data).expect(404);
+    await request(app).delete(`/api${path}/${id}`).set("Cookie", bob.cookie).set("Origin", origin).send({}).expect(404);
+    const updated = await request(app).patch(`/api${path}/${id}`).set("Cookie", alice.cookie).set("Origin", origin).send(data).expect(200);
+    for (const [key,value] of Object.entries(data)) expect(updated.body.row[key]).toEqual(value);
+    expect((await request(app).get("/api/me/stats").set("Cookie", alice.cookie)).body.xp).toBe(0);
+    await request(app).delete(`/api${path}/${id}`).set("Cookie", alice.cookie).set("Origin", origin).send({}).expect(204);
+  });
+  it.each([-1, 1.5, 1000001])("rejects invalid workspace money %s", async amount => {
+    const alice = await login("workspace-invalid");
+    for (const [path,data] of workspaceCases) {
+      const field = Object.keys(data).find(key => key.endsWith("_cents"))!;
+      await write(alice.cookie, `/api${path}`, { ...data, [field]: amount }).expect(400);
+    }
+  });
+  it("rejects excessive fees on creates and partial edits", async () => {
+    const alice = await login("fees"); const [path,data] = workspaceCases[5];
+    await write(alice.cookie, `/api${path}`, { ...data, fee_cents: 10001 }).expect(400);
+    const row = (await write(alice.cookie, `/api${path}`, data).expect(201)).body.row;
+    await request(app).patch(`/api${path}/${row.id}`).set("Cookie",alice.cookie).set("Origin",origin).send({gross_cents: 999}).expect(400);
+  });
+  it("creates one paid income row when a brand deal is paid concurrently or repeatedly", async () => {
+    const alice = await login("deal-paid"); const [path,data]=workspaceCases[1];
+    const deal=(await write(alice.cookie, `/api${path}`, data).expect(201)).body.row;
+    const paid=()=>request(app).patch(`/api${path}/${deal.id}`).set("Cookie",alice.cookie).set("Origin",origin).send({stage:"Paid"});
+    expect((await Promise.all([paid(),paid(),paid()])).map(r=>r.status)).toEqual([200,200,200]);
+    const income=(await request(app).get("/api/spotlight/income").set("Cookie",alice.cookie)).body.rows;
+    expect(income).toHaveLength(1);expect(income[0]).toMatchObject({brand_deal_id:deal.id,amount_cents:5000,status:"paid",paid_on:"2026-10-14",earned_on:"2026-10-14"});
+  });
+  it("uses the player's local month for workspace summaries", async () => {
+    const alice=await login("workspace-month");gameNow=new Date("2026-11-01T02:00:00Z");
+    await write(alice.cookie,"/api/me/time-zone",{timeZone:"Pacific/Honolulu"}).expect(200);
+    const [path,data]=workspaceCases[0];
+    await write(alice.cookie,`/api${path}`,{...data,earned_on:"2026-10-31"}).expect(201);
+    await write(alice.cookie,`/api${path}`,{...data,earned_on:"2026-11-01",amount_cents:10000}).expect(201);
+    const result=await request(app).get("/api/spotlight/summary").set("Cookie",alice.cookie).expect(200);
+    expect(result.body).toMatchObject({month:"2026-10",earnedCents:199});
+    expect((await request(app).get("/api/spotlight/summary?month=2026-11").set("Cookie",alice.cookie)).body.earnedCents).toBe(10000);
+  });
+  it("cascades workspace rows on player deletion", async () => {
+    const alice=await login("workspace-cascade");
+    for(const [path,data] of workspaceCases) await write(alice.cookie,`/api${path}`,data).expect(201);
+    await prisma.player.delete({where:{id:alice.player.id}});
+    for(const table of ["creator_income","brand_deals","expenses","freelance_gigs","delivery_shifts","sales"]){
+      const rows=await prisma.$queryRawUnsafe<{count:bigint}[]>(`SELECT count(*) AS count FROM ${table}`);
+      expect(Number(rows[0].count)).toBe(0);
+    }
+  });
   it("rate limits writes per player and permits reads, other players, and later windows", async () => {
     const alice = await login("limit-alice");
     const bob = await login("limit-bob");

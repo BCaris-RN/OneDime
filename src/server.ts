@@ -1,3 +1,7 @@
+/*  (o) OneDime | src/server.ts
+ *  ----------------------------------------------------------
+ *  Authenticated application and shared request boundaries.
+ */
 import "dotenv/config";
 import express from "express";
 import path from "node:path";
@@ -10,6 +14,8 @@ import type { PrismaClient } from "@prisma/client";
 import { ZodError } from "zod";
 import { createGameRouter } from "./game/router.js";
 import type { QuestDefinition } from "./game/catalog.js";
+import { createLedgerRouter } from "./ledger/router.js";
+import { HttpError } from "./http/errors.js";
 
 type CreateAppOptions = {
   config?: AppConfig;
@@ -84,6 +90,7 @@ export function createApp(options: CreateAppOptions = {}) {
 
   const gameRouter = createGameRouter({ prisma, config, sessions, now: options.now, quests: options.quests, writeLimit: options.writeLimit });
   app.use("/api", gameRouter);
+  app.use("/api", createLedgerRouter(prisma, options.now ?? (() => new Date())));
   app.post("/logout", gameRouter);
 
   app.get("/app", sessions.requirePlayer(), (_request, response) => {
@@ -93,6 +100,10 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use(express.static(publicDir));
 
   app.use((error: Error, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
+    if (error instanceof HttpError) {
+      response.status(error.status).json({ error: error.code });
+      return;
+    }
     if (error instanceof ZodError) {
       response.status(400).json({ error: "invalid_input", issues: error.issues.map(({ path, message }) => ({ path, message })) });
       return;

@@ -1,3 +1,4 @@
+import "./workspaces.js";
 import type { GameStats } from "../src/game/rules.js";
 import type { QuestDefinition } from "../src/game/catalog.js";
 import { dollarsToCents } from "../src/game/money.js";
@@ -216,7 +217,7 @@ async function initialize() {
   }
 }
 
-const tabs = [...document.querySelectorAll<HTMLButtonElement>("[role=tab]")];
+const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-tab]")];
 function setTab(id: string, focus = false) {
   const target = tabs.find((tab) => tab.dataset.tab === id) ?? tabs[0];
   for (const tab of tabs) {

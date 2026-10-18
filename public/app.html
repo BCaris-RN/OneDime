@@ -2,34 +2,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>OneDime | Work log</title>
     <link rel="icon" href="data:," />
-    <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:wght@400;600;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/fonts.css" /><link rel="stylesheet" href="/styles.css" />
     <script type="module" src="/app.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="topbar">
       <a class="brand" href="/app">OneDime<span class="brand-dot" aria-hidden="true">.</span></a>
+    <div class="controls">
+      <p class="status" id="control-status" aria-live="polite">Ready</p>
+      <div class="dpad"><button type="button" class="up" data-pad="up" aria-label="Scroll up"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2L11 9H1z" fill="currentColor"/></svg></button><button type="button" class="down" data-pad="down" aria-label="Scroll down"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10L1 3h10z" fill="currentColor"/></svg></button><button type="button" class="left" data-pad="left" aria-label="Previous tab"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6L9 1v10z" fill="currentColor"/></svg></button><button type="button" class="right" data-pad="right" aria-label="Next tab"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M10 6L3 11V1z" fill="currentColor"/></svg></button><span class="center" aria-hidden="true"></span></div>
+      <div class="facebtns"><button type="button" id="btnB" aria-label="B: clock in or out" title="B: clock in or out">B</button><button type="button" id="btnA" aria-label="A: log a session" title="A: log a session">A</button></div>
+    </div>
       <div class="player-strip">
-        <span id="player-name">Loading…</span>
+        <span id="player-name">Loadingâ€¦</span>
         <button type="button" class="ghost-button" id="theme-toggle" aria-label="Switch to dark mode">Dark mode</button>
         <button type="button" class="text-button" id="logout">Log out</button>
       </div>
     </header>
-    <main class="shell" id="main">
-      <div class="workspace-heading"><div><p class="eyebrow">The first-dollar quest game</p><h1>Your progress</h1></div><p id="level-summary" class="level-summary">Loading your progress…</p></div>
-      <dl class="metrics" aria-label="Player statistics">
-        <div><dt>Logged</dt><dd id="total-amount">—</dd></div>
-        <div><dt>Verified</dt><dd id="verified-amount">—</dd></div>
-        <div><dt>This week</dt><dd id="week-amount">—</dd></div>
-        <div><dt>Minutes</dt><dd id="total-minutes">—</dd></div>
-        <div><dt>Day streak</dt><dd id="streak">—</dd></div>
-        <div><dt>Rested pool</dt><dd id="rested-pool">—</dd></div>
-      </dl>
-      <nav class="tabs" role="tablist" aria-label="OneDime sections">
+    <main class="shell" id="main"><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
+<div id="app-first" role="tabpanel" aria-labelledby="app-tab-first">
+
+
+      <nav class="tabs" id="secNav" role="tablist" aria-label="OneDime sections">
         <button type="button" role="tab" id="tab-log" aria-controls="panel-log" aria-selected="true" tabindex="0" data-tab="log">Log</button>
         <button type="button" role="tab" id="tab-quests" aria-controls="panel-quests" aria-selected="false" tabindex="-1" data-tab="quests">Quests</button>
         <button type="button" role="tab" id="tab-leaderboard" aria-controls="panel-leaderboard" aria-selected="false" tabindex="-1" data-tab="leaderboard">Leaderboard</button>
@@ -38,7 +36,18 @@
       </nav>
       <p id="message" role="status" aria-live="polite" class="message"></p>
       <section id="panel-log" role="tabpanel" aria-labelledby="tab-log" tabindex="0">
-        <section class="goal-hero" aria-labelledby="goal-title"><div class="goal-coin" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="goal-ring" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg><div class="coin-face"><b id="goal-percent">0%</b><span>of goal</span></div></div><div><p class="eyebrow">Current goal</p><h2 id="goal-title">Earn your first dime</h2><p id="goal-sub" class="muted"></p><p class="field-help">Your personal goal uses logged earnings. The rung race requires verified earnings.</p></div></section>
+        <section class="goal-hero" aria-labelledby="goal-title"><div class="goal-coin" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="goal-ring" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg><div class="coin-face"><b id="goal-percent">0%</b><span>of goal</span></div></div><div><p class="eyebrow">Current goal</p><h2 id="goal-title">Earn your first dime</h2><p id="goal-sub" class="muted"></p><p class="field-help">Your personal goal uses logged earnings. The rung race requires verified earnings.</p><p id="level-summary" class="level-summary">Loading your progress…</p></div></section>      <dl class="stats" aria-label="Player statistics">
+        <div><dt>Logged</dt><dd id="total-amount">â€”</dd></div>
+        <div><dt>Verified</dt><dd id="verified-amount">â€”</dd></div>
+        <div><dt>This week</dt><dd id="week-amount">â€”</dd></div>
+        <div><dt>Minutes</dt><dd id="total-minutes">â€”</dd></div>
+        <div><dt>Day streak</dt><dd id="streak">â€”</dd></div>
+        <div><dt>Rested pool</dt><dd id="rested-pool">â€”</dd></div>
+      </dl>
+            <section class="clock-workspace" aria-labelledby="clock-heading"><p class="eyebrow">Work clock</p><h2 id="clock-heading">Keep track of your minutes.</h2><p id="clock-elapsed" class="clock-elapsed" aria-label="Elapsed work time">0:00:00</p><p id="clock-status" class="muted">No clock running.</p>
+              <form id="clock-form"><label>Site or platform<input id="clock-platform" required maxlength="80" list="platform-options" placeholder="Where you are working" /></label><div class="button-row"><button class="ghost-button" id="clock-in" type="submit">Clock in</button><button class="ghost-button" id="clock-out" type="button" disabled>Clock out</button></div></form>
+              <p class="field-help">Clocking out fills the entry form. Review it, add earnings, then save.</p>
+            </section>
         <div class="log-layout">
           <section class="entry-workspace" aria-labelledby="log-heading">
             <p class="eyebrow">Add an entry</p><h2 id="log-heading">What did you work on?</h2>
@@ -53,18 +62,15 @@
             </form>
           </section>
           <div class="log-context">
-            <section class="clock-workspace" aria-labelledby="clock-heading"><p class="eyebrow">Work clock</p><h2 id="clock-heading">Keep track of your minutes.</h2><p id="clock-elapsed" class="clock-elapsed" aria-label="Elapsed work time">0:00:00</p><p id="clock-status" class="muted">No clock running.</p>
-              <form id="clock-form"><label>Site or platform<input id="clock-platform" required maxlength="80" list="platform-options" placeholder="Where you are working" /></label><div class="button-row"><button class="ghost-button" id="clock-in" type="submit">Clock in</button><button class="ghost-button" id="clock-out" type="button" disabled>Clock out</button></div></form>
-              <p class="field-help">Clocking out fills the entry form. Review it, add earnings, then save.</p>
-            </section>
-            <section class="rung-workspace" aria-labelledby="rung-heading"><p class="eyebrow">The rung race</p><h2 id="rung-heading">First verified total wins.</h2><p class="muted" id="next-rung">Loading next rung…</p><ol id="rung-list" class="rung-list"></ol><p class="field-help">Each rung has one winner. Receipt verification and payouts arrive in a later phase.</p></section>
+
+            <section class="rung-workspace" aria-labelledby="rung-heading"><p class="eyebrow">The rung race</p><h2 id="rung-heading">First verified total wins.</h2><p class="muted" id="next-rung">Loading next rungâ€¦</p><ol id="rung-list" class="rung-list"></ol><p class="field-help">Each rung has one winner. Receipt verification and payouts arrive in a later phase.</p></section>
           </div>
         </div>
         <section class="workspace-section" aria-labelledby="history-heading"><div class="section-heading"><h2 id="history-heading">Your entries</h2><button type="button" class="text-button" id="refresh">Refresh</button></div><p id="entries-empty" class="muted">No entries yet. Add your first work session above.</p><div class="table-scroll"><table id="entries-table" hidden><caption class="sr-only">Your work entries</caption><thead><tr><th scope="col">Date / site</th><th scope="col">Time</th><th scope="col">Earned</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead><tbody id="entries-body"></tbody></table></div></section>
         <section class="workspace-section" aria-labelledby="sites-heading"><h2 id="sites-heading">Your site rates</h2><p class="field-help">Effective hourly rate counts only sessions where you logged minutes, including earnings awaiting verification.</p><ul id="site-rates" class="plain-list"></ul></section>
       </section>
-      <section id="panel-quests" role="tabpanel" aria-labelledby="tab-quests" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Quests</p><h2 id="quest-level">Level 1 · Rookie</h2><p id="quest-xp" class="muted">0 XP</p><div id="xp-progress" class="xp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="xp-fill"></i></div><p id="quests-status" class="muted">Loading quests…</p><ul id="quest-list" class="plain-list"></ul></div></section>
-      <section id="panel-leaderboard" role="tabpanel" aria-labelledby="tab-leaderboard" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Leaderboard</p><h2>The verified standings.</h2><p class="muted">Joining shares your display name, verified earnings by site, XP, level, and rung wins with other players. Your notes stay private.</p><button type="button" class="primary-button" id="leaderboard-toggle" disabled>Loading…</button><p id="leaderboard-empty" class="muted"></p><h3 class="board-heading">First to each rung</h3><div class="table-scroll"><table><thead><tr><th scope="col">Bonus quest</th><th scope="col">Claimed by</th><th scope="col">When</th></tr></thead><tbody id="race-body"></tbody></table></div><p class="field-help">Only opted-in winners appear here. Private winners retain their claims.</p><h3 class="board-heading">Top earners</h3><ol id="leaderboard-list" class="leaderboard-list"></ol><h3 class="board-heading">Top earner on each site</h3><ul id="site-leaders" class="plain-list"></ul></div></section>
+      <section id="panel-quests" role="tabpanel" aria-labelledby="tab-quests" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Quests</p><h2 id="quest-level">Level 1 Â· Rookie</h2><p id="quest-xp" class="muted">0 XP</p><div id="xp-progress" class="xp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="xp-fill"></i></div><p id="quests-status" class="muted">Loading questsâ€¦</p><ul id="quest-list" class="plain-list"></ul></div></section>
+      <section id="panel-leaderboard" role="tabpanel" aria-labelledby="tab-leaderboard" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Leaderboard</p><h2>The verified standings.</h2><p class="muted">Joining shares your display name, verified earnings by site, XP, level, and rung wins with other players. Your notes stay private.</p><button type="button" class="primary-button" id="leaderboard-toggle" disabled>Loadingâ€¦</button><p id="leaderboard-empty" class="muted"></p><h3 class="board-heading">First to each rung</h3><div class="table-scroll"><table><thead><tr><th scope="col">Bonus quest</th><th scope="col">Claimed by</th><th scope="col">When</th></tr></thead><tbody id="race-body"></tbody></table></div><p class="field-help">Only opted-in winners appear here. Private winners retain their claims.</p><h3 class="board-heading">Top earners</h3><ol id="leaderboard-list" class="leaderboard-list"></ol><h3 class="board-heading">Top earner on each site</h3><ul id="site-leaders" class="plain-list"></ul></div></section>
       <section id="panel-playbook" role="tabpanel" aria-labelledby="tab-playbook" tabindex="0" hidden><div class="reading-column workspace-section playbook-copy">
     <section>
       <h2>The one rule</h2>
@@ -140,7 +146,7 @@
       </ul>
     </section>
     <section>
-      <h2>Questions</h2>
+      <h2>Choose the right workspace</h2><p>Needs an audience? Spotlight. Selling a skill to a client? Freelance. Driving, delivering or selling goods? Market. Everything else, including SideShift, is First Dime. Every payment belongs in exactly one tab. Printify and Ninja Transfers are suppliers; Printify Shop is a store.</p></section><section><h2>Questions</h2>
       <ul>
         <li><b>Does it connect to my gig accounts?</b> No. You enter everything yourself. That keeps your logins private and keeps you inside every site's rules.</li>
         <li><b>Can it do the work for me?</b> No, on purpose. These sites pay for a human and ban accounts that use bots or AI answers. OneDime makes you faster instead.</li>
@@ -150,6 +156,205 @@
       </ul>
     </section><section><h2>Your time zone</h2><form id="time-zone-form"><label>Your time zone<input id="time-zone" required maxlength="100" aria-describedby="zone-help" /></label><p id="zone-help" class="field-help">Initially set from your browser. Use an IANA name such as Pacific/Honolulu.</p><button type="submit" class="ghost-button">Save time zone</button></form></section><p>Use Tab to move between controls, and arrow keys, Home or End to switch focused tabs. PayPal remains in sandbox mode.</p></div></section>
     <datalist id="platform-options"><option value="Prolific"></option><option value="Rev"></option><option value="TranscribeMe"></option><option value="SideShift"></option><option value="Microworkers"></option><option value="Other"></option></datalist>
-    </main>
+</div>  <section id="app-freelance" role="tabpanel" aria-labelledby="app-tab-freelance" hidden style="display:grid;gap:18px">
+    <div class="slip row">
+      <h2>Freelance: your client work</h2>
+      <p class="muted">Projects you sell to clients on freelance marketplaces. Track what the client paid, what the platform kept, and when the money clears.</p>
+    </div>
+    <dl class="stats" id="fiveStats" aria-label="Freelance this month"></dl>
+
+    <section class="slip" aria-labelledby="jobTitle">
+      <form id="jobForm">
+        <h2 id="jobTitle">Add a gig</h2>
+        <div class="fields">
+          <label>Platform<select id="jPlat"><option>Upwork</option><option>Fiverr</option><option>Freelancer.com</option><option>Toptal</option><option>Behance</option><option>Dribbble</option><option>Other</option></select></label>
+          <label>Client<input id="jClient" type="text" maxlength="60" placeholder="Name or nickname" required></label>
+          <label>Project<input id="jProj" type="text" maxlength="80" placeholder="e.g. Logo refresh" required></label>
+          <label>Pricing<select id="jPrice"><option value="fixed">Fixed price</option><option value="hourly">Hourly</option></select></label>
+          <label>Client pays ($)<input id="jGross" type="number" inputmode="decimal" min="0" step="0.01" required></label>
+          <label>Platform fee ($)<input id="jFee" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Hours worked<input id="jHrs" type="number" inputmode="decimal" min="0" step="0.25" placeholder="0"></label>
+          <label>Started<input id="jDate" type="date" required></label>
+        </div>
+        <p class="muted" style="font-size:.85rem;margin:6px 0 0">Check the fee on your platform's earnings page. Fees differ by platform and change over time.</p>
+        <div class="btns"><button class="act" type="submit">Add gig</button></div>
+      </form>
+    </section>
+
+    <section class="slip" aria-labelledby="jPlatTitle">
+      <h2 id="jPlatTitle">By platform</h2>
+      <p class="muted" style="margin-top:4px">Per hour uses what you keep after fees, on gigs with hours logged.</p>
+      <div class="tablewrap" style="margin-top:10px"><table>
+        <thead><tr><th>Platform</th><th class="r">Gigs</th><th class="r">Client paid</th><th class="r">Fees</th><th class="r">You keep</th><th class="r">Per hour</th></tr></thead>
+        <tbody id="jPlatBody"></tbody>
+      </table></div>
+    </section>
+
+    <section class="slip" aria-labelledby="jListTitle">
+      <h2 id="jListTitle">Gigs</h2>
+      <div class="tablewrap" style="margin-top:10px"><table>
+        <thead><tr><th>Started</th><th>Client and project</th><th class="r">You keep</th><th class="r">Hours</th><th>Stage</th><th><span class="hide">Actions</span></th></tr></thead>
+        <tbody id="jBody"></tbody>
+      </table></div>
+      <p class="muted" style="margin-top:8px;font-size:.85rem">Stages: In progress, Delivered, Clearing (the platform is holding the money), Paid.</p>
+    </section>
+  </section>
+
+  <!-- BALITZU -->
+  <div id="app-market" role="tabpanel" aria-labelledby="app-tab-market" hidden style="display:grid;gap:18px">
+  <nav id="balNav" role="tablist" aria-label="Market sections">
+    <button role="tab" aria-selected="true" aria-controls="bal-drive" id="b-drive">Delivery and rides</button>
+    <button role="tab" aria-selected="false" aria-controls="bal-sell" id="b-sell">Selling</button>
+  </nav>
+
+  <section id="bal-drive" role="tabpanel" aria-labelledby="b-drive" style="display:grid;gap:18px">
+    <dl class="stats" id="driveStats" aria-label="Delivery and rides this month"></dl>
+    <section class="slip" aria-labelledby="dTitle">
+      <form id="driveForm">
+        <h2 id="dTitle">Log a shift</h2>
+        <div class="fields">
+          <label>Platform<select id="vPlat"><option>DoorDash</option><option>Uber</option><option>Uber Eats</option><option>Lyft</option><option>Instacart</option><option>Grubhub</option><option>Other</option></select></label>
+          <label>Date<input id="vDate" type="date" required></label>
+          <label>Pay ($)<input id="vPay" type="number" inputmode="decimal" min="0" step="0.01" required></label>
+          <label>Tips ($)<input id="vTips" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Hours online<input id="vHrs" type="number" inputmode="decimal" min="0" step="0.25" required></label>
+          <label>Miles driven<input id="vMi" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0"></label>
+        </div>
+        <div class="btns"><button class="act" type="submit">Add shift</button></div>
+      </form>
+      <p class="muted" style="margin-top:8px;font-size:.85rem">Log every mile. Business miles can usually be deducted at tax time, so they're worth keeping even on slow days.</p>
+    </section>
+    <section class="slip" aria-labelledby="dpTitle">
+      <h2 id="dpTitle">By platform</h2>
+      <div class="tablewrap" style="margin-top:10px"><table>
+        <thead><tr><th>Platform</th><th class="r">Shifts</th><th class="r">Earned</th><th class="r">Per hour</th><th class="r">Per mile</th></tr></thead>
+        <tbody id="dPlatBody"></tbody>
+      </table></div>
+    </section>
+    <section class="slip" aria-labelledby="dlTitle">
+      <h2 id="dlTitle">Shifts</h2>
+      <div class="tablewrap" style="margin-top:10px"><table>
+        <thead><tr><th>Date</th><th>Platform</th><th class="r">Pay</th><th class="r">Tips</th><th class="r">Hours</th><th class="r">Miles</th><th><span class="hide">Actions</span></th></tr></thead>
+        <tbody id="dBody"></tbody>
+      </table></div>
+    </section>
+  </section>
+
+  <section id="bal-sell" role="tabpanel" aria-labelledby="b-sell" class="hide" style="display:grid;gap:18px">
+    <dl class="stats" id="sellStats" aria-label="Selling this month"></dl>
+    <section class="slip" aria-labelledby="slTitle">
+      <form id="sellForm">
+        <h2 id="slTitle">Log a sale</h2>
+        <div class="fields">
+          <label>Sold on<select id="xPlat"><option>Amazon</option><option>eBay</option><option>Etsy</option><option>Facebook Marketplace</option><option>TikTok Shop</option><option>Shopify</option><option>Printify Shop</option><option>Other</option></select></label>
+          <label>Item<input id="xItem" type="text" maxlength="80" required placeholder="e.g. Custom tee, vintage lamp"></label>
+          <label>Sale date<input id="xDate" type="date" required></label>
+          <label>Sale price ($)<input id="xPrice" type="number" inputmode="decimal" min="0" step="0.01" required></label>
+          <label>Platform fees ($)<input id="xFees" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Item cost ($)<input id="xCost" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Made by<select id="xSup"><option>Own stock</option><option>Printify</option><option>Ninja Transfers</option><option>Other</option></select></label>
+          <label>Shipping you paid ($)<input id="xShip" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Status<select id="xStatus"><option value="pending">Pending payout</option><option value="paid">Paid</option></select></label>
+        </div>
+        <div class="btns"><button class="act" type="submit">Add sale</button></div>
+      </form>
+      <p class="muted" style="margin-top:8px;font-size:.85rem">Log each sale under the store where the buyer paid. If it sold on your Printify Shop (Printify's free Pop-Up Store), pick that as the store. If Printify or Ninja Transfers made an item you sold somewhere else, pick them under Made by and put their charge in Item cost.</p>
+    </section>
+    <section class="slip" aria-labelledby="spTitle">
+      <h2 id="spTitle">By store</h2>
+      <div class="tablewrap" style="margin-top:10px"><table>
+        <thead><tr><th>Store</th><th class="r">Sales</th><th class="r">Revenue</th><th class="r">Fees</th><th class="r">Profit</th><th class="r">Margin</th></tr></thead>
+        <tbody id="sPlatBody2"></tbody>
+      </table></div>
+    </section>
+    <section class="slip" aria-labelledby="ssTitle">
+      <h2 id="ssTitle">Sales</h2>
+      <div class="tablewrap" style="margin-top:10px"><table>
+        <thead><tr><th>Date</th><th>Item</th><th class="r">Price</th><th class="r">Profit</th><th>Status</th><th><span class="hide">Actions</span></th></tr></thead>
+        <tbody id="xBody"></tbody>
+      </table></div>
+    </section>
+  </section>
+  </div>
+
+  <!-- SASUME -->
+  <section id="app-spotlight" role="tabpanel" aria-labelledby="app-tab-spotlight" hidden style="display:grid;gap:18px">
+    <div class="slip row">
+      <h2>Spotlight: your creator income</h2>
+      <p class="muted">Money that comes from your own audience on YouTube, TikTok, Instagram and Facebook. Starter gigs like SideShift stay in First Dime, so nothing is counted twice.</p>
+    </div>
+    <dl class="stats" id="sasuStats" aria-label="Spotlight this month"></dl>
+
+    <section class="slip" aria-labelledby="sStreamTitle">
+      <form id="sStreamForm">
+        <h2 id="sStreamTitle">Log creator income</h2>
+        <div class="fields">
+          <label>Platform<select id="sPlat"><option>YouTube</option><option>TikTok</option><option>Instagram</option><option>Facebook</option><option>Other</option></select></label>
+          <label>Stream<select id="sType"><option>Ad revenue</option><option>Creator rewards</option><option>Subscriptions</option><option>Gifts and tips</option><option>Brand deal</option><option>Affiliate</option><option>Merch</option><option>Other</option></select></label>
+          <label>Amount ($)<input id="sAmt" type="number" inputmode="decimal" min="0" step="0.01" required></label>
+          <label>Earned on<input id="sDate" type="date" required></label>
+          <label>Status<select id="sStatus"><option value="pending">Pending</option><option value="paid">Paid</option></select></label>
+          <label>Content time (min)<input id="sMin" type="number" inputmode="numeric" min="0" step="1" placeholder="0"></label>
+        </div>
+        <label>Note (optional)<input id="sNote" type="text" maxlength="120" placeholder="e.g. September Creator Rewards, recipe video"></label>
+        <div class="btns"><button class="act" type="submit">Add income</button></div>
+      </form>
+    </section>
+
+    <section class="slip" aria-labelledby="sPlatTitle">
+      <h2 id="sPlatTitle">By platform</h2>
+      <p class="muted" style="margin-top:4px">Per hour counts only income with content time logged.</p>
+      <div class="tablewrap" style="margin-top:10px"><table>
+        <thead><tr><th>Platform</th><th class="r">Earned</th><th class="r">Paid</th><th class="r">Pending</th><th class="r">Per hour</th></tr></thead>
+        <tbody id="sPlatBody"></tbody>
+      </table></div>
+    </section>
+
+    <section class="slip" aria-labelledby="sIncTitle">
+      <h2 id="sIncTitle">Income</h2>
+      <div class="tablewrap" style="margin-top:10px"><table>
+        <thead><tr><th>Earned</th><th>Platform</th><th>Stream</th><th class="r">Amount</th><th>Status</th><th>Note</th><th><span class="hide">Actions</span></th></tr></thead>
+        <tbody id="sIncBody"></tbody>
+      </table></div>
+    </section>
+
+    <section class="slip" aria-labelledby="sDealTitle">
+      <form id="sDealForm">
+        <h2 id="sDealTitle">Brand deals</h2>
+        <div class="fields">
+          <label>Brand<input id="dBrand" type="text" maxlength="60" required></label>
+          <label>Platform<select id="dPlat"><option>YouTube</option><option>TikTok</option><option>Instagram</option><option>Facebook</option><option>Other</option></select></label>
+          <label>Agreed ($)<input id="dAmt" type="number" inputmode="decimal" min="0" step="0.01" required></label>
+          <label>Payment due<input id="dDue" type="date"></label>
+        </div>
+        <label>Deliverables<input id="dDeliv" type="text" maxlength="120" placeholder="e.g. 1 TikTok + 3 IG stories"></label>
+        <div class="btns"><button class="act" type="submit">Add deal</button></div>
+      </form>
+      <div class="tablewrap" style="margin-top:14px"><table>
+        <thead><tr><th>Brand</th><th>Deliverables</th><th class="r">Agreed</th><th>Due</th><th>Stage</th><th><span class="hide">Actions</span></th></tr></thead>
+        <tbody id="sDealBody"></tbody>
+      </table></div>
+      <p class="muted" style="margin-top:8px;font-size:.85rem">Marking a deal Paid adds it to your income automatically.</p>
+    </section>
+
+    <section class="slip" aria-labelledby="sExpTitle">
+      <form id="sExpForm">
+        <h2 id="sExpTitle">Expenses</h2>
+        <div class="fields">
+          <label>Item<input id="eItem" type="text" maxlength="60" placeholder="e.g. ring light, editing app" required></label>
+          <label>Amount ($)<input id="eAmt" type="number" inputmode="decimal" min="0" step="0.01" required></label>
+          <label>Date<input id="eDate" type="date" required></label>
+        </div>
+        <div class="btns"><button class="act" type="submit">Add expense</button></div>
+      </form>
+      <div class="tablewrap" style="margin-top:14px"><table>
+        <thead><tr><th>Date</th><th>Item</th><th class="r">Amount</th><th><span class="hide">Actions</span></th></tr></thead>
+        <tbody id="sExpBody"></tbody>
+      </table></div>
+      <p class="muted" style="margin-top:8px;font-size:.85rem">Creator income is usually self-employment income. Set part of every payout aside for taxes, and share your totals with a tax preparer.</p>
+    </section>
+  </section>
+<section id="app-paypal" role="tabpanel" aria-labelledby="app-tab-paypal" hidden><div class="slip row"><h2>PayPal</h2><p id="paypal-connection">Your PayPal sandbox identity is connected.</p><p>Activity import and routing arrive in the PayPal milestone.</p></div></section>
+    </main><div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
 </html>
