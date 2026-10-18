@@ -1,3 +1,4 @@
+import "./exports.js";
 import "./workspaces.js";
 import type { GameStats } from "../src/game/rules.js";
 import type { QuestDefinition } from "../src/game/catalog.js";

@@ -1,3 +1,4 @@
+import { unzipSync, strFromU8 } from "fflate";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { execSync } from "node:child_process";
@@ -514,6 +515,37 @@ describe("Phase 2 game API", () => {
       const rows=await prisma.$queryRawUnsafe<{count:bigint}[]>(`SELECT count(*) AS count FROM ${table}`);
       expect(Number(rows[0].count)).toBe(0);
     }
+  });
+  function parseBinary(response: NodeJS.ReadableStream, callback: (error: Error | null, data?: Buffer) => void) {
+    const chunks: Buffer[] = []; response.on("data", chunk => chunks.push(Buffer.from(chunk)));
+    response.on("end", () => callback(null, Buffer.concat(chunks))); response.on("error", callback);
+  }
+  it("exports only the current player's data and makes Summary agree with monthly workspace totals", async () => {
+    const alice=await login("export-alice"),bob=await login("export-bob");
+    await write(alice.cookie,"/api/spotlight/income",{...workspaceCases[0][1],note:"=ALICE()"}).expect(201);
+    await write(bob.cookie,"/api/spotlight/income",{...workspaceCases[0][1],note:"BOB PRIVATE",amount_cents:999999}).expect(201);
+    await write(alice.cookie,"/api/entries",validEntry).expect(201);
+    const file=await request(app).get("/api/exports?tab=spotlight&format=csv").set("Cookie",alice.cookie).expect(200);
+    expect(file.text).toContain("'=ALICE()");expect(file.text).toContain('"1.99"');expect(file.text).not.toContain("BOB PRIVATE");
+    expect(file.headers["content-disposition"]).toContain("onedime-spotlight-2026-10-14.csv");
+    const archive=await request(app).get("/api/exports?tab=all&format=zip&month=2026-10").set("Cookie",alice.cookie).buffer(true).parse(parseBinary).expect(200);
+    const files=unzipSync(archive.body);
+    const text=Object.values(files).map(strFromU8).join("\n");expect(text).not.toContain("BOB PRIVATE");expect(text).not.toContain(bob.player.id);
+    const total=(await request(app).get("/api/spotlight/summary?month=2026-10").set("Cookie",alice.cookie)).body;
+    expect(strFromU8(files["Summary.csv"])).toContain(`"spotlight","2026-10","${(total.earnedCents/100).toFixed(2)}","0.00","1.99","0.00","0.00","1.99"`);
+    const market=await request(app).get("/api/exports?tab=market&format=xlsx").set("Cookie",alice.cookie).buffer(true).parse(parseBinary).expect(200);
+    const workbook=strFromU8(unzipSync(market.body)["xl/workbook.xml"]);
+    expect(workbook).toContain('name="Delivery"');expect(workbook).toContain('name="Selling"');
+  });
+  it("validates export filters and rate limits exports without blocking other reads", async () => {
+    const alice=await login("export-limit");
+    await request(app).get("/api/exports?tab=first&format=csv").expect(401);
+    for(const query of ["tab=first&format=csv&playerId=other","tab=first&format=csv&month=2026-13","tab=first&format=csv&from=2026-10-15&to=2026-10-14","tab=all&format=csv"]){
+      await request(app).get(`/api/exports?${query}`).set("Cookie",alice.cookie).expect(400);
+    }
+    for(let i=0;i<6;i++)await request(app).get("/api/exports?tab=first&format=csv").set("Cookie",alice.cookie).expect(200);
+    await request(app).get("/api/exports?tab=first&format=csv").set("Cookie",alice.cookie).expect(429);
+    await request(app).get("/api/entries").set("Cookie",alice.cookie).expect(200);
   });
   it("rate limits writes per player and permits reads, other players, and later windows", async () => {
     const alice = await login("limit-alice");

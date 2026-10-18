@@ -3,8 +3,8 @@ export const numeric = (row: LedgerRow, key: string) => Number(row[key] ?? 0);
 const sum = (rows: LedgerRow[], key: string) => rows.reduce((total, row) => total + numeric(row, key), 0);
 const ratio = (cents: number, units: number, scale: number) => units ? Math.round(cents * scale / units) : null;
 export function summary(app: string, data: { income: LedgerRow[]; deals: LedgerRow[]; expenses: LedgerRow[];
-  gigs: LedgerRow[]; shifts: LedgerRow[]; sales: LedgerRow[] }, month: string) {
-  const inMonth = (row: LedgerRow, field: string) => String(row[field] ?? "").startsWith(month);
+  gigs: LedgerRow[]; shifts: LedgerRow[]; sales: LedgerRow[] }, month: string, include: (day: string) => boolean = () => true) {
+  const inMonth = (row: LedgerRow, field: string) => String(row[field] ?? "").startsWith(month) && include(String(row[field]));
   const expenses = sum(data.expenses.filter(row => row.app === app && inMonth(row, "spent_on")), "amount_cents");
   const rows = app === "spotlight" ? data.income : app === "freelance" ? data.gigs : app === "market_delivery" ? data.shifts : data.sales;
   const date = app === "spotlight" ? "earned_on" : app === "freelance" ? "started_on" : app === "market_delivery" ? "worked_on" : "sold_on";

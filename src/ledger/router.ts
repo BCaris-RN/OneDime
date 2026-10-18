@@ -8,7 +8,7 @@ import { z } from "zod";
 import type { AuthedRequest } from "../auth/session.js";
 import { localDay } from "../game/rules.js";
 import { tables, type TableKey } from "./catalog.js";
-import { identifier, insertRow, listRows, ownRow, stampPayment, updateRow, validateRow } from "./store.js";
+import { identifier, insertRow, listRows, ownRow, stampPayment, updateRow, validateRow, type Db } from "./store.js";
 import { summary } from "./summary.js";
 import { NotFound } from "../http/errors.js";
 
@@ -74,7 +74,7 @@ export function createLedgerRouter(prisma: PrismaClient, now: () => Date) {
   }
   return router;
 }
-export async function allRows(prisma: PrismaClient, playerId: string) {
+export async function allRows(prisma: Db, playerId: string) {
   const [income, deals, expenses, gigs, shifts, sales] = await Promise.all((Object.keys(tables) as TableKey[]).map(key => listRows(prisma, key, playerId)));
   return { income, deals, expenses, gigs, shifts, sales };
 }

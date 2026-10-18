@@ -54,3 +54,32 @@ The user accepted the history rewrite on main `9953600` and owns GitHub Support
 cleanup of retained old PR refs. Do not fetch or merge the old history into this branch.
 No merge, deployment, live PayPal, public visibility, employer accounts or real keys
 are authorized for Phase 3. Later integrations use mocks when keys are missing.
+
+## M2: exports
+
+`write-excel-file` 4.1.1 and `fflate` 0.8.3 were checked live on npm and their
+maintainer repositories; npm audit reports zero vulnerabilities. Exports read a
+repeatable-read transaction for one authenticated player, limited to six/minute.
+CSV and XLSX text starting with formula markers, tab, CR or LF is apostrophe-prefixed.
+XLSX money is numeric USD (0.00 format), dates are real cells, and headers are frozen.
+CSV money headers end in `_usd`, values have two decimal places. Empty data keeps headers.
+
+Summary rows use event-local calendar months: earned/fees/net on the work or sale date,
+paid on payment date when available, expenses on spend date, pending on earned month.
+This monthly pending metric differs deliberately from the pilot's global pending headline.
+First Dime uses verified earnings as paid because the game has no separate paid status.
+Range filters apply separately to earning and payment dates. Market has two sheets,
+with each category's expenses distinguished by record_type. Other tab CSVs combine
+records using record_type; all-workbook exports keep one sheet per table plus Summary.
+
+Google Sheets is the optional stretch: skipped by the approved files-only default.
+No Google OAuth, project, credentials or extra permissions are needed for file import.
+Help documents Google Sheets File > Import and Excel import/open steps. Binary structure,
+dates, formats and frozen panes are checked in tests; interactive Excel/Sheets import
+has not been performed with a real account.
+
+Sources:
+- https://github.com/catamphetamine/write-excel-file
+- https://github.com/101arrowz/fflate
+- https://www.npmjs.com/package/write-excel-file
+- https://www.npmjs.com/package/fflate

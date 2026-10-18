@@ -16,6 +16,7 @@ import { createGameRouter } from "./game/router.js";
 import type { QuestDefinition } from "./game/catalog.js";
 import { createLedgerRouter } from "./ledger/router.js";
 import { HttpError } from "./http/errors.js";
+import { createExportRouter } from "./exports/router.js";
 
 type CreateAppOptions = {
   config?: AppConfig;
@@ -91,6 +92,7 @@ export function createApp(options: CreateAppOptions = {}) {
   const gameRouter = createGameRouter({ prisma, config, sessions, now: options.now, quests: options.quests, writeLimit: options.writeLimit });
   app.use("/api", gameRouter);
   app.use("/api", createLedgerRouter(prisma, options.now ?? (() => new Date())));
+  app.use("/api", createExportRouter(prisma, options.now ?? (() => new Date())));
   app.post("/logout", gameRouter);
 
   app.get("/app", sessions.requirePlayer(), (_request, response) => {
