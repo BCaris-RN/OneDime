@@ -6,6 +6,7 @@ import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AppConfig } from "../src/config.js";
 import type { PayPalIdentityClient } from "../src/auth/paypal.js";
+import { claimEligibleRungs } from "../src/game/rungs.js";
 
 const testConfig: AppConfig = {
   nodeEnv: "test",
@@ -27,6 +28,7 @@ let container: StartedPostgreSqlContainer | undefined;
 let prisma: PrismaClient;
 let app: ReturnType<typeof import("../src/server.js").createApp>;
 let paypalClient: PayPalIdentityClient;
+let gameNow = new Date("2026-10-14T20:00:00Z");
 
 beforeAll(async () => {
   const databaseUrl = await resolveDatabaseUrl();
@@ -57,12 +59,16 @@ beforeAll(async () => {
       databaseUrl
     },
     prisma,
-    paypalClient
+    paypalClient,
+    now: () => gameNow,
+    // Fixtures exercise quest mechanics, never stand in for the missing pilot.
+    quests: [{ id: "fixture-quest", title: "Test fixture only", xp: 50 }]
   });
 }, 120_000);
 
 beforeEach(async () => {
   vi.clearAllMocks();
+  gameNow = new Date("2026-10-14T20:00:00Z");
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
       sessions,
@@ -204,11 +210,239 @@ describe("server", () => {
     const logoutResponse = await request(app)
       .post("/logout")
       .set("Cookie", cookie)
-      .expect(302);
+      .set("Origin", testConfig.publicBaseUrl)
+      .send({})
+      .expect(204);
 
-    expect(logoutResponse.headers.location).toBe("/");
     expect(logoutResponse.headers["set-cookie"]?.[0]).toContain("onedime_session=;");
     await expect(prisma.session.count()).resolves.toBe(0);
+  });
+});
+
+describe("Phase 2 game API", () => {
+  const origin = testConfig.publicBaseUrl;
+  const validEntry = { platform: "Test site", amountCents: 123, minutes: 15, workedOn: "2026-10-14", note: "Private work note" };
+
+  async function login(suffix: string) {
+    vi.mocked(paypalClient.fetchUserInfo).mockResolvedValueOnce({
+      user_id: `game-${suffix}`, name: `Player ${suffix}`, email: `${suffix}@example.com`
+    });
+    const state = await beginPayPalLogin();
+    const result = await request(app).get(`/auth/paypal/callback?code=fixture&state=${state}`).expect(302);
+    const player = await prisma.player.findUniqueOrThrow({ where: { paypalUserId: `game-${suffix}` } });
+    return { player, cookie: result.headers["set-cookie"]![0] };
+  }
+  function write(cookie: string, route: string, body: unknown = {}) {
+    return request(app).post(route).set("Cookie", cookie).set("Origin", origin).send(body);
+  }
+
+  it.each(["/api/entries", "/api/me/stats", "/api/clock", "/api/quests", "/api/leaderboard"])("requires a session for GET %s", async (route) => {
+    await request(app).get(route).expect(401);
+  });
+  it.each(["/api/entries", "/api/clock/in", "/api/clock/out", "/api/quests/fixture-quest", "/api/leaderboard/join", "/api/leaderboard/leave", "/api/me/time-zone", "/api/logout"])("requires a session for POST %s", async (route) => {
+    await request(app).post(route).set("Origin", origin).send({}).expect(401);
+  });
+  it("requires a session to delete entries", async () => {
+    await request(app).delete("/api/entries").set("Origin", origin).send({}).expect(401);
+  });
+  it("logs only owned, unverified entries and keeps private stats private", async () => {
+    const alice = await login("alice");
+    const bob = await login("bob");
+    const created = await write(alice.cookie, "/api/entries", validEntry).expect(201);
+    expect(created.body.entry).toMatchObject({ ...validEntry, playerId: alice.player.id, verified: false });
+    const own = await request(app).get("/api/entries").set("Cookie", alice.cookie).expect(200);
+    expect(own.body.entries).toHaveLength(1);
+    expect((await request(app).get("/api/entries").set("Cookie", bob.cookie)).body.entries).toEqual([]);
+    await request(app).get(`/api/entries?id=${created.body.entry.id}`).set("Cookie", bob.cookie).expect(404);
+    await request(app).delete("/api/entries").set("Cookie", bob.cookie).set("Origin", origin).send({ id: created.body.entry.id }).expect(404);
+    await write(bob.cookie, "/api/entries", { ...validEntry, playerId: alice.player.id }).expect(400);
+    await write(bob.cookie, "/api/entries", { ...validEntry, id: created.body.entry.id }).expect(400);
+    await request(app).patch(`/api/entries/${created.body.entry.id}`).set("Cookie", bob.cookie).set("Origin", origin).send({ minutes: 0 }).expect(404);
+    const stats = await request(app).get("/api/me/stats").set("Cookie", alice.cookie).expect(200);
+    expect(stats.body).toMatchObject({ totals: { amountCents: 123, verifiedCents: 0, minutes: 15 }, xp: 27, streak: 1 });
+    expect((await request(app).get("/api/me/stats").set("Cookie", bob.cookie)).body.totals.amountCents).toBe(0);
+    await expect(prisma.rungClaim.count()).resolves.toBe(0);
+    await request(app).delete("/api/entries").set("Cookie", alice.cookie).set("Origin", origin).send({ id: created.body.entry.id }).expect(204);
+    await expect(prisma.logEntry.count()).resolves.toBe(0);
+  });
+  it.each([-1, 0.5, 1_000_001, "100", null])("rejects amount %s", async (amountCents) => {
+    const current = await login("invalid");
+    await write(current.cookie, "/api/entries", { ...validEntry, amountCents }).expect(400);
+    await expect(prisma.logEntry.count()).resolves.toBe(0);
+  });
+  it.each([0, 1_000_000])("accepts boundary amount %s", async (amountCents) => {
+    const current = await login("boundary");
+    await write(current.cookie, "/api/entries", { ...validEntry, amountCents }).expect(201);
+  });
+  it.each([
+    { verified: true }, { playerId: "other-player" }, { platform: "" }, { minutes: -1 },
+    { minutes: 0.1 }, { workedOn: "2026-02-30" }, { workedOn: "2026-10-15" }, { note: "x".repeat(2001) }
+  ])("rejects invalid or privileged entry fields: %j", async (fields) => {
+    const current = await login("fields");
+    await write(current.cookie, "/api/entries", { ...validEntry, ...fields }).expect(400);
+  });
+  it("rejects missing, null, cross-origin and malformed origins, plus non-JSON writes", async () => {
+    const current = await login("csrf");
+    for (const value of ["null", "https://evil.example", `${origin}.evil.example`, `${origin}/path`]) {
+      await request(app).post("/api/entries").set("Cookie", current.cookie).set("Origin", value).send(validEntry).expect(403);
+    }
+    await request(app).post("/api/entries").set("Cookie", current.cookie).send(validEntry).expect(403);
+    await request(app).post("/api/entries").set("Cookie", current.cookie).set("Origin", origin).set("Sec-Fetch-Site", "cross-site").send(validEntry).expect(403);
+    await request(app).post("/api/entries").set("Cookie", current.cookie).set("Origin", origin).type("form").send(validEntry).expect(415);
+    await request(app).post("/api/entries").set("Cookie", current.cookie).set("Origin", origin).type("json").send("{").expect(400);
+    await request(app).delete("/api/entries").set("Cookie", current.cookie).send({ id: current.player.id }).expect(403);
+    await request(app).post("/logout").set("Cookie", current.cookie).type("form").send({}).expect(415);
+    await request(app).post("/api/logout").set("Cookie", current.cookie).send({}).expect(403);
+    await request(app).get("/api/me").set("Cookie", current.cookie).expect(200);
+  });
+  it("persists the browser time zone and computes dates in it", async () => {
+    const current = await login("zone");
+    gameNow = new Date("2026-10-14T02:00:00Z");
+    await write(current.cookie, "/api/me/time-zone", { timeZone: "Pacific/Honolulu" }).expect(200);
+    await write(current.cookie, "/api/me/time-zone", { timeZone: "not/a-zone" }).expect(400);
+    await write(current.cookie, "/api/entries", validEntry).expect(400);
+    await write(current.cookie, "/api/entries", { ...validEntry, workedOn: "2026-10-13" }).expect(201);
+    const stats = await request(app).get("/api/me/stats").set("Cookie", current.cookie).expect(200);
+    expect(stats.body).toMatchObject({ today: "2026-10-13", timeZone: "Pacific/Honolulu", streak: 1 });
+  });
+  it("makes concurrent entries safe for the same player", async () => {
+    const current = await login("parallel");
+    const results = await Promise.all([write(current.cookie, "/api/entries", validEntry), write(current.cookie, "/api/entries", validEntry)]);
+    expect(results.map((row) => row.status)).toEqual([201, 201]);
+    await expect(prisma.logEntry.count()).resolves.toBe(2);
+  });
+  it("clock out returns the pilot's rounded minutes for the form without auto-logging", async () => {
+    const alice = await login("clock-alice");
+    const bob = await login("clock-bob");
+    await write(alice.cookie, "/api/clock/out").expect(409);
+    await write(alice.cookie, "/api/clock/in", { platform: "Test site" }).expect(200);
+    await write(alice.cookie, "/api/clock/in", { platform: "Other site" }).expect(409);
+    await write(bob.cookie, "/api/clock/out").expect(409);
+    expect((await request(app).get("/api/clock").set("Cookie", alice.cookie)).body.platform).toBe("Test site");
+    gameNow = new Date(gameNow.getTime() + 125_000);
+    const results = await Promise.all([write(alice.cookie, "/api/clock/out"), write(alice.cookie, "/api/clock/out")]);
+    expect(results.map((row) => row.status).sort()).toEqual([200, 409]);
+    expect(results.find((row) => row.status === 200)!.body).toMatchObject({ minutes: 2, platform: "Test site", workedOn: "2026-10-14" });
+    await expect(prisma.logEntry.count()).resolves.toBe(0);
+    expect((await prisma.player.findUniqueOrThrow({ where: { id: alice.player.id } })).clockStartedAt).toBeNull();
+  });
+  it("only allows one concurrent clock in", async () => {
+    const current = await login("clock-race");
+    const results = await Promise.all([
+      write(current.cookie, "/api/clock/in", { platform: "A" }),
+      write(current.cookie, "/api/clock/in", { platform: "B" })
+    ]);
+    expect(results.map((row) => row.status).sort()).toEqual([200, 409]);
+  });
+  it("toggles only a player's own quest and counts its XP once", async () => {
+    const alice = await login("quest-alice");
+    const bob = await login("quest-bob");
+    await write(alice.cookie, "/api/quests/fixture-quest").expect(200, { id: "fixture-quest", completed: true });
+    expect((await request(app).get("/api/me/stats").set("Cookie", alice.cookie)).body.xp).toBe(50);
+    expect((await request(app).get("/api/quests").set("Cookie", bob.cookie)).body.completed).toEqual([]);
+    await write(bob.cookie, "/api/quests/fixture-quest", { playerId: alice.player.id }).expect(400);
+    await write(alice.cookie, "/api/quests/unknown").expect(404);
+    const results = await Promise.all([write(alice.cookie, "/api/quests/fixture-quest"), write(alice.cookie, "/api/quests/fixture-quest")]);
+    expect(results.map((row) => row.status)).toEqual([200, 200]);
+    await expect(prisma.questProgress.count({ where: { playerId: alice.player.id } })).resolves.toBe(1);
+    await write(alice.cookie, "/api/quests/fixture-quest").expect(200, { id: "fixture-quest", completed: false });
+    expect((await request(app).get("/api/me/stats").set("Cookie", alice.cookie)).body.xp).toBe(0);
+  });
+  it("serves the 19 real quests and rejects unknown quest IDs", async () => {
+    const current = await login("no-pilot");
+    const { createApp } = await import("../src/server.js");
+    const productionCatalogApp = createApp({ config: testConfig, prisma, paypalClient });
+    const catalog = await request(productionCatalogApp).get("/api/quests").set("Cookie", current.cookie).expect(200);
+    expect(catalog.body.pilotAvailable).toBe(true);
+    expect(catalog.body.quests).toHaveLength(19);
+    await request(productionCatalogApp).post("/api/quests/invented").set("Cookie", current.cookie).set("Origin", origin).send({}).expect(404);
+  });
+  it.each([[0, 1], [45_000, 1], [90_000, 2]])("rounds clock duration %s ms to %s minutes as the pilot does", async (elapsed, expected) => {
+    const current = await login("clock-round");
+    await write(current.cookie, "/api/clock/in", { platform: "Prolific" }).expect(200);
+    gameNow = new Date(gameNow.getTime() + elapsed);
+    const result = await write(current.cookie, "/api/clock/out").expect(200);
+    expect(result.body.minutes).toBe(expected);
+  });
+  it("joining completes the pilot's leaderboard quest once and leaving retains that progress", async () => {
+    const current = await login("real-join");
+    const { createApp } = await import("../src/server.js");
+    const realApp = createApp({ config: testConfig, prisma, paypalClient, now: () => gameNow });
+    const action = (value: string) => request(realApp).post(`/api/leaderboard/${value}`).set("Cookie", current.cookie).set("Origin", origin).send({});
+    await action("join").expect(200);
+    await action("join").expect(200);
+    const stats = () => request(realApp).get("/api/me/stats").set("Cookie", current.cookie);
+    expect((await stats()).body.xp).toBe(20);
+    await action("leave").expect(200);
+    expect((await stats()).body.xp).toBe(20);
+    await expect(prisma.questProgress.count({ where: { playerId: current.player.id, questId: "lb-join" } })).resolves.toBe(1);
+  });
+  it("requires opt-in and whitelists leaderboard fields", async () => {
+    const alice = await login("leader-alice");
+    const bob = await login("leader-bob");
+    await write(alice.cookie, "/api/entries", { ...validEntry, amountCents: 99999, platform: "Unverified-only site" }).expect(201);
+    await prisma.logEntry.create({ data: { ...validEntry, playerId: alice.player.id, amountCents: 10, workedOn: new Date("2026-10-14"), verified: true } });
+    await prisma.$transaction((tx) => claimEligibleRungs(tx, alice.player.id));
+    expect((await request(app).get("/api/leaderboard").set("Cookie", bob.cookie)).body.players).toEqual([]);
+    await write(alice.cookie, "/api/leaderboard/join").expect(200);
+    const result = await request(app).get("/api/leaderboard").set("Cookie", bob.cookie).expect(200);
+    expect(result.body.players).toHaveLength(1);
+    expect(result.body.players[0]).toMatchObject({ displayName: "Player leader-alice", verifiedTotalCents: 10, sites: [{ platform: "Test site", verifiedCents: 10 }] });
+    expect(Object.keys(result.body.players[0]).sort()).toEqual(["displayName", "level", "rungClaims", "sites", "verifiedTotalCents", "xp"]);
+    const serialized = JSON.stringify(result.body);
+    for (const forbidden of ["@example.com", validEntry.note, "99999", "Unverified-only site", "email", "note", "amountCents", "playerId"]) expect(serialized).not.toContain(forbidden);
+    expect(result.body.players[0].rungClaims[0]).toMatchObject({ rungCents: 10, claimedAt: expect.any(String) });
+    await write(alice.cookie, "/api/leaderboard/leave").expect(200);
+    expect((await request(app).get("/api/leaderboard").set("Cookie", bob.cookie)).body.players).toEqual([]);
+  });
+  it("unverified earnings cannot claim rungs, verified earnings can claim all crossed rungs", async () => {
+    const current = await login("rungs");
+    const entry = await write(current.cookie, "/api/entries", { ...validEntry, amountCents: 100000 }).expect(201);
+    await prisma.$transaction((tx) => claimEligibleRungs(tx, current.player.id));
+    await expect(prisma.rungClaim.count()).resolves.toBe(0);
+    await prisma.$transaction(async (tx) => {
+      await tx.logEntry.update({ where: { id: entry.body.entry.id }, data: { verified: true } });
+      await claimEligibleRungs(tx, current.player.id);
+    });
+    await expect(prisma.rungClaim.count()).resolves.toBe(8);
+    await prisma.$transaction((tx) => claimEligibleRungs(tx, current.player.id));
+    await expect(prisma.rungClaim.count()).resolves.toBe(8);
+    expect((await request(app).get("/api/me/stats").set("Cookie", current.cookie)).body.xp).toBe(10815);
+  });
+  it("two players crossing a rung simultaneously yield exactly one winner and no loser error", async () => {
+    const alice = await login("race-alice");
+    const bob = await login("race-bob");
+    await Promise.all([alice, bob].map((current) => prisma.logEntry.create({ data: {
+      ...validEntry, playerId: current.player.id, amountCents: 10, verified: true, workedOn: new Date("2026-10-14")
+    } })));
+    await Promise.all([alice, bob].map((current) => prisma.$transaction((tx) => claimEligibleRungs(tx, current.player.id))));
+    const claims = await prisma.rungClaim.findMany();
+    expect(claims).toHaveLength(1);
+    expect(claims[0].rungCents).toBe(10);
+    expect([alice.player.id, bob.player.id]).toContain(claims[0].playerId);
+  });
+  it("rolls back a claim with its enclosing verification transaction", async () => {
+    const current = await login("rollback");
+    await prisma.logEntry.create({ data: { ...validEntry, playerId: current.player.id, amountCents: 10, verified: true, workedOn: new Date("2026-10-14") } });
+    await expect(prisma.$transaction(async (tx) => {
+      await claimEligibleRungs(tx, current.player.id);
+      throw new Error("rollback fixture");
+    })).rejects.toThrow("rollback fixture");
+    await expect(prisma.rungClaim.count()).resolves.toBe(0);
+  });
+  it("rate limits writes per player and permits reads, other players, and later windows", async () => {
+    const alice = await login("limit-alice");
+    const bob = await login("limit-bob");
+    const { createApp } = await import("../src/server.js");
+    const limited = createApp({ config: testConfig, prisma, paypalClient, now: () => gameNow, writeLimit: { count: 1, windowMs: 60_000 } });
+    const send = (cookie: string) => request(limited).post("/api/leaderboard/join").set("Cookie", cookie).set("Origin", origin).send({});
+    await send(alice.cookie).expect(200);
+    const result = await send(alice.cookie).expect(429);
+    expect(result.headers["retry-after"]).toBe("60");
+    await request(limited).get("/api/me/stats").set("Cookie", alice.cookie).expect(200);
+    await send(bob.cookie).expect(200);
+    gameNow = new Date(gameNow.getTime() + 60_000);
+    await send(alice.cookie).expect(200);
   });
 });
 
