@@ -5,10 +5,12 @@ Updated Oct 17, 2026 (Hawaii). Branch: `week3-onedime-app`, base `9953600`.
 | Milestone | Implementation commit | Validation | Next |
 | --- | --- | --- | --- |
 | M1: pilot and workspaces | `a76cd8997eab6e52baf88d7d6b1f883ec03f19b5` | 113 tests passed; build passed; audit clean; browser checks and 21 screenshots; CI passed | Complete |
-| M2: exports | `dcedcc659f33276c1a0d552d8d0e3d817b8b36e2` | 125 tests passed; build passed; audit clean; browser CSV download; XML numeric/date/frozen-pane checks | M3 sandbox PayPal |
+| M2: exports | `dcedcc659f33276c1a0d552d8d0e3d817b8b36e2` | 125 tests; build/audit/browser passed; CI passed on f86605a | Complete |
+| M3: sandbox PayPal | `d72e6a3799543ae963d4e571d633d2b549a26616` | 146 tests; build/audit passed; browser CSV import/routing/badge; payout/webhook mocks | M4 bounded AI suggestions |
 
 CI: M1 head `d1576cd` passed push and PR runs (39092799143, 39092821772).
-M2 checkpoint CI is pending; exact-head evidence is tracked in draft PR #4.
+M2 CI passed on `f86605a` (39093119535, 39093122307). M3 CI pending.
+Exact checkpoint head evidence is tracked in draft PR #4.
 Draft PR: https://github.com/BCaris-RN/OneDime/pull/4
 The six workspace tables use SQL migrations and bound queries with fixed identifiers.
 Only First Dime feeds game progression. Pilot reference stays ignored and local.
