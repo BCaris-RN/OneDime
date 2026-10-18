@@ -1,0 +1,116 @@
+[
+  {
+    "id": "paypal",
+    "xp": 30,
+    "title": "Quest 1: Set up your PayPal payout account",
+    "description": "One PayPal account and one personal email on every site, so every payout lands in one place."
+  },
+  {
+    "id": "pro-sign",
+    "xp": 30,
+    "title": "Prolific: account approved",
+    "description": "Sign up or join the waitlist, verify your ID, link PayPal."
+  },
+  {
+    "id": "pro-about",
+    "xp": 40,
+    "title": "Prolific: finish every About You screener",
+    "description": "More screeners answered means more studies you qualify for."
+  },
+  {
+    "id": "pro-alert",
+    "xp": 20,
+    "title": "Prolific: alerts on",
+    "description": "Phone notifications plus a browser alert, so you only show up when a study is live."
+  },
+  {
+    "id": "pro-first",
+    "xp": 50,
+    "title": "Prolific: first study approved",
+    "description": "Read every instruction and pass every attention check."
+  },
+  {
+    "id": "rev-apply",
+    "xp": 30,
+    "title": "Rev: apply (join the waitlist)",
+    "description": "Read the style guide before starting the sample test."
+  },
+  {
+    "id": "tm-apply",
+    "xp": 30,
+    "title": "TranscribeMe: pass the transcription test",
+    "description": "Same approach: style guide first, headphones on."
+  },
+  {
+    "id": "expand",
+    "xp": 40,
+    "title": "Set up text expansion",
+    "description": "Short codes for [inaudible], [crosstalk] and speaker labels."
+  },
+  {
+    "id": "hotkeys",
+    "xp": 30,
+    "title": "Learn the transcription editor hotkeys",
+    "description": "Play, pause and rewind without touching the mouse."
+  },
+  {
+    "id": "wpm",
+    "xp": 30,
+    "title": "Record your baseline typing speed",
+    "description": "Retest weekly. Note it in a session log entry."
+  },
+  {
+    "id": "pick",
+    "xp": 20,
+    "title": "Skip a bad audio file",
+    "description": "Preview 30 seconds and pass on noisy, crosstalk-heavy files."
+  },
+  {
+    "id": "ss-profile",
+    "xp": 40,
+    "title": "SideShift: profile and 2 sample videos",
+    "description": "Brands pick creators who already show their style."
+  },
+  {
+    "id": "ss-setup",
+    "xp": 30,
+    "title": "SideShift: fixed filming setup",
+    "description": "One spot, one light, one script skeleton."
+  },
+  {
+    "id": "ss-first",
+    "xp": 60,
+    "title": "SideShift: land your first gig",
+    "description": "Reuse a pitch message you can tweak per brand."
+  },
+  {
+    "id": "mw-sign",
+    "xp": 15,
+    "title": "Microworkers: sign up",
+    "description": "Filler only. Cap it at 20 minutes."
+  },
+  {
+    "id": "lb-join",
+    "xp": 20,
+    "title": "Join the leaderboard",
+    "description": "Then race for the bonus quests: first to each rung gets +100 XP."
+  },
+  {
+    "id": "tax",
+    "xp": 20,
+    "title": "Start a tax set-aside",
+    "description": "Move part of each payout aside the day it arrives."
+  },
+  {
+    "id": "week",
+    "xp": 40,
+    "title": "First Sunday review",
+    "description": "Check the per-hour table and drop the bottom site's time."
+  },
+  {
+    "id": "pedal",
+    "xp": 50,
+    "title": "Buy a foot pedal with earnings",
+    "description": "Only once transcription earnings cover it."
+  }
+]
