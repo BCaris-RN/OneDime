@@ -1,3 +1,7 @@
+/*  (o) OneDime | src/game/rungs.ts
+ *  ----------------------------------------------------------
+ *  Verified rung claims and their disabled-by-default payout outbox.
+ */
 import type { Prisma } from "@prisma/client";
 import { RUNGS } from "./rules.js";
 
@@ -16,4 +20,9 @@ export async function claimEligibleRungs(tx: Prisma.TransactionClient, playerId:
   await tx.rungClaim.createMany({
     data: eligible.map((rungCents) => ({ rungCents, playerId })), skipDuplicates: true
   });
+  const claims = await tx.rungClaim.findMany({ where: { playerId } });
+  await tx.payout.createMany({ data: claims.map(({ rungCents }) => ({
+    playerId, rungCents, senderBatchId: `${playerId}:${rungCents}`,
+    amountCents: Math.max(10, Math.floor(rungCents / 10)), status: "ready"
+  })), skipDuplicates: true });
 }

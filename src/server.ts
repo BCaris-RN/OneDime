@@ -16,12 +16,17 @@ import { createGameRouter } from "./game/router.js";
 import type { QuestDefinition } from "./game/catalog.js";
 import { createLedgerRouter } from "./ledger/router.js";
 import { HttpError } from "./http/errors.js";
+import { sandboxClient } from "./paypal/client.js";
+import { createPayoutService, type PayoutClient } from "./paypal/payouts.js";
+import { webhookHandler } from "./paypal/webhooks.js";
+import { createActivityRouter } from "./paypal/router.js";
 import { createExportRouter } from "./exports/router.js";
 
 type CreateAppOptions = {
   config?: AppConfig;
   prisma?: PrismaClient;
   paypalClient?: PayPalIdentityClient;
+  payoutClient?: PayoutClient;
   now?: () => Date;
   quests?: readonly QuestDefinition[];
   writeLimit?: { count: number; windowMs: number };
@@ -33,10 +38,13 @@ export function createApp(options: CreateAppOptions = {}) {
   const config = options.config ?? loadConfig();
   const prisma = options.prisma ?? defaultPrisma;
   const sessions = new SessionStore(prisma, config);
+  const payoutClient = options.payoutClient ?? sandboxClient(config);
+  const flushPayouts = createPayoutService(prisma, config, payoutClient, options.now ?? (() => new Date()));
   const app = express();
 
   app.disable("x-powered-by");
   app.use(express.urlencoded({ extended: false }));
+  app.use("/api/paypal/import", express.json({ limit: "1mb" }));
   app.use(express.json({ limit: "32kb" }));
 
   app.get("/health", (_request, response) => {
@@ -80,6 +88,7 @@ export function createApp(options: CreateAppOptions = {}) {
           id: currentSession.player.id,
           displayName: currentSession.player.displayName,
           email: currentSession.player.email,
+          paypalVerified: currentSession.player.paypalVerified,
           timeZone: currentSession.player.timeZone,
           leaderboardOptIn: currentSession.player.leaderboardOptIn
         }
@@ -90,7 +99,10 @@ export function createApp(options: CreateAppOptions = {}) {
   });
 
   const gameRouter = createGameRouter({ prisma, config, sessions, now: options.now, quests: options.quests, writeLimit: options.writeLimit });
+  app.post("/api/paypal/webhook", webhookHandler(prisma, config, payoutClient));
   app.use("/api", gameRouter);
+  app.use("/api", createActivityRouter(prisma, options.now ?? (() => new Date()), flushPayouts));
+  app.locals.flushPayouts = flushPayouts;
   app.use("/api", createLedgerRouter(prisma, options.now ?? (() => new Date())));
   app.use("/api", createExportRouter(prisma, options.now ?? (() => new Date())));
   app.post("/logout", gameRouter);
@@ -125,6 +137,14 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const config = loadConfig();
   const app = createApp({ config });
 
+  if (config.payoutsEnabled) {
+    setInterval(async () => {
+      try {
+        const rows = await defaultPrisma.payout.findMany({ where: { status: { in: ["ready", "retry", "sending"] } }, distinct: ["playerId"], select: { playerId: true } });
+        for (const row of rows) await app.locals.flushPayouts(row.playerId);
+      } catch { console.error("payout worker failed"); }
+    }, 60000).unref();
+  }
   app.listen(config.port, () => {
     console.log(`OneDime listening on http://localhost:${config.port}`);
   });

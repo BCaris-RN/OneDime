@@ -17,6 +17,8 @@ export type AppConfig = {
   paypalAuthUrl: string;
   paypalApiBaseUrl: string;
   paypalScope: string;
+  payoutsEnabled?: boolean;
+  paypalWebhookId?: string;
 };
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -40,7 +42,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error("SESSION_SECRET must be set to at least 32 characters.");
   }
 
+  if (nodeEnv === "production" && env.PAYOUTS_ENABLED === "true") throw new Error("Payouts may only be enabled locally.");
+
   return {
+    payoutsEnabled: env.PAYOUTS_ENABLED === "true",
+    paypalWebhookId: blankToUndefined(env.PAYPAL_WEBHOOK_ID),
     nodeEnv,
     port,
     databaseUrl: env.DATABASE_URL,

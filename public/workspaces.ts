@@ -109,7 +109,7 @@ function renderRows(f:Form,rows:LedgerRow[]){
   const app=f.id.startsWith("expense-")?f.id.slice(8):f.id==="sExpForm"?"spotlight":null;
   if(app)rows=rows.filter(row=>row.app===app);
   if(!rows.length){const tr=node("tr"),td=node("td","No entries yet.");td.colSpan=f.columns.length+1;td.className="empty";tr.append(td);tbody.append(tr);return;}
-  for(const row of rows){const tr=node("tr");
+  for(const row of rows){const tr=node("tr");tr.dataset.recordId=row.id;tr.dataset.recordType=f.id==="sStreamForm"?"income":f.id==="jobForm"?"gigs":f.id==="driveForm"?"shifts":f.id==="sellForm"?"sales":"expense";
     for(const col of f.columns){const td=node("td");if(col==="stage"&&f.stage){const select=node("select");select.setAttribute("aria-label",`Stage for ${row.project??row.brand}`);for(const stage of f.stage)select.append(node("option",stage));select.value=String(row.stage);select.addEventListener("change",()=>void run(async()=>{await request(`${f.path}/${row.id}`,{stage:select.value},"PATCH");toast("Stage saved.");await refresh();}));td.append(select);}else td.textContent=typeof col==="function"?col(row):String(row[col]??"—");tr.append(td);}
     const actions=node("td");actions.append(button("Edit",()=>edit(f,row)),button("Delete",()=>{if(confirm("Delete this entry?"))void run(async()=>{await request(`${f.path}/${row.id}`,{},"DELETE");toast("Deleted.");await refresh();});}));
     if(row.status==="pending")actions.append(button("Mark paid",()=>void run(async()=>{await request(`${f.path}/${row.id}`,{status:"paid"},"PATCH");toast("Marked paid.");await refresh();})));
@@ -139,6 +139,7 @@ async function refresh(){
   platforms("dPlatBody",c.delivery.byPlatform,["platform","count","earnedCents","perHourCents","perMileCents"]);
   platforms("sPlatBody2",c.selling.byPlatform,["platform","count","earnedCents","feesCents","netCents","marginPercent"]);
   for(const f of forms)renderRows(f,(lists[unique.indexOf(f.path)] as {rows:LedgerRow[]}).rows);
+  document.dispatchEvent(new Event("onedime:rendered"));
 }
 for(const f of forms){
   el(f.id).append(button("Cancel edit",()=>reset(f)));
@@ -152,3 +153,5 @@ for(const f of forms){
 control("jHrs").step="0.01";
 for(const f of forms)for(const [field,id,scale] of f.fields){if(scale){const i=control(id);if(scale===100&&field.endsWith("_cents"))i.max="10000";else if(field==="hours_x100"||field==="minutes_online")i.max="24";else if(field==="miles_x10")i.max="2000";else if(field==="content_minutes")i.max="1440";}}
 void run(refresh);
+
+document.addEventListener("onedime:payment-routed",()=>void run(refresh));

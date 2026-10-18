@@ -1,3 +1,4 @@
+import "./paypal.js";
 import "./exports.js";
 import "./workspaces.js";
 import type { GameStats } from "../src/game/rules.js";
@@ -105,7 +106,7 @@ function renderEntries(entries: Entry[]) {
   element("entries-empty").hidden = entries.length > 0;
   element("entries-table").hidden = !entries.length;
   element("entries-body").replaceChildren(...entries.slice(0, 60).map((entry) => {
-    const row = node("tr");
+    const row = node("tr"); row.dataset.recordId=entry.id; row.dataset.recordType="first";
     const detail = node("td", entry.workedOn.slice(0, 10));
     detail.append(node("small", entry.platform));
     if (entry.note) detail.append(node("small", entry.note));
@@ -125,6 +126,7 @@ function renderEntries(entries: Entry[]) {
     row.append(detail, node("td", `${entry.minutes} min`), node("td", money(entry.amountCents)), node("td", entry.verified ? "Verified" : "Awaiting verification"), action);
     return row;
   }));
+  document.dispatchEvent(new Event("onedime:rendered"));
 }
 function renderClock(value: Clock) {
   clock = value;
@@ -294,3 +296,5 @@ element("logout").addEventListener("click", async () => {
 availability();
 setInterval(renderElapsed, 1000);
 void initialize();
+
+document.addEventListener("onedime:payment-routed",()=>void refresh());

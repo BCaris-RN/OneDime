@@ -1,3 +1,5 @@
+import { createPayoutService } from "../src/paypal/payouts.js";
+import type { PayoutClient } from "../src/paypal/payouts.js";
 import { unzipSync, strFromU8 } from "fflate";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
@@ -73,6 +75,7 @@ beforeEach(async () => {
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
       sessions,
+      webhook_events,
       oauth_states,
       payouts,
       receipts,
@@ -546,6 +549,89 @@ describe("Phase 2 game API", () => {
     for(let i=0;i<6;i++)await request(app).get("/api/exports?tab=first&format=csv").set("Cookie",alice.cookie).expect(200);
     await request(app).get("/api/exports?tab=first&format=csv").set("Cookie",alice.cookie).expect(429);
     await request(app).get("/api/entries").set("Cookie",alice.cookie).expect(200);
+  });
+  const activityCsv=(id="PAYPAL-DEMO",payer="Hyperwallet",currency="USD",gross="1.99",fee="0.00",net="1.99")=>`Date,Name,Gross,Fee,Net,Currency,Transaction ID,Type,Email,IP Address\n10/14/2026,${payer},${gross},${fee},${net},${currency},${id},General Payment,discard@example.test,192.0.2.1`;
+  const activity=(cookie:string)=>request(app).get("/api/paypal/transactions").set("Cookie",cookie);
+  it("imports whitelisted fields once per player and isolates routing",async()=>{
+    const alice=await login("paypal-alice"),bob=await login("paypal-bob");
+    await write(alice.cookie,"/api/paypal/import",{csv:activityCsv()}).expect(200,{added:1,duplicates:0});
+    await write(alice.cookie,"/api/paypal/import",{csv:activityCsv()}).expect(200,{added:0,duplicates:1});
+    const rows=(await activity(alice.cookie).expect(200)).body.rows;
+    expect(rows).toHaveLength(1);expect(JSON.stringify(rows)).not.toContain("discard@example.test");
+    expect((await activity(bob.cookie)).body.rows).toEqual([]);
+    await write(bob.cookie,`/api/paypal/transactions/${rows[0].id}/route`,{record_type:"first",platform:"Prolific"}).expect(404);
+    const owned=(await write(bob.cookie,"/api/entries",validEntry).expect(201)).body.entry;
+    await write(alice.cookie,`/api/paypal/transactions/${rows[0].id}/route`,{record_type:"first",platform:"Prolific",record_id:owned.id}).expect(404);
+    const route=()=>write(alice.cookie,`/api/paypal/transactions/${rows[0].id}/route`,{record_type:"first",platform:"Prolific"});
+    expect((await Promise.all([route(),route(),route()])).map(result=>result.status)).toEqual([200,200,200]);
+    const entries=await prisma.logEntry.findMany({where:{playerId:alice.player.id}});
+    expect(entries).toHaveLength(1);expect(entries[0]).toMatchObject({amountCents:199,verified:true,verificationSource:"paypal_csv"});
+    const claims=await prisma.rungClaim.count();expect(claims).toBe(2);
+    await request(app).delete(`/api/entries/${entries[0].id}`).set("Cookie",alice.cookie).set("Origin",origin).send({}).expect(204);
+    expect((await activity(alice.cookie)).body.rows[0]).toMatchObject({routed_app:null,routed_record_id:null});
+    expect(await prisma.rungClaim.count()).toBe(claims);
+  });
+  it("does not verify unmatched payers or mismatched existing amounts",async()=>{
+    const alice=await login("paypal-match");
+    const entry=(await write(alice.cookie,"/api/entries",{...validEntry,platform:"Prolific"}).expect(201)).body.entry;
+    await write(alice.cookie,"/api/paypal/import",{csv:activityCsv()}).expect(200);
+    const row=(await activity(alice.cookie)).body.rows[0];
+    await write(alice.cookie,`/api/paypal/transactions/${row.id}/route`,{record_type:"first",platform:"Prolific",record_id:entry.id}).expect(200);
+    expect(await prisma.logEntry.findUniqueOrThrow({where:{id:entry.id}})).toMatchObject({amountCents:123,verified:false});
+    expect((await activity(alice.cookie)).body.rows[0].mismatch).toBe(true);
+    await write(alice.cookie,"/api/paypal/import",{csv:activityCsv("PAYPAL-UNKNOWN","Unknown payer")}).expect(200);
+    const other=(await activity(alice.cookie)).body.rows.find((p:{txn_id:string})=>p.txn_id==="PAYPAL-UNKNOWN");
+    await write(alice.cookie,`/api/paypal/transactions/${other.id}/route`,{record_type:"first",platform:"Prolific"}).expect(200);
+    expect(await prisma.logEntry.count({where:{playerId:alice.player.id,verified:true}})).toBe(0);
+  });
+  it("lists non-USD activity without permitting routing",async()=>{
+    const alice=await login("paypal-eur");await write(alice.cookie,"/api/paypal/import",{csv:activityCsv("EUR-DEMO","Hyperwallet","EUR")}).expect(200);
+    const row=(await activity(alice.cookie)).body.rows[0];expect(row.eligible).toBe(false);
+    await write(alice.cookie,`/api/paypal/transactions/${row.id}/route`,{record_type:"first",platform:"Prolific"}).expect(400);
+  });
+  it.each([["income","YouTube","/spotlight/income"],["gigs","Upwork","/freelance/gigs"],["shifts","Uber","/market/shifts"],["sales","eBay","/market/sales"]])("routes and unlinks %s without granting game XP",async(recordType,platform,path)=>{
+    const alice=await login(`paypal-${recordType}`);
+    await write(alice.cookie,"/api/paypal/import",{csv:activityCsv("ROUTE-DEMO","Demo payer","USD","20.00","-1.00","19.00")}).expect(200);
+    const payment=(await activity(alice.cookie)).body.rows[0];
+    const result=await write(alice.cookie,`/api/paypal/transactions/${payment.id}/route`,{record_type:recordType,platform}).expect(200);
+    const id=result.body.transaction.routed_record_id;
+    expect((await request(app).get(`/api${path}`).set("Cookie",alice.cookie)).body.rows).toHaveLength(1);
+    expect((await request(app).get("/api/me/stats").set("Cookie",alice.cookie)).body.xp).toBe(0);
+    await request(app).delete(`/api${path}/${id}`).set("Cookie",alice.cookie).set("Origin",origin).send({}).expect(204);
+    expect((await activity(alice.cookie)).body.rows[0].routed_record_id).toBeNull();
+  });
+  it("reserves an idempotent payout outbox before API calls and retries with identical keys",async()=>{
+    const alice=await login("payout");
+    await prisma.logEntry.create({data:{...validEntry,playerId:alice.player.id,amountCents:10,verified:true,workedOn:new Date("2026-10-14")}});
+    await prisma.$transaction(tx=>claimEligibleRungs(tx,alice.player.id));
+    const outbox=await prisma.payout.findMany();expect(outbox).toHaveLength(1);expect(outbox[0]).toMatchObject({amountCents:10,status:"ready"});
+    const client:PayoutClient={create:vi.fn().mockRejectedValueOnce(new Error("temporary")).mockResolvedValue({id:"BATCH-DEMO",status:"PENDING"}),verify:vi.fn(async()=>true)};
+    const off=createPayoutService(prisma,{...testConfig,payoutsEnabled:false},client,()=>gameNow);await off(alice.player.id);expect(client.create).not.toHaveBeenCalled();
+    const flush=createPayoutService(prisma,{...testConfig,payoutsEnabled:true},client,()=>gameNow);
+    await flush(alice.player.id);
+    await prisma.player.update({where:{id:alice.player.id},data:{email:"changed@example.test"}});
+    await Promise.all([flush(alice.player.id),flush(alice.player.id)]);await flush(alice.player.id);
+    expect(client.create).toHaveBeenCalledTimes(2);
+    const calls=vi.mocked(client.create).mock.calls;
+    expect(calls[0][0]).toEqual(calls[1][0]);expect(calls[0][0].items[0]).toMatchObject({amount:{value:"0.10",currency:"USD"},receiver:"payout@example.com"});
+    expect((await prisma.payout.findMany())[0]).toMatchObject({status:"PENDING",paypalBatchId:"BATCH-DEMO"});
+  });
+  it("rejects failed webhook signatures and processes an event only once",async()=>{
+    const alice=await login("webhook");
+    const payout=await prisma.payout.create({data:{playerId:alice.player.id,rungCents:10,amountCents:10,senderBatchId:"webhook-demo",paypalBatchId:"BATCH-HOOK",status:"PENDING"}});
+    const client:PayoutClient={create:vi.fn(),verify:vi.fn(async()=>false)};
+    const {createApp}=await import("../src/server.js");
+    const on=createApp({config:{...testConfig,payoutsEnabled:true},prisma,paypalClient,payoutClient:client});
+    const event={id:"EVENT-DEMO",event_type:"PAYMENT.PAYOUTSBATCH.SUCCESS",resource:{batch_header:{payout_batch_id:"BATCH-HOOK"}}};
+    await request(on).post("/api/paypal/webhook").send(event).expect(401);
+    vi.mocked(client.verify).mockResolvedValue(true);
+    await request(on).post("/api/paypal/webhook").send(event).expect(200);
+    await request(on).post("/api/paypal/webhook").send({...event,event_type:"PAYMENT.PAYOUTSBATCH.DENIED"}).expect(200);
+    expect((await prisma.payout.findUniqueOrThrow({where:{id:payout.id}})).status).toBe("SUCCESS");
+    const events=await prisma.$queryRaw<{count:bigint}[]>`SELECT count(*) AS count FROM webhook_events`;expect(Number(events[0].count)).toBe(1);
+    vi.mocked(client.verify).mockClear();
+    const off=createApp({config:{...testConfig,payoutsEnabled:false},prisma,paypalClient,payoutClient:client});
+    await request(off).post("/api/paypal/webhook").send(event).expect(503);expect(client.verify).not.toHaveBeenCalled();
   });
   it("rate limits writes per player and permits reads, other players, and later windows", async () => {
     const alice = await login("limit-alice");

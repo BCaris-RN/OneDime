@@ -7,6 +7,7 @@ import { Prisma, type PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import type { AuthedRequest } from "../auth/session.js";
 import { localDay } from "../game/rules.js";
+import { transactions } from "../paypal/routing.js";
 import { allRows } from "../ledger/router.js";
 import { tables, type TableKey } from "../ledger/catalog.js";
 import { summary } from "../ledger/summary.js";
@@ -66,7 +67,17 @@ export function createExportRouter(prisma: PrismaClient, now: () => Date) {
       }
       const summarySheet: ExportSheet = { name: "Summary", columns: ["app","month","earned_cents","paid_cents","pending_cents","fees_cents","expenses_cents","net_cents"], rows: totals };
       first.rows = first.rows.filter(row => inRange(String(row.worked_on)));
-      if (query.tab === "all") return [summarySheet, ...all];
+      if (query.tab === "all") {
+        const columns=["txn_id","occurred_on","payer","gross_cents","fee_cents","net_cents","currency","kind","routed_app","routed_record_type","routed_record_id"];
+        const payments=await transactions(tx,player.id);
+        const payouts=await tx.payout.findMany({where:{playerId:player.id}});
+        const quests=await tx.questProgress.findMany({where:{playerId:player.id}});
+        const claims=await tx.rungClaim.findMany({where:{playerId:player.id}});
+        return [summarySheet,...all,{name:"paypal_transactions",columns,rows:payments.filter(row=>inRange(row.occurred_on)).map(row=>Object.fromEntries(columns.map(key=>[key,(row as unknown as ExportRow)[key]??null])))},
+          {name:"payouts",columns:["rung_cents","amount_cents","status","sender_batch_id","paypal_batch_id"],rows:payouts.map(row=>({rung_cents:row.rungCents,amount_cents:row.amountCents,status:row.status,sender_batch_id:row.senderBatchId,paypal_batch_id:row.paypalBatchId}))},
+          {name:"quests",columns:["quest_id","completed_on"],rows:quests.filter(row=>inRange(localDay(row.completedAt,player.timeZone??"UTC"))).map(row=>({quest_id:row.questId,completed_on:localDay(row.completedAt,player.timeZone??"UTC")}))},
+          {name:"rung_claims",columns:["rung_cents","claimed_on"],rows:claims.filter(row=>inRange(localDay(row.claimedAt,player.timeZone??"UTC"))).map(row=>({rung_cents:row.rungCents,claimed_on:localDay(row.claimedAt,player.timeZone??"UTC")}))}];
+      }
       if (query.tab === "first") return [first];
       const expenses = all.find(sheet => sheet.name === "expenses")!;
       if (query.tab === "market") return [

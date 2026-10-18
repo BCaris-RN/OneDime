@@ -1,3 +1,6 @@
+//  (o) OneDime | prisma/schema.prisma
+//  ----------------------------------------------------------
+//  Identity and game models. Workspace SQL constraints live in migrations.
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,6 +14,7 @@ model Player {
   id           String          @id @default(uuid()) @db.Uuid
   paypalUserId String          @unique @map("paypal_user_id")
   displayName  String?         @map("display_name")
+  paypalVerified Boolean? @map("paypal_verified")
   email        String?
   createdAt    DateTime        @default(now()) @map("created_at")
   lastSeenAt   DateTime        @default(now()) @map("last_seen_at")
@@ -57,6 +61,7 @@ model LogEntry {
   minutes     Int
   workedOn    DateTime  @map("worked_on") @db.Date
   note        String?
+  verificationSource String? @map("verification_source")
   verified    Boolean   @default(false)
   createdAt   DateTime  @default(now()) @map("created_at")
   player      Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
@@ -106,6 +111,12 @@ model Payout {
   id            String   @id @default(uuid()) @db.Uuid
   playerId      String   @map("player_id") @db.Uuid
   rungCents     Int      @map("rung_cents")
+  recipientEmail String? @map("recipient_email")
+  senderBatchId String? @unique @map("sender_batch_id")
+  amountCents Int? @map("amount_cents")
+  attemptStartedAt DateTime? @map("attempt_started_at") @db.Timestamptz
+  firstAttemptAt DateTime? @map("first_attempt_at") @db.Timestamptz
+  lastAttemptAt DateTime? @map("last_attempt_at") @db.Timestamptz
   paypalBatchId String?  @map("paypal_batch_id")
   status        String
   createdAt     DateTime @default(now()) @map("created_at")
@@ -113,5 +124,6 @@ model Payout {
 
   @@index([playerId])
   @@index([rungCents])
+  @@unique([playerId, rungCents], map: "payouts_player_rung_key")
   @@map("payouts")
 }

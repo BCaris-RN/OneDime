@@ -83,3 +83,55 @@ Sources:
 - https://github.com/101arrowz/fflate
 - https://www.npmjs.com/package/write-excel-file
 - https://www.npmjs.com/package/fflate
+
+## M3: sandbox PayPal
+
+CSV imports accept the eight specified English columns and US or ISO dates, with
+512 KB / 1,000-row limits. Other columns are discarded before insertion. Incoming
+USD routing additionally requires an allowed payment type, positive gross, nonnegative
+net, and net = gross - absolute fee. Transfers, outgoing amounts and other currencies
+remain visible but cannot be counted. Transaction IDs deduplicate per player.
+
+The review queue creates a paid record or links an existing owned one. First Dime,
+Spotlight and delivery use the incoming net amount; freelance and selling preserve
+gross and fee separately. Linking never rewrites amounts; current mismatches are
+computed against net after platform fees (before supplier costs). Paid dates use the
+activity date. Fixed payer matches use exact normalized names, not substring matches.
+Only a matched First Dime platform and exact net amount set verified/source paypal_csv.
+CSV upload is player-provided evidence, not an authenticated PayPal transaction lookup;
+Help and the PayPal panel state that limitation.
+
+A unique record link prevents double-routing. Database deletion triggers clear the
+link and preserve imported activity. Badges show transaction IDs and mismatches;
+workspace strips show routed monthly net and review links. PayPal also shows totals
+by app and calendar month. Exports include activity, own quests/rungs and safe payout
+metadata; authentication/session secrets and payout recipient email are excluded.
+
+Rung claims create a unique payout outbox row in the same database transaction.
+The amount is floor(rung / 10), minimum 10 cents. The sandbox sender batch/item keys,
+amount and first-attempt recipient persist across retries, even after an email change.
+A worker retries pending work only when PAYOUTS_ENABLED=true locally. API failures
+leave retry state; concurrent workers claim a lease; attempts older than 29 days
+require manual review because PayPal's duplicate-batch window is 30 days. No browser
+endpoint can choose a payout, recipient or amount. Disabled flags perform no requests.
+No payout API call was made with real credentials; network behavior uses mocks.
+
+Webhook signatures use PayPal's server verification endpoint with the five transmission
+headers, configured webhook ID and original parsed event. Event IDs are deduplicated
+transactionally; only recognized event types update a tracked batch. Terminal success
+is preserved from stale processing/denied events, while returned/refunded states can
+update it. Sender batch IDs can reconcile events arriving before create responses.
+
+Login persists verified_account when returned; missing names no longer fall back to
+email as a public display name. The only activity link points to sandbox PayPal.
+146 tests passed at this checkpoint, build passed, audit clean. Browser CSV upload,
+confirmation, verified First Dime row and PayPal badge passed with fictional data;
+no console errors. Real sandbox login/Payouts/webhooks remain operator validation.
+
+Sources checked live:
+- https://developer.paypal.com/api/payments.payouts-batch/v1/payouts-post
+- https://developer.paypal.com/api/webhooks/v1/verify-webhook-signature-post
+- https://developer.paypal.com/log-in/references
+- https://developer.paypal.com/api/identity/v1/userinfo-get
+- https://csv.js.org/parse/options/
+- https://www.npmjs.com/package/csv-parse (7.0.3, MIT, audit clean)
