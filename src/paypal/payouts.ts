@@ -76,10 +76,16 @@ export function createPayoutService(
           ]
         });
         // A verified webhook can arrive before the create response; preserve its terminal result.
-        await prisma.payout.updateMany({
-          where: { id: row.id, status: "sending" },
-          data: { paypalBatchId: result.id, batchStatus: result.status, status: "PENDING" }
-        });
+        await prisma.$transaction([
+          prisma.payout.updateMany({
+            where: { id: row.id, OR: [{ batchStatus: null }, { batchStatus: { notIn: ["SUCCESS", "DENIED", "CANCELED"] } }] },
+            data: { paypalBatchId: result.id, batchStatus: result.status }
+          }),
+          prisma.payout.updateMany({
+            where: { id: row.id, status: "sending" },
+            data: { paypalBatchId: result.id, status: "PENDING" }
+          })
+        ]);
       } catch {
         await prisma.payout.updateMany({
           where: { id: row.id, status: "sending" },
