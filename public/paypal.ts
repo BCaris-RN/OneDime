@@ -258,7 +258,7 @@ function render() {
       node("span", `PayPal · ${money(total ?? 0)} routed here in ${payload.month}`),
       button(`Review ${payload.unrouted} unrouted`, () => {
         filter.value = app === "market" ? "market_delivery" : app;
-        showApp("paypal");
+        showApp("paypal", true);
         render();
       })
     );
@@ -299,7 +299,7 @@ function render() {
           `Paid via PayPal · ${p.routed_app}${p.mismatch ? " · Amount mismatch: your recorded amount was preserved." : ""}`
         ),
         button("Open workspace", () =>
-          showApp(p.routed_app!.startsWith("market_") ? "market" : p.routed_app!)
+          showApp(p.routed_app!.startsWith("market_") ? "market" : p.routed_app!, true)
         )
       );
     } else {

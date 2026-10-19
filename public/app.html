@@ -23,7 +23,7 @@
         <button type="button" class="text-button" id="logout">Log out</button>
       </div>
     </header>
-    <main class="shell" id="main"><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
+    <main class="shell" id="main" tabindex="-1"><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
 <div id="app-first" role="tabpanel" aria-labelledby="app-tab-first">
 
 
@@ -130,7 +130,7 @@
       <h2>Freelance: your client work</h2>
       <p class="muted">Projects you sell to clients on freelance marketplaces. Track what the client paid, what the platform kept, and when the money clears.</p>
     </div>
-    <dl class="stats" id="fiveStats" aria-label="Freelance this month"></dl>
+    <dl class="stats" id="fiveStats" aria-label="Freelance selected month"></dl>
 
     <section class="slip" aria-labelledby="jobTitle">
       <form id="jobForm">
@@ -151,7 +151,7 @@
     </section>
 
     <section class="slip" aria-labelledby="jPlatTitle">
-      <h2 id="jPlatTitle">By platform</h2>
+      <h2 id="jPlatTitle">By platform (all time)</h2>
       <p class="muted" style="margin-top:4px">Per hour uses what you keep after fees, on gigs with hours logged.</p>
       <div class="tablewrap" style="margin-top:10px"><table>
         <thead><tr><th>Platform</th><th class="r">Gigs</th><th class="r">Client paid</th><th class="r">Fees</th><th class="r">You keep</th><th class="r">Per hour</th></tr></thead>
@@ -162,7 +162,7 @@
     <section class="slip" aria-labelledby="jListTitle">
       <h2 id="jListTitle">Gigs</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
-        <thead><tr><th>Started</th><th>Client and project</th><th class="r">You keep</th><th class="r">Hours</th><th>Stage</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Started</th><th>Client and project</th><th class="r">You keep</th><th class="r">Hours</th><th>Stage</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="jBody"></tbody>
       </table></div>
       <p class="muted" style="margin-top:8px;font-size:.85rem">Stages: In progress, Delivered, Clearing (the platform is holding the money), Paid.</p>
@@ -177,7 +177,7 @@
   </nav>
 
   <section id="bal-drive" role="tabpanel" aria-labelledby="b-drive" style="display:grid;gap:18px">
-    <dl class="stats" id="driveStats" aria-label="Delivery and rides this month"></dl>
+    <dl class="stats" id="driveStats" aria-label="Delivery and rides selected month"></dl>
     <section class="slip" aria-labelledby="dTitle">
       <form id="driveForm">
         <h2 id="dTitle">Log a shift</h2>
@@ -194,7 +194,7 @@
       <p class="muted" style="margin-top:8px;font-size:.85rem">Log every mile. Business miles can usually be deducted at tax time, so they're worth keeping even on slow days.</p>
     </section>
     <section class="slip" aria-labelledby="dpTitle">
-      <h2 id="dpTitle">By platform</h2>
+      <h2 id="dpTitle">By platform (all time)</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
         <thead><tr><th>Platform</th><th class="r">Shifts</th><th class="r">Earned</th><th class="r">Per hour</th><th class="r">Per mile</th></tr></thead>
         <tbody id="dPlatBody"></tbody>
@@ -203,14 +203,14 @@
     <section class="slip" aria-labelledby="dlTitle">
       <h2 id="dlTitle">Shifts</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
-        <thead><tr><th>Date</th><th>Platform</th><th class="r">Pay</th><th class="r">Tips</th><th class="r">Hours</th><th class="r">Miles</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Date</th><th>Platform</th><th class="r">Pay</th><th class="r">Tips</th><th class="r">Hours</th><th class="r">Miles</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="dBody"></tbody>
       </table></div>
     </section>
   </section>
 
   <section id="bal-sell" role="tabpanel" aria-labelledby="b-sell" class="hide" style="display:grid;gap:18px">
-    <dl class="stats" id="sellStats" aria-label="Selling this month"></dl>
+    <dl class="stats" id="sellStats" aria-label="Selling selected month"></dl>
     <section class="slip" aria-labelledby="slTitle">
       <form id="sellForm">
         <h2 id="slTitle">Log a sale</h2>
@@ -230,7 +230,7 @@
       <p class="muted" style="margin-top:8px;font-size:.85rem">Log each sale under the store where the buyer paid. If it sold on your Printify Shop (Printify's free Pop-Up Store), pick that as the store. If Printify or Ninja Transfers made an item you sold somewhere else, pick them under Made by and put their charge in Item cost.</p>
     </section>
     <section class="slip" aria-labelledby="spTitle">
-      <h2 id="spTitle">By store</h2>
+      <h2 id="spTitle">By store (all time)</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
         <thead><tr><th>Store</th><th class="r">Sales</th><th class="r">Revenue</th><th class="r">Fees</th><th class="r">Profit</th><th class="r">Margin</th></tr></thead>
         <tbody id="sPlatBody2"></tbody>
@@ -239,7 +239,7 @@
     <section class="slip" aria-labelledby="ssTitle">
       <h2 id="ssTitle">Sales</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
-        <thead><tr><th>Date</th><th>Item</th><th class="r">Price</th><th class="r">Profit</th><th>Status</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Date</th><th>Item</th><th class="r">Price</th><th class="r">Profit</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="xBody"></tbody>
       </table></div>
     </section>
@@ -252,7 +252,7 @@
       <h2>Spotlight: your creator income</h2>
       <p class="muted">Money that comes from your own audience on YouTube, TikTok, Instagram and Facebook. Starter gigs like SideShift stay in First Dime, so nothing is counted twice.</p>
     </div>
-    <dl class="stats" id="sasuStats" aria-label="Spotlight this month"></dl>
+    <dl class="stats" id="sasuStats" aria-label="Spotlight selected month"></dl>
 
     <section class="slip" aria-labelledby="sStreamTitle">
       <form id="sStreamForm">
@@ -271,7 +271,7 @@
     </section>
 
     <section class="slip" aria-labelledby="sPlatTitle">
-      <h2 id="sPlatTitle">By platform</h2>
+      <h2 id="sPlatTitle">By platform (all time)</h2>
       <p class="muted" style="margin-top:4px">Per hour counts only income with content time logged.</p>
       <div class="tablewrap" style="margin-top:10px"><table>
         <thead><tr><th>Platform</th><th class="r">Earned</th><th class="r">Paid</th><th class="r">Pending</th><th class="r">Per hour</th></tr></thead>
@@ -282,7 +282,7 @@
     <section class="slip" aria-labelledby="sIncTitle">
       <h2 id="sIncTitle">Income</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
-        <thead><tr><th>Earned</th><th>Platform</th><th>Stream</th><th class="r">Amount</th><th>Status</th><th>Note</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Earned</th><th>Platform</th><th>Stream</th><th class="r">Amount</th><th>Status</th><th>Note</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="sIncBody"></tbody>
       </table></div>
     </section>
@@ -300,7 +300,7 @@
         <div class="btns"><button class="act" type="submit">Add deal</button></div>
       </form>
       <div class="tablewrap" style="margin-top:14px"><table>
-        <thead><tr><th>Brand</th><th>Deliverables</th><th class="r">Agreed</th><th>Due</th><th>Stage</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Brand</th><th>Deliverables</th><th class="r">Agreed</th><th>Due</th><th>Stage</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="sDealBody"></tbody>
       </table></div>
       <p class="muted" style="margin-top:8px;font-size:.85rem">Marking a deal Paid adds it to your income automatically.</p>
@@ -317,7 +317,7 @@
         <div class="btns"><button class="act" type="submit">Add expense</button></div>
       </form>
       <div class="tablewrap" style="margin-top:14px"><table>
-        <thead><tr><th>Date</th><th>Item</th><th class="r">Amount</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Date</th><th>Item</th><th class="r">Amount</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="sExpBody"></tbody>
       </table></div>
       <p class="muted" style="margin-top:8px;font-size:.85rem">Creator income is usually self-employment income. Set part of every payout aside for taxes, and share your totals with a tax preparer.</p>

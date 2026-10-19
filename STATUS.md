@@ -8,11 +8,23 @@ Phase 3 merged as PR #4. Phase 4 follows `handoffs/week4-playtest.md`.
 | --- | --- | --- |
 | P1 payout review fixes | Complete | b32fdd4; build/178 tests passed; CI green 39214704838 and 39214736585 |
 | P2 free on-device suggestions | Complete | 291a91c; 41.3 MB local model/runtime; build/170 tests/browser passed; CI green 39215863437 and 39215869049 |
-| P3 missing pieces | Implemented | Overview/months/platforms/Help/policies/deletion/callback; build/177 tests/browser checks passed; next P4 |
-| P4 accessibility/play-test | Pending | Keyboard, captions, focus, 320/390px and dark mode |
+| P3 missing pieces | Complete | 053a84d; build/177 tests/browser passed; CI green 39217131318 and 39217135956 |
+| P4 accessibility/play-test | Implemented | Build/179 tests/audit passed; 3,912 browser Tab steps, arrows, labels/captions, 320/390px and both themes; final CI pending |
 
 Checkpoint commit and exact-head CI links are tracked in the Phase 4 draft PR.
 No merge, deploy, public visibility change, live PayPal or payout enablement.
+
+P4 also preserves early batch webhooks against late create responses (6a4e011),
+with SUCCESS/DENIED regressions. The browser checks every app and sub-tab, visible
+focus above phone controls, persisted free suggestions and cache, public policies
+and typed account deletion. Twenty-four P4 screenshots contain fictional data only.
+Final source review found no remaining blocker. No Brandon play-test notes were
+present in this file or PR #5 when checked. Next: exact-head CI, ready for review.
+
+Remaining operator checks: physical phone inference speed/screen-reader testing,
+real sandbox connectivity, draft policy contact/jurisdiction/backup review and
+zero-cost hosting. Existing prepared Render starter plans are not approved hosting.
+Root LICENSE is unchanged. Reviewer/Brandon merge gates remain outstanding.
 
 ## Phase 3 checkpoint history
 

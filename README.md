@@ -79,7 +79,7 @@ Coverage includes ownership, input/origin/rate checks, game math and clock races
 brand-deal payment concurrency, ledger calculations, exports/formula protection,
 CSV privacy and re-imports, routing/unlink behavior, payout idempotency and webhook
 failures/deduplication, device confidence/privacy/cache/preferences, and repeatable fake seed data.
-Exact checkpoint SHAs, test counts and CI evidence are in `STATUS.md` and PR #4.
+Exact checkpoint SHAs, test counts and CI evidence are in `STATUS.md` and PR #5.
 
 ## Pick one workspace for each payment
 
@@ -96,6 +96,9 @@ you out. Tests check every owned table and preserve another player's records.
 
 For the browser privacy/cache check, install Chromium with `npx playwright install chromium`,
 then run `npm run test:browser`. CI also runs this check. Screenshots use fictional data.
+It checks every app and sub-tab at 320px and 390px in both themes, keyboard tab/arrow
+navigation, visible focus above the phone controls, table captions and input labels.
+I use wider date fields and a single form column at 320px so native dates stay readable.
 
 - **First Dime:** starter gigs and everything that does not fit below, including SideShift.
 - **Spotlight:** income that needs an audience: creator streams and brand deals, plus expenses.
@@ -239,8 +242,9 @@ Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not l
 
 ## Review and deployment boundaries
 
-`render.yaml` is preparation only. Its starter-plan setting is a placeholder for Brandon's
-hosting choice; no Render resources were created or deployed. Payouts, Google Sheets and
+`render.yaml` is preparation only. Its existing starter plans are not an approved zero-cost
+hosting choice and must be revisited before deployment; no resources were created or deployed.
+Phase 4 removes paid inference dependencies; free hosting remains unresolved. Payouts, Google Sheets and
 seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
 Brandon accepted clean rewritten main `9953600` and owns GitHub Support cleanup of old PR refs.
 Do not merge old pre-cleanup history into this branch. The repository license is recorded in LICENSE.

@@ -110,3 +110,38 @@ account deletion. Provider connectivity and physical phone speed remain manual.
 Sources checked Oct 18, 2026:
 - https://developer.paypal.com/log-in/references
 - https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/individual-rights/the-right-to-be-informed/what-privacy-information-should-we-provide/
+
+## P4: keyboard and phone polish
+
+Tables have captions, scoped column headings, named keyboard-focusable scroll regions,
+and contextual row actions. Region names follow refreshed month captions. Cancel edit
+appears only during editing; resetting returns focus to the form. Rerendered rows restore
+the selected action where possible. Export date filters stay blank until chosen instead
+of inheriting the work-entry date. All-time platform and paid-hour scopes are explicit.
+
+Keyboard focus uses a visible outline, including native date segments, and scrolls
+above the fixed phone controls. Tall regions align their start in the usable viewport.
+Positioned table wrappers contain the absolute screen-reader header text, which otherwise
+expanded the document beyond 320px. Native date fields get a full row on phones; forms
+use one column at 320px. Dark/light ghost buttons, LCD labels and placeholders have
+stronger contrast. The existing named D-pad/A/B controls are retained and asserted.
+
+Final review also found a late create response could overwrite an early terminal batch
+webhook. Commit 6a4e011 reconciles batch and item states separately inside a transaction;
+two new regressions deliver SUCCESS/DENIED before the create response. The full suite
+now has 179 passing tests.
+
+No Brandon play-test notes were present in STATUS.md or PR #5 when checked. Screenshots
+use the disposable fictional demo and synthetic payments, with no real identity or
+third-party logos. Physical screen-reader/mobile device testing remains manual; browser
+emulation does not establish device inference speed. Draft policies need operator review.
+The existing prepared Render starter plans are not a zero-cost hosting decision and must
+be revisited before any separately approved deployment. No resources were provisioned.
+
+Local final validation: build, 179 unit/integration tests and zero-vulnerability full
+npm audit pass. Real Chromium passes 3,912 Tab steps plus Home/End/arrow activation,
+visible focus, labels/captions, every sub-tab, 320/390px and light/dark modes. It also
+passes month-region naming, local inference/no payer requests/cached reload, public
+policy pages and typed deletion. The 24 p4-* screenshots include all five apps plus
+Market selling in every width/theme combination. This is keyboard/browser evidence,
+not a claim of a full physical-device or screen-reader conformance audit.

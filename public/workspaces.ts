@@ -358,6 +358,7 @@ for (const [app, parent] of [
   });
 }
 const edits = new Map<string, string>();
+const cancelButtons = new Map<string, HTMLButtonElement>();
 let loading = false;
 async function run(task: () => Promise<void>) {
   if (loading) return;
@@ -380,6 +381,7 @@ async function run(task: () => Promise<void>) {
 }
 function edit(f: Form, row: LedgerRow) {
   edits.set(f.id, row.id);
+  cancelButtons.get(f.id)!.hidden = false;
   for (const [field, id, scale] of f.fields)
     control(id).value = scale ? String(num(row, field) / scale) : String(row[field] ?? "");
   el(f.id).querySelector<HTMLButtonElement>("button[type=submit],button:not([type])")!.textContent =
@@ -389,6 +391,7 @@ function edit(f: Form, row: LedgerRow) {
 }
 function reset(f: Form) {
   edits.delete(f.id);
+  cancelButtons.get(f.id)!.hidden = true;
   el<HTMLFormElement>(f.id).reset();
   el(f.id).querySelector<HTMLButtonElement>("button[type=submit],button:not([type])")!.textContent =
     f.id.includes("expense") || f.id === "sExpForm"
@@ -403,9 +406,18 @@ function reset(f: Form) {
               ? "Log sale"
               : "Add gig";
   dates();
+  control(f.fields[0][1]).focus();
 }
 function renderRows(f: Form, rows: LedgerRow[]) {
   const tbody = el(f.body);
+  const active=document.activeElement as HTMLElement|null;
+  const focus=active&&tbody.contains(active)?{id:active.closest<HTMLElement>("[data-record-id]")?.dataset.recordId,action:active.dataset.action}:null;
+  const restoreFocus=()=>{
+    if(!focus)return;
+    const target=tbody.querySelector<HTMLElement>(`[data-record-id="${focus.id}"] [data-action="${focus.action}"]`)
+      ??tbody.querySelector<HTMLElement>("button,select")??control(f.fields[0][1]);
+    target.focus();
+  };
   tbody.replaceChildren();
   const app = f.id.startsWith("expense-")
     ? f.id.slice(8)
@@ -420,6 +432,7 @@ function renderRows(f: Form, rows: LedgerRow[]) {
     td.className = "empty";
     tr.append(td);
     tbody.append(tr);
+    restoreFocus();
     return;
   }
   for (const row of rows) {
@@ -440,6 +453,7 @@ function renderRows(f: Form, rows: LedgerRow[]) {
       if (col === "stage" && f.stage) {
         const select = node("select");
         select.setAttribute("aria-label", `Stage for ${row.project ?? row.brand}`);
+        select.dataset.action = "stage";
         for (const stage of f.stage) select.append(node("option", stage));
         select.value = String(row.stage);
         select.addEventListener(
@@ -479,9 +493,15 @@ function renderRows(f: Form, rows: LedgerRow[]) {
             })
         )
       );
+    const description=`${row.project??row.brand??row.item??row.platform??row.store??"entry"} ${row.started_on??row.earned_on??row.worked_on??row.sold_on??row.spent_on??""}`.trim();
+    for(const action of actions.querySelectorAll("button")) {
+      action.dataset.action=action.textContent!;
+      action.setAttribute("aria-label",`${action.textContent} ${description}`);
+    }
     tr.append(actions);
     tbody.append(tr);
   }
+  restoreFocus();
 }
 function stats(id: string, items: [string, string][]) {
   el(id).replaceChildren(
@@ -517,8 +537,8 @@ function platforms(
 }
 let today = "";
 function dates() {
-  for (const i of document.querySelectorAll<HTMLInputElement>('input[type="date"]'))
-    if (!i.value && i.id !== "dDue") i.value = today;
+  for(const f of forms)for(const [field,id] of f.fields)
+    if(field.endsWith("_on")&&field!=="due_on"&&!control(id).value)control(id).value=today;
 }
 let refreshSequence = 0;
 async function refresh() {
@@ -560,7 +580,7 @@ async function refresh() {
     ["Fees selected month", usd(b.paidFeesCents)],
     ["Clearing (all time)", usd(b.clearingCents)],
     ["In progress (all time)", usd(b.openCents)],
-    ["Per hour (paid)", usd(b.perHourCents)],
+    ["Per hour (paid, all time)", usd(b.perHourCents)],
     ["Expenses selected month", usd(b.expensesCents)]
   ]);
   stats("driveStats", [
@@ -613,7 +633,7 @@ async function refresh() {
   document.dispatchEvent(new Event("onedime:rendered"));
 }
 for (const f of forms) {
-  el(f.id).append(button("Cancel edit", () => reset(f)));
+  const cancel=button("Cancel edit", () => reset(f));cancel.hidden=true;cancelButtons.set(f.id,cancel);el(f.id).append(cancel);
   el(f.id).addEventListener("submit", (event) => {
     event.preventDefault();
     void run(async () => {
