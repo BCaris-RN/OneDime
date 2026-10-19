@@ -1,6 +1,20 @@
 # OneDime status
 
-Updated Oct 17, 2026 (Hawaii). Branch: `week3-onedime-app`, base `9953600`.
+Updated Oct 18, 2026 (Hawaii). Branch: `week4-playtest`, base `423c33d`.
+
+Phase 3 merged as PR #4. Phase 4 follows `handoffs/week4-playtest.md`.
+
+| Phase 4 checkpoint | State | Validation / next |
+| --- | --- | --- |
+| P1 payout review fixes | Implemented | Separate batch/item status; BLOCKED/HELD; build and 178 tests passed; CI in draft PR; next P2 |
+| P2 free on-device suggestions | Evaluation running | Small MIT classifier shortlisted; no paid API use |
+| P3 missing pieces | Pending | Overview, month pickers, platforms, Help/policies/deletion/local callback |
+| P4 accessibility/play-test | Pending | Keyboard, captions, focus, 320/390px and dark mode |
+
+Checkpoint commit and exact-head CI links are tracked in the Phase 4 draft PR.
+No merge, deploy, public visibility change, live PayPal or payout enablement.
+
+## Phase 3 checkpoint history
 
 | Milestone | Implementation commit | Validation | Next |
 | --- | --- | --- | --- |

@@ -1568,10 +1568,8 @@ describe("Phase 2 game API", () => {
       .post("/api/paypal/webhook")
       .send({ ...event, event_type: "PAYMENT.PAYOUTSBATCH.DENIED" })
       .expect(200);
-    expect(
-      (await prisma.payout.findUniqueOrThrow({ where: { id: payout.id } }))
-        .status,
-    ).toBe("SUCCESS");
+    expect(await prisma.payout.findUniqueOrThrow({ where: { id: payout.id } }))
+      .toMatchObject({ status: "PENDING", batchStatus: "SUCCESS" });
     const events = await prisma.$queryRaw<
       { count: bigint }[]
     >`SELECT count(*) AS count FROM webhook_events`;
@@ -1586,6 +1584,37 @@ describe("Phase 2 game API", () => {
     await request(off).post("/api/paypal/webhook").send(event).expect(503);
     expect(client.verify).not.toHaveBeenCalled();
   });
+  it("keeps the item pending when create reports a completed batch", async () => {
+    const alice = await login("created-batch-success");
+    const payout = await prisma.payout.create({data:{playerId:alice.player.id,rungCents:10,
+      amountCents:10,status:"ready",senderBatchId:"created-batch",recipientEmail:"fake@example.test"}});
+    const client:PayoutClient={create:vi.fn(async()=>({id:"CREATED-BATCH",status:"SUCCESS"})),verify:vi.fn()};
+    await createPayoutService(prisma,{...testConfig,payoutsEnabled:true},client,()=>gameNow)(alice.player.id);
+    expect(await prisma.payout.findUniqueOrThrow({where:{id:payout.id}}))
+      .toMatchObject({status:"PENDING",batchStatus:"SUCCESS"});
+  });
+  it.each(["FAILED", "DENIED", "CANCELED", "BLOCKED", "HELD"])(
+    "applies item %s after batch success and exposes the owned item state", async (status) => {
+      const alice = await login("item-status");
+      const bob = await login("other-item-status");
+      const payout = await prisma.payout.create({data:{playerId:alice.player.id,
+        rungCents:10,amountCents:10,status:"PENDING",paypalBatchId:"BATCH-STATUS"}});
+      const { createApp } = await import("../src/server.js");
+      const on = createApp({config:{...testConfig,payoutsEnabled:true},prisma,paypalClient,
+        payoutClient:{create:vi.fn(),verify:vi.fn(async()=>true)}});
+      const send = (id:string,type:string) => request(on).post("/api/paypal/webhook").send({
+        id,event_type:type,resource:{payout_batch_id:"BATCH-STATUS",payout_item:{sender_item_id:payout.id}}});
+      await send("BATCH-DONE","PAYMENT.PAYOUTSBATCH.SUCCESS").expect(200);
+      expect((await prisma.payout.findUniqueOrThrow({where:{id:payout.id}})).status).toBe("PENDING");
+      await send("ITEM-STATE",`PAYMENT.PAYOUTS-ITEM.${status}`).expect(200);
+      expect((await activity(alice.cookie)).body.payouts[0]).toMatchObject({status,batchStatus:"SUCCESS"});
+      expect((await activity(bob.cookie)).body.payouts).toEqual([]);
+      await send("ITEM-STATE","PAYMENT.PAYOUTS-ITEM.SUCCEEDED").expect(200);
+      expect((await prisma.payout.findUniqueOrThrow({where:{id:payout.id}})).status).toBe(status);
+      await send("LATER-SUCCESS","PAYMENT.PAYOUTS-ITEM.SUCCEEDED").expect(200);
+      expect((await prisma.payout.findUniqueOrThrow({where:{id:payout.id}})).status)
+        .toBe(status==="HELD"?"SUCCESS":status);
+    });
   it("batches private payer-only AI inputs, caches per player and suppresses low confidence", async () => {
     const alice = await login("ai-alice"),
       bob = await login("ai-bob");

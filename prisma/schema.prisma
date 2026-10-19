@@ -118,6 +118,7 @@ model Payout {
   firstAttemptAt DateTime? @map("first_attempt_at") @db.Timestamptz
   lastAttemptAt DateTime? @map("last_attempt_at") @db.Timestamptz
   paypalBatchId String?  @map("paypal_batch_id")
+  batchStatus   String?  @map("batch_status")
   status        String
   createdAt     DateTime @default(now()) @map("created_at")
   player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)

@@ -50,6 +50,10 @@ export function createActivityRouter(
       })
     );
     res.json({
+      payouts: await prisma.payout.findMany({
+        where: { playerId: player.id }, orderBy: { createdAt: "desc" },
+        select: { id: true, rungCents: true, amountCents: true, status: true, batchStatus: true }
+      }),
       totalsByMonth: Object.fromEntries(
         [...new Set(rows.filter((row) => row.routed_app).map((row) => row.occurred_on.slice(0, 7)))]
           .sort()
