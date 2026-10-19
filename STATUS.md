@@ -9,9 +9,9 @@ Phase 3 merged as PR #4. Phase 4 follows `handoffs/week4-playtest.md`.
 | P1 payout review fixes | Complete | b32fdd4; build/178 tests passed; CI green 39214704838 and 39214736585 |
 | P2 free on-device suggestions | Complete | 291a91c; 41.3 MB local model/runtime; build/170 tests/browser passed; CI green 39215863437 and 39215869049 |
 | P3 missing pieces | Complete | 053a84d; build/177 tests/browser passed; CI green 39217131318 and 39217135956 |
-| P4 accessibility/play-test | Implemented | Build/179 tests/audit passed; 3,912 browser Tab steps, arrows, labels/captions, 320/390px and both themes; final CI pending |
+| P4 accessibility/play-test | Complete | 6d24c54; build/179 tests/audit passed; 3,912 browser Tab steps, arrows, labels/captions, 320/390px and both themes; CI green 39219251774 and 39219258008 |
 
-Checkpoint commit and exact-head CI links are tracked in the Phase 4 draft PR.
+Checkpoint commits and exact-head CI links are tracked in PR #5.
 No merge, deploy, public visibility change, live PayPal or payout enablement.
 
 P4 also preserves early batch webhooks against late create responses (6a4e011),
@@ -19,7 +19,14 @@ with SUCCESS/DENIED regressions. The browser checks every app and sub-tab, visib
 focus above phone controls, persisted free suggestions and cache, public policies
 and typed account deletion. Twenty-four P4 screenshots contain fictional data only.
 Final source review found no remaining blocker. No Brandon play-test notes were
-present in this file or PR #5 when checked. Next: exact-head CI, ready for review.
+present in this file or PR #5 when checked.
+
+P4 implementation head: `6d24c54d5652d4fd13caedf58500275a5a940d0c`.
+Both [push CI](https://github.com/BCaris-RN/OneDime/actions/runs/39219251774) and
+[PR CI](https://github.com/BCaris-RN/OneDime/actions/runs/39219258008) passed on that
+exact head, including the browser checks. This documentation checkpoint follows
+that verified implementation. Final documentation-head CI is linked in PR #5.
+Next: reviewer play-test and Brandon's separate merge decision. Do not merge.
 
 Remaining operator checks: physical phone inference speed/screen-reader testing,
 real sandbox connectivity, draft policy contact/jurisdiction/backup review and
