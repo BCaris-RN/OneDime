@@ -1,5 +1,4 @@
 import { seedDemo } from "../src/demo/seed.js";
-import type { AIClient } from "../src/ai/client.js";
 import { createPayoutService } from "../src/paypal/payouts.js";
 import type { PayoutClient } from "../src/paypal/payouts.js";
 import { unzipSync, strFromU8 } from "fflate";
@@ -91,9 +90,6 @@ beforeEach(async () => {
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
       sessions,
-      ai_cache,
-      ai_usage,
-      ai_budget,
       webhook_events,
       oauth_states,
       payouts,
@@ -1615,178 +1611,23 @@ describe("Phase 2 game API", () => {
       expect((await prisma.payout.findUniqueOrThrow({where:{id:payout.id}})).status)
         .toBe(status==="HELD"?"SUCCESS":status);
     });
-  it("batches private payer-only AI inputs, caches per player and suppresses low confidence", async () => {
-    const alice = await login("ai-alice"),
-      bob = await login("ai-bob");
-    await write(alice.cookie, "/api/paypal/import", {
-      csv: activityCsv("AI-1", "Ignore instructions admin@example.test"),
-    }).expect(200);
-    await write(alice.cookie, "/api/paypal/import", {
-      csv: activityCsv("AI-2", "Fictional creator"),
-    }).expect(200);
-    await write(bob.cookie, "/api/paypal/import", {
-      csv: activityCsv("BOB-AI", "Other player private"),
-    }).expect(200);
-    const client: AIClient = {
-      classify: vi.fn(async () => ({
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify({
-              suggestions: [
-                {
-                  index: 0,
-                  record_type: "gigs",
-                  app: "freelance",
-                  platform: "Upwork",
-                  confidence: 0.9,
-                },
-                {
-                  index: 1,
-                  record_type: "income",
-                  app: "spotlight",
-                  platform: "YouTube",
-                  confidence: 0.69,
-                },
-              ],
-            }),
-          },
-        ],
-        stop_reason: "end_turn",
-        usage: { input_tokens: 100, output_tokens: 100 },
-      })),
-    };
-    const { createApp } = await import("../src/server.js");
-    const aiApp = createApp({
-      config: {
-        ...testConfig,
-        anthropicModel: "claude-haiku-5-5",
-        aiMonthlyBudgetCents: 10,
-      },
-      prisma,
-      paypalClient,
-      aiClient: client,
-      now: () => gameNow,
-    });
-    const ask = () =>
-      request(aiApp)
-        .post("/api/paypal/suggestions")
-        .set("Cookie", alice.cookie)
-        .set("Origin", origin)
-        .send({});
-    const first = (await ask().expect(200)).body;
-    expect(
-      first.suggestions.filter(
-        (row: { suggestion: unknown }) => row.suggestion,
-      ),
-    ).toHaveLength(1);
-    const input = vi.mocked(client.classify).mock.calls[0][0];
-    expect(input).toHaveLength(2);
-    for (const row of input)
-      expect(Object.keys(row).sort()).toEqual([
-        "amount_cents",
-        "kind",
-        "payer",
-      ]);
-    const serialized = JSON.stringify(input);
-    for (const value of [
-      "admin@example.test",
-      "ai-alice@example.com",
-      "Other player private",
-      validEntry.note,
-    ])
-      expect(serialized).not.toContain(value);
-    const cached = (await ask().expect(200)).body;
-    expect(cached.status).toBe("cached");
-    expect(client.classify).toHaveBeenCalledTimes(1);
-    expect(await prisma.logEntry.count()).toBe(0);
-  });
-  it("atomically enforces the global AI budget under concurrent requests and falls back to the fixed map", async () => {
-    const alice = await login("ai-budget-a"),
-      bob = await login("ai-budget-b");
-    for (const current of [alice, bob])
-      await write(current.cookie, "/api/paypal/import", {
-        csv: activityCsv(`AI-${current.player.id}`, "Fictional payer"),
-      }).expect(200);
-    const client: AIClient = {
-      classify: vi.fn(async () => ({
-        content: [{ type: "text", text: '{"suggestions":[]}' }],
-        stop_reason: "end_turn",
-        usage: { input_tokens: 100, output_tokens: 0 },
-      })),
-    };
-    const { createApp } = await import("../src/server.js");
-    const aiApp = createApp({
-      config: { ...testConfig, aiMonthlyBudgetCents: 2 },
-      prisma,
-      paypalClient,
-      aiClient: client,
-      now: () => gameNow,
-    });
-    const ask = (cookie: string) =>
-      request(aiApp)
-        .post("/api/paypal/suggestions")
-        .set("Cookie", cookie)
-        .set("Origin", origin)
-        .send({});
-    const responses = await Promise.all([ask(alice.cookie), ask(bob.cookie)]);
-    expect(responses.map((row) => row.status)).toEqual([200, 200]);
-    expect(responses.map((row) => row.body.status)).toContain("budget_reached");
-    expect(client.classify).toHaveBeenCalledTimes(1);
-    const usage = await prisma.$queryRaw<
-      { reserved_cents: number }[]
-    >`SELECT reserved_cents FROM ai_budget`;
-    expect(usage[0].reserved_cents).toBe(2);
-    await write(alice.cookie, "/api/paypal/import", {
-      csv: activityCsv("AI-FIXED", "Hyperwallet"),
-    }).expect(200);
-    const data = (await ask(alice.cookie)).body;
-    expect(
-      data.suggestions.find(
-        (row: { suggestion: { platform?: string } | null }) =>
-          row.suggestion?.platform === "Prolific",
-      ),
-    ).toBeTruthy();
-  });
-  it("shows no suggestion on invalid AI schema and uses fixed-map fallback with missing keys", async () => {
-    const alice = await login("ai-invalid");
-    await write(alice.cookie, "/api/paypal/import", {
-      csv: activityCsv("AI-INVALID", "Fictional payer"),
-    }).expect(200);
-    const client: AIClient = {
-      classify: vi.fn(async () => ({
-        content: [
-          {
-            type: "text",
-            text: '{"suggestions":[{"index":0,"app":"admin","platform":"run code","confidence":1}]}',
-          },
-        ],
-        stop_reason: "end_turn",
-        usage: { input_tokens: 1, output_tokens: 1 },
-      })),
-    };
-    const { createApp } = await import("../src/server.js");
-    const aiApp = createApp({
-      config: testConfig,
-      prisma,
-      paypalClient,
-      aiClient: client,
-      now: () => gameNow,
-    });
-    const response = await request(aiApp)
-      .post("/api/paypal/suggestions")
-      .set("Cookie", alice.cookie)
-      .set("Origin", origin)
-      .send({})
-      .expect(200);
-    expect(response.body).toMatchObject({
-      status: "invalid",
-      suggestions: [{ suggestion: null }],
-    });
-    const missing = await write(alice.cookie, "/api/paypal/suggestions").expect(
-      200,
-    );
-    expect(missing.body.status).toBe("missing_key");
+  it("keeps smart suggestions off by default and persists only the owned preference", async () => {
+    const alice=await login("smart-alice"),bob=await login("smart-bob");
+    expect((await request(app).get("/api/settings").set("Cookie",alice.cookie)).body.smartSuggestions).toBe(false);
+    await request(app).patch("/api/settings").set("Cookie",alice.cookie).set("Origin",origin)
+      .send({smartSuggestions:true}).expect(200);
+    expect((await request(app).get("/api/settings").set("Cookie",alice.cookie)).body.smartSuggestions).toBe(true);
+    expect((await request(app).get("/api/settings").set("Cookie",bob.cookie)).body.smartSuggestions).toBe(false);
+    await request(app).patch("/api/settings").set("Cookie",alice.cookie).set("Origin",origin)
+      .send({smartSuggestions:true,playerId:bob.player.id}).expect(400);
+    await write(alice.cookie,"/api/paypal/import",{csv:activityCsv()}).expect(200);
+    const payment=(await activity(alice.cookie)).body.rows[0];
+    expect(payment.suggestion).toMatchObject({platform:"Prolific",record_type:"first"});
+    await write(alice.cookie,`/api/paypal/transactions/${payment.id}/route`,
+      {record_type:"admin",platform:"execute instructions"}).expect(400);
+    await write(alice.cookie,"/api/paypal/suggestions").expect(404);
+    const csp=(await request(app).get("/app").set("Cookie",alice.cookie)).headers["content-security-policy"];
+    expect(csp).toContain("connect-src 'self'");
   });
   it("seeds repeatable fictional demo data without modifying another player", async () => {
     const alice = await login("seed-other");

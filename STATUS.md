@@ -6,8 +6,8 @@ Phase 3 merged as PR #4. Phase 4 follows `handoffs/week4-playtest.md`.
 
 | Phase 4 checkpoint | State | Validation / next |
 | --- | --- | --- |
-| P1 payout review fixes | Implemented | Separate batch/item status; BLOCKED/HELD; build and 178 tests passed; CI in draft PR; next P2 |
-| P2 free on-device suggestions | Evaluation running | Small MIT classifier shortlisted; no paid API use |
+| P1 payout review fixes | Complete | b32fdd4; build/178 tests passed; CI green 39214704838 and 39214736585 |
+| P2 free on-device suggestions | Implemented | 41.3 MB local model/runtime; build/170 tests/browser privacy+cached reload passed; next P3 |
 | P3 missing pieces | Pending | Overview, month pickers, platforms, Help/policies/deletion/local callback |
 | P4 accessibility/play-test | Pending | Keyboard, captions, focus, 320/390px and dark mode |
 
@@ -38,8 +38,7 @@ History cleanup on main is accepted by Brandon; retained GitHub PR refs are his 
 No merge, deploy, live PayPal, public visibility or real credential use in Phase 3.
 Missing keys will use mocks. Defaults: file exports only; payouts off; no XP for other tabs.
 Open decisions: payout enablement, Google Sheets stretch, license, hosting and real sandbox keys.
-Model claude-haiku-5-5, structured output API and pricing checked live at M4.
-No real provider keys used; operator must validate real sandbox/AI connectivity.
+No real provider keys used; operator must validate real sandbox connectivity.
 Interactive Excel/Sheets import remains an operator check; file structures/downloads are tested.
 Development-only Testcontainers/archiver emits a glob 10.5.0 deprecation warning; audit is clean.
 Run `npm run demo` with Node 24 and Docker for a disposable fictional local demo.

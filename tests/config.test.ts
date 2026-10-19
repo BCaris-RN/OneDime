@@ -4,9 +4,7 @@ const fixture = { SESSION_SECRET: "fixture-session-value-at-least-32-characters"
 describe("configuration boundaries", () => {
   it("keeps payout network calls disabled by default", () => {
     expect(loadConfig(fixture)).toMatchObject({
-      payoutsEnabled: false,
-      anthropicModel: "claude-haiku-5-5",
-      aiMonthlyBudgetCents: 100
+      payoutsEnabled: false
     });
   });
   it("rejects non-sandbox environments and alternate provider endpoints", () => {
@@ -19,8 +17,5 @@ describe("configuration boundaries", () => {
       loadConfig({ ...fixture, NODE_ENV: "production", PAYOUTS_ENABLED: "true" })
     ).toThrow();
     expect(() => loadConfig({ ...fixture, GOOGLE_SHEETS_ENABLED: "true" })).toThrow();
-  });
-  it.each(["-1", "1.5", "NaN", "1000001"])("rejects an invalid AI budget %s", (budget) => {
-    expect(() => loadConfig({ ...fixture, AI_MONTHLY_BUDGET_CENTS: budget })).toThrow();
   });
 });

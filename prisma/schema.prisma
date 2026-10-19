@@ -11,6 +11,7 @@ datasource db {
 }
 
 model Player {
+  smartSuggestions Boolean @default(false) @map("smart_suggestions")
   id           String          @id @default(uuid()) @db.Uuid
   paypalUserId String          @unique @map("paypal_user_id")
   displayName  String?         @map("display_name")

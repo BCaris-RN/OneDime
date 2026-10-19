@@ -52,8 +52,8 @@ npm run demo
 Docker Desktop must be running. This creates a disposable PostgreSQL 16 container,
 applies migrations, seeds fake data and binds only to `127.0.0.1:3403`. Open
 [the local demo](http://127.0.0.1:3403/demo-login). Stop with Ctrl+C to remove the container.
-The demo uses fake identity/session data, disabled payouts and no AI key. It does
-not contact PayPal or Anthropic. It does not demonstrate real PayPal authentication.
+The demo uses fake identity/session data, disabled payouts and no provider keys. It does
+not contact external providers. It does not demonstrate real PayPal authentication.
 All people, transaction IDs and financial events are fictional; platform names are
 labels and no third-party logos are included.
 
@@ -78,7 +78,7 @@ GitHub Actions uses a local PostgreSQL 16 service and Node 24, then installs, bu
 Coverage includes ownership, input/origin/rate checks, game math and clock races,
 brand-deal payment concurrency, ledger calculations, exports/formula protection,
 CSV privacy and re-imports, routing/unlink behavior, payout idempotency and webhook
-failures/deduplication, AI schema/privacy/cache/budget races, and repeatable fake seed data.
+failures/deduplication, device confidence/privacy/cache/preferences, and repeatable fake seed data.
 Exact checkpoint SHAs, test counts and CI evidence are in `STATUS.md` and PR #4.
 
 ## Pick one workspace for each payment
@@ -105,7 +105,7 @@ sheets, Delivery and Selling, each including its corresponding expenses.
 
 **Export everything** in PayPal produces an XLSX workbook with monthly Summary rows and
 one sheet per financial/activity/game table, or a ZIP of CSV files. Sessions, OAuth state,
-credentials, AI prompts and payout recipient emails are never exported. PayPal rows
+credentials and payout recipient emails are never exported. PayPal rows
 are reconciliation metadata and are not counted again in Summary. First Dime treats
 verified earnings as paid because it has no separate payout status.
 
@@ -170,23 +170,21 @@ are updated. The browser cannot choose a payout, amount or recipient. These flow
 mock-tested; actual sandbox authentication, payouts, app permissions and webhook delivery
 must be validated with Brandon's personal sandbox accounts before activation.
 
-## AI reads and suggests; the server decides
+## Smart suggestions stay on the device
 
-Optional routing suggestions use `claude-haiku-5-5`, verified against current Anthropic
-docs. A request sends only owned payer name, net amount and payment kind; email-like
-payer text is redacted. It sends no notes, emails, player IDs or other players' data.
-Names stay JSON data under a fixed instruction. There are no AI tools or automatic actions.
-The UI explains the data sent before the player requests suggestions.
+I use a small MIT-licensed classifier in an isolated browser worker. Smart suggestions
+are off by default and saved per player. The notice states the measured uncompressed
+first download: 41.3 MB including model, tokenizer, worker and WASM. Files are served
+by OneDime and cached by the browser. No inference API, keys or spending code is needed.
+The model receives only payer, net amount and payment kind locally. Imported activity
+is still stored in OneDime; it is never sent anywhere else for suggestions.
 
-The server validates JSON, allowed app/platform/record combinations, indices and confidence.
-Below 0.7, invalid JSON, refusal or truncation gives no suggestion. Fixed-map matches skip
-AI. Suggestions cache privately per player/payer/model for 30 days. The shared UTC-month
-budget reserves two cents atomically per batch of at most ten names, with a 50 KB text
-request limit and 2,048 output tokens. That conservatively covers the checked model's
-short-context rates; usage also records tokens and rounded cost. Reservations are not
-refunded, so the cap can stop before actual invoice spend. Missing keys, exhausted budget,
-unsupported model overrides or provider failure use a visible fixed-map fallback.
-There is no player billing. Real provider calls remain untested; tests use mocks.
+Five fixed intents map to allowed app/record types with platform Other. Known payers
+keep the fixed map. Low confidence, ambiguous results, loading errors or a two-minute
+timeout keep the fallback. Model scores are heuristic and need player review; no action
+is automatic. Turning it off terminates the worker. The server validates every route.
+CSP permits only same-origin data/model connections. Mid-range physical phone speed is
+not measured; phone-width desktop checks only establish UI and cache behavior.
 
 ## Environment variables
 
@@ -210,9 +208,6 @@ Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not l
 | `PAYPAL_SCOPE` | `openid profile email https://uri.paypal.com/services/paypalattributes` |
 | `PAYPAL_WEBHOOK_ID` | Sandbox webhook ID; blank |
 | `PAYOUTS_ENABLED` | `false`; local activation requires separate approval |
-| `ANTHROPIC_API_KEY` | Personal API key; blank, fixed-map fallback when missing |
-| `ANTHROPIC_MODEL` | `claude-haiku-5-5`; other IDs fall back until priced in code |
-| `AI_MONTHLY_BUDGET_CENTS` | `100`, shared monthly reservation cap; integer 0..1,000,000 |
 | `GOOGLE_SHEETS_ENABLED` | `false`; true is rejected because the stretch is deferred |
 | `GOOGLE_CLIENT_ID` | Blank; reserved, unused by file exports |
 | `GOOGLE_CLIENT_SECRET` | Blank; reserved, unused |

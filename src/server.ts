@@ -19,8 +19,7 @@ import { HttpError } from "./http/errors.js";
 import { sandboxClient } from "./paypal/client.js";
 import { createPayoutService, type PayoutClient } from "./paypal/payouts.js";
 import { webhookHandler } from "./paypal/webhooks.js";
-import { createAIRouter } from "./ai/router.js";
-import type { AIClient } from "./ai/client.js";
+import { createSettingsRouter } from "./settings/router.js";
 import { createActivityRouter } from "./paypal/router.js";
 import { createExportRouter } from "./exports/router.js";
 
@@ -29,7 +28,6 @@ type CreateAppOptions = {
   prisma?: PrismaClient;
   paypalClient?: PayPalIdentityClient;
   payoutClient?: PayoutClient;
-  aiClient?: AIClient;
   now?: () => Date;
   quests?: readonly QuestDefinition[];
   writeLimit?: { count: number; windowMs: number };
@@ -46,6 +44,11 @@ export function createApp(options: CreateAppOptions = {}) {
   const app = express();
 
   app.disable("x-powered-by");
+  app.use((_req, res, next) => {
+    res.set("Content-Security-Policy", "default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
+    res.set("X-Content-Type-Options", "nosniff");
+    next();
+  });
   app.use(express.urlencoded({ extended: false }));
   app.use("/api/paypal/import", express.json({ limit: "1mb" }));
   app.use(express.json({ limit: "32kb" }));
@@ -106,7 +109,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use("/api", gameRouter);
   app.use("/api", createActivityRouter(prisma, options.now ?? (() => new Date()), flushPayouts));
   app.locals.flushPayouts = flushPayouts;
-  app.use("/api", createAIRouter(prisma, config, options.now ?? (() => new Date()), options.aiClient));
+  app.use("/api", createSettingsRouter(prisma));
   app.use("/api", createLedgerRouter(prisma, options.now ?? (() => new Date())));
   app.use("/api", createExportRouter(prisma, options.now ?? (() => new Date())));
   app.post("/logout", gameRouter);

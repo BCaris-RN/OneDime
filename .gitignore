@@ -9,3 +9,7 @@ reference/
 
 public/fonts/
 public/fonts.css
+public/models/
+public/vendor/
+public/smart-worker.js
+public/smart-model.json
