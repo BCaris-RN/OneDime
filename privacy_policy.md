@@ -1,33 +1,49 @@
-OneDime User Agreement
+OneDime Privacy Policy
 Last updated Oct 19, 2026
-OneDime is free to use, you keep ownership of your data, and you agree to log only real work honestly.
-This agreement is between you and Brandon Caris, who builds and runs OneDime. By signing in, you agree to it and to the OneDime Privacy Policy. It is a plain-language draft and has not been reviewed by a lawyer.
-Who can use OneDime
-• You must be 18 or older.
-• You sign in with your own PayPal account. One account per person, and don't share it.
-• Keep the information in your account true and up to date.
-What OneDime is, and isn't
-OneDime is a tracker and game for income you earn online and on gig apps. It shows totals, rates and progress, and verifies earnings against your own PayPal records.
-• Not a bank or payment service. OneDime doesn't hold or move your money.
-• Not tax, legal or financial advice. Totals and reminders are for your own tracking. Check with a tax professional.
-• Not affiliated with PayPal or any gig platform. Platform names are used only to label your income. None of them sponsor or endorse OneDime.
-• No guaranteed earnings. OneDime can't promise you'll make money on any platform.
-Fair play
-Ranks and milestones mean something only if they're real. You agree to:
-• Log only work you actually did and money you actually received.
-• Upload only your own PayPal activity files and proof of pay, unedited.
-• Never use bots, scripts or automation on OneDime or on any gig platform through it.
-• Follow the rules of every platform you work on. OneDime doesn't change those rules.
-• Not upload client files, study content or anyone else's private information.
-• Not try to break, overload or get around OneDime's security.
-OneDime may remove entries, reset ranks or close accounts that break these rules.
-The fine print
-• Free: OneDime charges players nothing. Ranks, levels and features are never sold.
-• Your data: you own what you enter. You can export it or delete your account at any time.
-• The software: OneDime's code is open source under its license. The OneDime name and logo are not covered by that license.
-• As is: OneDime is a free project provided as is, without warranties. It may change, have bugs or go offline.
-• Liability: to the extent the law allows, OneDime is not liable for lost earnings, platform decisions, tax outcomes or indirect damages from using it.
-• Ending: you can stop using OneDime and delete your account at any time. OneDime may suspend accounts that break this agreement.
-• Changes: if this agreement changes, the date at the top changes, and significant changes are shown in the app.
-• Law: this agreement is governed by the laws of the State of Hawaii.
-• Contact: caris.industries@gmail.com
+OneDime keeps only what it needs to track your own earnings, never sells your data, and lets you export or delete everything at any time.
+OneDime is a free income tracker built and run by Brandon Caris. This policy explains what OneDime stores, why, and the choices you have. It is a draft written in plain language and has not been reviewed by a lawyer.
+What OneDime collects
+What
+Where it comes from
+Why
+Name, email and PayPal account ID
+Log in with PayPal, when you sign in
+To create your account and know it's you
+Earnings, gigs, shifts, sales, expenses, hours, miles and notes
+You type them in
+To show your totals, rates and progress
+From a PayPal activity file you upload: date, payer name, gross, fee, net, currency, transaction ID and type
+The file you choose to upload
+To match payments to your entries and verify earnings
+Time zone and display settings
+Your browser and your choices
+To count days and streaks correctly
+A session cookie
+OneDime's server
+To keep you signed in
+When you upload a PayPal activity file, OneDime reads only the eight fields listed above. The rest of the file is discarded, and the file itself is never stored.
+What OneDime never collects or does
+• No passwords or logins for PayPal or any gig platform. You sign in through PayPal's own page.
+• No bank, card or Social Security numbers.
+• No study content, client files or work you do on other platforms. Only proof of pay.
+• No ads, no tracking pixels and no selling or renting your data to anyone.
+• No logging in to, scraping or automating any gig platform on your behalf.
+How it's used and who sees it
+Your data is used only to run OneDime for you: totals, rates, verification, exports and the game. It is shared only with the services that make OneDime work:
+• PayPal, to sign you in. PayPal's own privacy policy covers what happens on PayPal's pages.
+• The hosting provider that runs OneDime's server and database (Render), which stores the data on OneDime's behalf.
+Smart suggestions, if you turn them on, run on your own device. Payer names and amounts are not sent to any AI service.
+Other players see you only if you join the leaderboard, and then only your display name, verified totals, level and milestone dates. Never your email, notes or unverified amounts.
+OneDime may disclose data if the law requires it.
+Your choices
+• Export: download any tab, or everything, as CSV or Excel files at any time.
+• Edit or delete entries: change or remove any record you added.
+• Delete your account: "Delete my data" in settings permanently removes your account and every record tied to it.
+• Leaderboard: off by default. Join or leave at any time.
+• Smart suggestions: off by default. Turn them on or off at any time.
+Security, retention and the rest
+• Security: connections are encrypted, sessions are stored as hashes, and money is stored as exact whole cents. No system is perfectly secure, but OneDime keeps as little as it can.
+• Retention: your data stays until you delete it or your account. Deleted data is removed from the live database right away and from backups within 30 days.
+• Adults only: OneDime is for people 18 and older and does not knowingly collect data from anyone younger.
+• Changes: if this policy changes, the date at the top changes, and significant changes are shown in the app.
+• Contact: questions or requests go to caris.industries@gmail.com
