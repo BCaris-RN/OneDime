@@ -1640,7 +1640,7 @@ describe("Phase 2 game API", () => {
       const response=await request(app).get(`/${policy}`).expect(200);
       expect(response.text).toContain("Draft, not legal advice");
       expect(response.text).toContain("18");
-      expect(response.text).toContain("DELETE MY DATA");
+      expect(response.text).toContain("Delete my data");
     }
   });
   it.each(["TaskRabbit","Rover","Thumbtack"])("accepts %s shifts without awarding game progression",async platform=>{
