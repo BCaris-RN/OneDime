@@ -1,6 +1,6 @@
 # OneDime status
 
-Updated Oct 18, 2026 (Hawaii). Branch: `week4-playtest`, base `423c33d`.
+Updated Oct 19, 2026 (Hawaii). Branch: `week4-playtest`, base `423c33d`.
 
 Phase 3 merged as PR #4. Phase 4 follows `handoffs/week4-playtest.md`.
 
@@ -26,12 +26,18 @@ Both [push CI](https://github.com/BCaris-RN/OneDime/actions/runs/39219251774) an
 [PR CI](https://github.com/BCaris-RN/OneDime/actions/runs/39219258008) passed on that
 exact head, including the browser checks. This documentation checkpoint follows
 that verified implementation. Final documentation-head CI is linked in PR #5.
-Next: reviewer play-test and Brandon's separate merge decision. Do not merge.
+The final policy drafts were added in `d2ead81`; this documentation update keeps the
+README, STATUS and SDLC roadmap aligned with the current app. PR #5 is ready for review
+and remains unmerged. Next: reviewer play-test and Brandon's separate merge decision.
+Do not merge.
 
 Remaining operator checks: physical phone inference speed/screen-reader testing,
 real sandbox connectivity, draft policy contact/jurisdiction/backup review and
 zero-cost hosting. Existing prepared Render starter plans are not approved hosting.
 Root LICENSE is unchanged. Reviewer/Brandon merge gates remain outstanding.
+
+The root drafts `privacy_policy.md` and `user_agreement.md` are plain-language play-test
+documents, not legal advice. Brandon must review them before public use.
 
 ## Phase 3 checkpoint history
 

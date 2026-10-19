@@ -79,7 +79,7 @@ Coverage includes ownership, input/origin/rate checks, game math and clock races
 brand-deal payment concurrency, ledger calculations, exports/formula protection,
 CSV privacy and re-imports, routing/unlink behavior, payout idempotency and webhook
 failures/deduplication, device confidence/privacy/cache/preferences, and repeatable fake seed data.
-Exact checkpoint SHAs, test counts and CI evidence are in `STATUS.md` and PR #5.
+Exact checkpoint SHAs, test counts and CI evidence are in `STATUS.md` and [PR #5](https://github.com/BCaris-RN/OneDime/pull/5).
 
 ## Pick one workspace for each payment
 
@@ -94,11 +94,17 @@ PayPal settings includes Delete my data. Export first, then type `DELETE MY DATA
 the server deletes the account and all owned active rows, clears the cookie and logs
 you out. Tests check every owned table and preserve another player's records.
 
+The current plain-language drafts are also kept as [privacy_policy.md](privacy_policy.md)
+and [user_agreement.md](user_agreement.md). They describe the data collected, PayPal CSV
+handling, device-only suggestions, account deletion, fair-play rules and current play-test
+boundaries. They are not legal advice and still need operator review.
+
 For the browser privacy/cache check, install Chromium with `npx playwright install chromium`,
 then run `npm run test:browser`. CI also runs this check. Screenshots use fictional data.
-It checks every app and sub-tab at 320px and 390px in both themes, keyboard tab/arrow
-navigation, visible focus above the phone controls, table captions and input labels.
-I use wider date fields and a single form column at 320px so native dates stay readable.
+The final check covers every app and sub-tab at 320px and 390px in both themes, keyboard
+tab/arrow/Home/End navigation, visible focus above the phone controls, table captions and
+input labels. Native date fields use a full row on narrow screens, and 320px forms use one
+column so dates remain readable.
 
 - **First Dime:** starter gigs and everything that does not fit below, including SideShift.
 - **Spotlight:** income that needs an audience: creator streams and brand deals, plus expenses.
@@ -165,7 +171,7 @@ is not an authenticated PayPal activity lookup and does not prove the file is ge
 | Personal developer account | `<personal account, never employer>` |
 | OneDime sandbox business sender/app | `<sandbox business account>` |
 | Sandbox player login/recipient | `<sandbox personal account>` |
-| Registered callback | `<PUBLIC_BASE_URL>/auth/paypal/callback` |
+| Registered callback | http://127.0.0.1:3000/auth/paypal/callback |
 | Webhook listener | `<PUBLIC_BASE_URL>/api/paypal/webhook` |
 | Requested attributes | `openid profile email` and PayPal verification/account attributes |
 
@@ -221,14 +227,14 @@ Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not l
 | `SESSION_SECRET` | Required private random value, at least 32 characters |
 | `NODE_ENV` | `development`; production enables secure-cookie default |
 | `PORT` | `3000` |
-| `PUBLIC_BASE_URL` | `http://localhost:<PORT>`; exact origin for writes/callbacks |
+| `PUBLIC_BASE_URL` | http://127.0.0.1:3000; exact origin for writes/callbacks |
 | `APP_BASE_URL` | Optional alias for that origin; blank by default; both aliases must agree |
 | `COOKIE_SECURE` | `false` locally; production defaults true; Render sets true |
 | `SESSION_TTL_DAYS` | `14` |
 | `PAYPAL_ENVIRONMENT` | `sandbox`; every other value is rejected |
 | `PAYPAL_CLIENT_ID` | Personal sandbox business app ID; blank |
 | `PAYPAL_CLIENT_SECRET` | Sandbox app secret; blank |
-| `PAYPAL_REDIRECT_URI` | `<PUBLIC_BASE_URL>/auth/paypal/callback` |
+| `PAYPAL_REDIRECT_URI` | http://127.0.0.1:3000/auth/paypal/callback |
 | `PAYPAL_AUTH_URL` | Optional; only `https://www.sandbox.paypal.com/connect` accepted |
 | `PAYPAL_API_BASE_URL` | Optional; only `https://api-m.sandbox.paypal.com` accepted |
 | `PAYPAL_SCOPE` | `openid profile email https://uri.paypal.com/services/paypalattributes` |
@@ -242,9 +248,8 @@ Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not l
 
 ## Review and deployment boundaries
 
-`render.yaml` is preparation only. Its existing starter plans are not an approved zero-cost
-hosting choice and must be revisited before deployment; no resources were created or deployed.
-Phase 4 removes paid inference dependencies; free hosting remains unresolved. Payouts, Google Sheets and
+`render.yaml` is preparation only. Its starter-plan setting is a placeholder for Brandon's
+hosting choice; no Render resources were created or deployed. Payouts, Google Sheets and
 seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
 Brandon accepted clean rewritten main `9953600` and owns GitHub Support cleanup of old PR refs.
 Do not merge old pre-cleanup history into this branch. The repository license is recorded in LICENSE.
