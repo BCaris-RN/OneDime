@@ -1640,7 +1640,8 @@ describe("Phase 2 game API", () => {
       const response=await request(app).get(`/${policy}`).expect(200);
       expect(response.text).toContain("Draft, not legal advice");
       expect(response.text).toContain("18");
-      if(policy === "privacy") expect(response.text).toContain("Delete my data");\n      else expect(response.text).toContain("You must be 18 or older");
+      if(policy === "privacy") expect(response.text).toContain("Delete my data");
+      else expect(response.text).toContain("You must be 18 or older");
     }
   });
   it.each(["TaskRabbit","Rover","Thumbtack"])("accepts %s shifts without awarding game progression",async platform=>{
@@ -1890,4 +1891,5 @@ function runPrismaMigrations(databaseUrl: string): void {
     stdio: "inherit",
   });
 }
+
 
