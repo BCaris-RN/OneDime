@@ -1320,6 +1320,14 @@ describe("Phase 2 game API", () => {
         net_cents: 970,
         mismatch: !verified,
       });
+      const financial=(await request(app).get("/api/overview?month=2026-10").set("Cookie",alice.cookie)).body.rows[0];
+      expect(financial).toMatchObject(verified
+        ? {earnedCents:1000,paidCents:970,feesCents:30,netCents:970,pendingCents:0}
+        : {earnedCents:985,paidCents:0,feesCents:0,netCents:985,pendingCents:985});
+      const archive=await request(app).get("/api/exports?tab=all&format=zip&month=2026-10")
+        .set("Cookie",alice.cookie).buffer(true).parse(parseBinary).expect(200);
+      expect(strFromU8(unzipSync(archive.body)["Summary.csv"]))
+        .toContain(verified?'"first","2026-10","10.00","9.70","0.00","0.30","0.00","9.70"':'"first","2026-10","9.85","0.00","9.85","0.00","0.00","9.85"');
     },
   );
   it("allows one payment to verify only one entry even when gross and net race", async () => {
@@ -1611,6 +1619,58 @@ describe("Phase 2 game API", () => {
       expect((await prisma.payout.findUniqueOrThrow({where:{id:payout.id}})).status)
         .toBe(status==="HELD"?"SUCCESS":status);
     });
+  it("serves draft policies publicly", async () => {
+    for(const policy of ["privacy","terms"]) {
+      const response=await request(app).get(`/${policy}`).expect(200);
+      expect(response.text).toContain("Draft, not legal advice");
+      expect(response.text).toContain("18");
+      expect(response.text).toContain("DELETE MY DATA");
+    }
+  });
+  it.each(["TaskRabbit","Rover","Thumbtack"])("accepts %s shifts without awarding game progression",async platform=>{
+    const alice=await login("service-platform");
+    const body=workspaceCases.find(([path])=>path==="/market/shifts")![1];
+    await write(alice.cookie,"/api/market/shifts",{...body,platform}).expect(201);
+    expect(await prisma.logEntry.count()).toBe(0);
+  });
+  it("totals one owned month without adding imported PayPal activity twice",async()=>{
+    const alice=await login("overview-alice"),bob=await login("overview-bob");
+    await write(alice.cookie,"/api/entries",validEntry).expect(201);
+    await write(bob.cookie,"/api/entries",{...validEntry,amountCents:999999}).expect(201);
+    await write(alice.cookie,"/api/spotlight/income",workspaceCases[0][1]).expect(201);
+    await write(alice.cookie,"/api/paypal/import",{csv:activityCsv()}).expect(200);
+    const result=(await request(app).get("/api/overview?month=2026-10").set("Cookie",alice.cookie).expect(200)).body;
+    expect(result.rows.at(-1)).toMatchObject({app:"total",earnedCents:322,pendingCents:322,paidCents:0,netCents:322});
+    const older=(await request(app).get("/api/overview?month=2026-09").set("Cookie",alice.cookie).expect(200)).body;
+    expect(older.rows.at(-1).earnedCents).toBe(0);
+    await request(app).get("/api/overview?month=2026-13").set("Cookie",alice.cookie).expect(400);
+    await request(app).get("/api/overview").expect(401);
+  });
+  it("deletes every owned row after exact typed confirmation and ends the session",async()=>{
+    const alice=await login("delete-alice"),bob=await login("delete-bob");
+    for(const [path,body] of workspaceCases) await write(alice.cookie,`/api${path}`,body).expect(201);
+    const entry=(await write(alice.cookie,"/api/entries",validEntry).expect(201)).body.entry;
+    await write(bob.cookie,"/api/entries",validEntry).expect(201);
+    await prisma.receipt.create({data:{playerId:alice.player.id,logEntryId:entry.id,status:"fixture"}});
+    await prisma.questProgress.create({data:{playerId:alice.player.id,questId:"fixture-quest"}});
+    await prisma.rungClaim.create({data:{playerId:alice.player.id,rungCents:10}});
+    await prisma.payout.create({data:{playerId:alice.player.id,rungCents:10,status:"ready",amountCents:10}});
+    await write(alice.cookie,"/api/paypal/import",{csv:activityCsv()}).expect(200);
+    const remove=(body:unknown)=>request(app).delete("/api/settings/data").set("Cookie",alice.cookie).set("Origin",origin).send(body);
+    await remove({confirmation:"delete"}).expect(400);
+    await remove({confirmation:"DELETE MY DATA",playerId:bob.player.id}).expect(400);
+    await request(app).delete("/api/settings/data").set("Cookie",alice.cookie).set("Origin","https://other.example.test")
+      .send({confirmation:"DELETE MY DATA"}).expect(403);
+    const response=await remove({confirmation:"DELETE MY DATA"}).expect(204);
+    expect(response.headers["set-cookie"][0]).toContain("Expires=Thu, 01 Jan 1970");
+    expect(await prisma.player.findUnique({where:{id:alice.player.id}})).toBeNull();
+    for(const table of ["sessions","log_entries","quest_progress","rung_claims","receipts","payouts","creator_income","brand_deals","expenses","freelance_gigs","delivery_shifts","sales","paypal_transactions"]) {
+      const rows=await prisma.$queryRaw<{count:bigint}[]>(Prisma.sql`SELECT count(*) AS count FROM ${Prisma.raw(table)} WHERE player_id=${alice.player.id}::uuid`);
+      expect(Number(rows[0].count),table).toBe(0);
+    }
+    expect(await prisma.logEntry.count({where:{playerId:bob.player.id}})).toBe(1);
+    await request(app).get("/api/me").set("Cookie",alice.cookie).expect(401);
+  });
   it("keeps smart suggestions off by default and persists only the owned preference", async () => {
     const alice=await login("smart-alice"),bob=await login("smart-bob");
     expect((await request(app).get("/api/settings").set("Cookie",alice.cookie)).body.smartSuggestions).toBe(false);

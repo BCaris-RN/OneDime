@@ -15,6 +15,9 @@ export const deliveryPlatforms = [
   "Lyft",
   "Instacart",
   "Grubhub",
+  "TaskRabbit",
+  "Rover",
+  "Thumbtack",
   "Other"
 ] as const;
 export const stores = [

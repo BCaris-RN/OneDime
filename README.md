@@ -83,6 +83,20 @@ Exact checkpoint SHAs, test counts and CI evidence are in `STATUS.md` and PR #4.
 
 ## Pick one workspace for each payment
 
+Each app has a stats month picker. PayPal's “This month, everywhere” overview adds
+the five income ledgers once, never the imported activity a second time. For a matched
+First Dime payment, financial earned/fee/paid/net totals use its actual gross/fee/net;
+the entry's logged amount and game progression are preserved. Unknown fees are not
+invented. All-time pending/open and platform comparisons are labeled separately.
+
+The footer and Help link to draft `/privacy` and `/terms` pages for Brandon's review.
+PayPal settings includes Delete my data. Export first, then type `DELETE MY DATA`:
+the server deletes the account and all owned active rows, clears the cookie and logs
+you out. Tests check every owned table and preserve another player's records.
+
+For the browser privacy/cache check, install Chromium with `npx playwright install chromium`,
+then run `npm run test:browser`. CI also runs this check. Screenshots use fictional data.
+
 - **First Dime:** starter gigs and everything that does not fit below, including SideShift.
 - **Spotlight:** income that needs an audience: creator streams and brand deals, plus expenses.
 - **Freelance:** selling a skill to a client, with platform fees and net hourly rates.
@@ -188,6 +202,14 @@ not measured; phone-width desktop checks only establish UI and cache behavior.
 
 ## Environment variables
 
+For a numeric loopback sandbox callback, set `APP_BASE_URL=http://127.0.0.1:3000`
+and leave `PUBLIC_BASE_URL` blank (or set it to the same value). Register exactly
+`http://127.0.0.1:3000/auth/paypal/callback` in your sandbox app and browse the numeric
+origin throughout login. Alternatively use `PUBLIC_BASE_URL=http://localhost:3000`
+and its matching callback if the dashboard accepts it. Explicit `PAYPAL_REDIRECT_URI`
+must use that same chosen origin. Conflicting base aliases fail at startup.
+Real dashboard/account acceptance remains an operator check with approved sandbox keys.
+
 Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not log them.
 
 | Variable | Default / purpose |
@@ -197,6 +219,7 @@ Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not l
 | `NODE_ENV` | `development`; production enables secure-cookie default |
 | `PORT` | `3000` |
 | `PUBLIC_BASE_URL` | `http://localhost:<PORT>`; exact origin for writes/callbacks |
+| `APP_BASE_URL` | Optional alias for that origin; blank by default; both aliases must agree |
 | `COOKIE_SECURE` | `false` locally; production defaults true; Render sets true |
 | `SESSION_TTL_DAYS` | `14` |
 | `PAYPAL_ENVIRONMENT` | `sandbox`; every other value is rejected |
@@ -220,11 +243,11 @@ Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not l
 hosting choice; no Render resources were created or deployed. Payouts, Google Sheets and
 seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
 Brandon accepted clean rewritten main `9953600` and owns GitHub Support cleanup of old PR refs.
-Do not merge old pre-cleanup history into this branch. No license has been selected or added.
+Do not merge old pre-cleanup history into this branch. The repository license is recorded in LICENSE.
 
-[The Phase 3 handoff](handoffs/week3-onedime-app.md) governs current scope; the older SDLC
+[The Phase 4 handoff](handoffs/week4-playtest.md) governs current scope; the SDLC
 roadmap has been updated to reflect this implementation. [Implementation decisions and
-primary documentation](docs/phase3-decisions.md) record calculations, dependencies, scope
+primary documentation](docs/phase4-decisions.md) record calculations, dependencies, scope
 choices and provider limitations. [Screenshots](docs/screenshots) use fictional data.
 
 Review and Brandon's merge approval are still required. This phase does not scrape,

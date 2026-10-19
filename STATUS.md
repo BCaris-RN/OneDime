@@ -7,8 +7,8 @@ Phase 3 merged as PR #4. Phase 4 follows `handoffs/week4-playtest.md`.
 | Phase 4 checkpoint | State | Validation / next |
 | --- | --- | --- |
 | P1 payout review fixes | Complete | b32fdd4; build/178 tests passed; CI green 39214704838 and 39214736585 |
-| P2 free on-device suggestions | Implemented | 41.3 MB local model/runtime; build/170 tests/browser privacy+cached reload passed; next P3 |
-| P3 missing pieces | Pending | Overview, month pickers, platforms, Help/policies/deletion/local callback |
+| P2 free on-device suggestions | Complete | 291a91c; 41.3 MB local model/runtime; build/170 tests/browser passed; CI green 39215863437 and 39215869049 |
+| P3 missing pieces | Implemented | Overview/months/platforms/Help/policies/deletion/callback; build/177 tests/browser checks passed; next P4 |
 | P4 accessibility/play-test | Pending | Keyboard, captions, focus, 320/390px and dark mode |
 
 Checkpoint commit and exact-head CI links are tracked in the Phase 4 draft PR.

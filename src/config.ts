@@ -24,7 +24,10 @@ export type AppConfig = {
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const nodeEnv = env.NODE_ENV ?? "development";
   const port = parseInteger(env.PORT, 3000);
-  const publicBaseUrl = env.PUBLIC_BASE_URL ?? `http://localhost:${port}`;
+  const appBase = blankToUndefined(env.APP_BASE_URL), publicBase = blankToUndefined(env.PUBLIC_BASE_URL);
+  if (appBase && publicBase && appBase !== publicBase)
+    throw new Error("APP_BASE_URL and PUBLIC_BASE_URL must agree.");
+  const publicBaseUrl = appBase ?? publicBase ?? `http://localhost:${port}`;
   const paypalEnvironment = env.PAYPAL_ENVIRONMENT ?? "sandbox";
   const paypalAuthUrl = env.PAYPAL_AUTH_URL ?? PAYPAL_AUTH_URL;
   const paypalApiBaseUrl = env.PAYPAL_API_BASE_URL ?? PAYPAL_API_BASE_URL;

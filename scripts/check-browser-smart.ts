@@ -18,6 +18,10 @@ try {
     env: { ...process.env, DATABASE_URL: container.getConnectionUri() }, stdio: "ignore"
   });
   const player = await seedDemo(prisma, "2026-10-18");
+  await prisma.payout.createMany({ data: [
+    {playerId:player.id,rungCents:10,amountCents:10,status:"BLOCKED",batchStatus:"SUCCESS"},
+    {playerId:player.id,rungCents:100,amountCents:10,status:"HELD",batchStatus:"SUCCESS"}
+  ] });
   const canary = "creator audience income advertisements sponsorships CANARY-DEVICE";
   await prisma.$executeRaw`INSERT INTO paypal_transactions(player_id,txn_id,occurred_on,payer,gross_cents,fee_cents,net_cents,currency,kind)
     VALUES(${player.id}::uuid,'FAKE-SMART','2026-10-18'::date,${canary},1000,0,1000,'USD','General Payment')`;
@@ -34,7 +38,16 @@ try {
   context.on("request", req => requests.push({ url: req.url(), body: req.postData() ?? "" }));
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("http://127.0.0.1:3404/browser-login");
+  await page.getByRole("tab", { name: "Spotlight", exact: true }).click();
+  await page.waitForFunction(() => (document.getElementById("sasuStats")?.children.length??0)>0);
+  const spotMonth=page.getByLabel("Stats month: Spotlight",{exact:true});
+  const older=page.waitForResponse(r=>r.url().includes("/spotlight/summary?month=2026-09"));
+  await spotMonth.fill("2026-09"); await spotMonth.press("Tab");
+  assert.equal((await older).status(),200);
   await page.getByRole("tab", { name: "PayPal", exact: true }).click();
+  await page.getByRole("heading",{name:"This month, everywhere",exact:true}).waitFor();
+  await page.getByText(/Item: BLOCKED/).waitFor();
+  await page.getByText(/Item: HELD/).waitFor();
   const toggle = page.getByRole("checkbox", { name: "Smart suggestions", exact: true });
   await toggle.waitFor();
   await page.waitForFunction(() => !(document.querySelector('input[type="checkbox"]') as HTMLInputElement)?.disabled);
@@ -56,7 +69,8 @@ try {
   assert(firstRequests.every(req => new URL(req.url).origin === "http://127.0.0.1:3404"));
   assert.equal(errors.length, 0, errors.join("\n"));
   await mkdir("docs/screenshots", { recursive: true });
-  await page.screenshot({ path: "docs/screenshots/p2-phone-smart.png", fullPage: true });
+  await page.screenshot({ path: "docs/screenshots/p3-phone-overview.png", fullPage: true });
+  await page.getByRole("heading",{name:"Settings",exact:true}).locator("..").screenshot({path:"docs/screenshots/p3-phone-settings.png"});
   await page.reload();
   await page.getByRole("tab", { name: "PayPal", exact: true }).click();
   await page.waitForFunction(() => [...document.querySelectorAll("button")].some(b => b.textContent === "Download and suggest" && !b.disabled));
@@ -66,6 +80,19 @@ try {
   await page.getByText(/^Suggestions ready\./).waitFor({ timeout: 125000 });
   assert.equal(requests.slice(secondStart).filter(req => req.url.endsWith("model_quantized.onnx")).length, 0);
   assert.equal(errors.length, 0, errors.join("\n"));
+  for(const policy of ["privacy","terms"]) {
+    const response=await page.request.get(`http://127.0.0.1:3404/${policy}`);
+    assert.equal(response.status(),200);
+    const policyPage=await context.newPage();
+    await policyPage.goto(`http://127.0.0.1:3404/${policy}`);
+    await policyPage.screenshot({path:`docs/screenshots/p3-phone-${policy}.png`,fullPage:true});
+    await policyPage.close();
+  }
+  await page.getByRole("textbox",{name:"Deletion confirmation",exact:true}).fill("DELETE MY DATA");
+  await page.getByRole("button",{name:"Delete my data",exact:true}).focus();
+  await page.getByRole("button",{name:"Delete my data",exact:true}).press("Enter");
+  await page.waitForURL("http://127.0.0.1:3404/");
+  assert.equal(await prisma.player.findUnique({where:{id:player.id}}),null);
   console.log("browser smart check passed: opt-in, inference, private requests, cached reload");
 } finally {
   await browser?.close();

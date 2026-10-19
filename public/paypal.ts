@@ -159,6 +159,7 @@ panel.append(
 el("paypal-connection").parentElement!.replaceWith(panel);
 const settings = node("section");
 settings.className = "slip row";
+settings.id = "settings";
 settings.append(
   node("h2", "Settings"),
   node(
@@ -167,6 +168,22 @@ settings.append(
   )
 );
 el("app-paypal").append(settings);
+const deleteForm = node("form");
+const deleteInput = node("input"); deleteInput.type = "text"; deleteInput.autocomplete = "off";
+deleteInput.required = true; deleteInput.pattern = "DELETE MY DATA";
+deleteInput.setAttribute("aria-describedby", "delete-help");
+const deleteHelp = node("p", "Export first if you want a copy. This deletes your account and all its active records, then logs you out. Type DELETE MY DATA to confirm.");
+deleteHelp.id = "delete-help";
+const deleteButton = node("button", "Delete my data"); deleteButton.type = "submit"; deleteButton.className = "act";
+const deleteStatus = node("p"); deleteStatus.setAttribute("role", "status");
+deleteForm.append(node("h3", "Delete my data"), deleteHelp, labelControl("Deletion confirmation", deleteInput), deleteButton, deleteStatus);
+deleteForm.addEventListener("submit", event => {
+  event.preventDefault(); if (deleteButton.disabled || deleteInput.value !== "DELETE MY DATA") return;
+  deleteButton.disabled = true;
+  void request("/settings/data", { confirmation: deleteInput.value }, "DELETE").then(() => location.assign("/"))
+    .catch(() => { deleteButton.disabled = false; deleteStatus.textContent = "Could not delete your data. Try again."; });
+});
+settings.append(deleteForm);
 let payload: Payload | null = null,
   loading = false;
 const strips = new Map<string, HTMLElement>();

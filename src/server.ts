@@ -22,6 +22,7 @@ import { webhookHandler } from "./paypal/webhooks.js";
 import { createSettingsRouter } from "./settings/router.js";
 import { createActivityRouter } from "./paypal/router.js";
 import { createExportRouter } from "./exports/router.js";
+import { createOverviewRouter } from "./ledger/overview.js";
 
 type CreateAppOptions = {
   config?: AppConfig;
@@ -109,7 +110,8 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use("/api", gameRouter);
   app.use("/api", createActivityRouter(prisma, options.now ?? (() => new Date()), flushPayouts));
   app.locals.flushPayouts = flushPayouts;
-  app.use("/api", createSettingsRouter(prisma));
+  app.use("/api", createSettingsRouter(prisma, sessions));
+  app.use("/api", createOverviewRouter(prisma, options.now ?? (() => new Date())));
   app.use("/api", createLedgerRouter(prisma, options.now ?? (() => new Date())));
   app.use("/api", createExportRouter(prisma, options.now ?? (() => new Date())));
   app.post("/logout", gameRouter);
@@ -117,6 +119,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.get("/app", sessions.requirePlayer(), (_request, response) => {
     response.sendFile(path.join(publicDir, "app.html"));
   });
+  for (const policy of ["privacy","terms"]) app.get(`/${policy}`, (_req,res) => res.sendFile(path.join(publicDir, `${policy}.html`)));
 
   app.use(express.static(publicDir));
 

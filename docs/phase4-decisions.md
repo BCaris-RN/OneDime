@@ -67,3 +67,46 @@ Primary sources checked Oct 18, 2026:
 - https://developer.chrome.com/docs/ai/prompt-api
 - https://playwright.dev/docs/network
 - https://playwright.dev/docs/ci
+
+## P3: monthly views, account controls and policies
+
+Overview uses repeatable-read owned ledger queries and the same summary definitions
+as exports. It never adds imported PayPal activity a second time. Earned/fees/net
+follow work dates; paid follows payment dates; pending follows the work month.
+Matched, verified First Dime records use payment gross for financial earned totals,
+actual fees, and received net for paid/net totals in the overview and export Summary.
+Both gross-logged and net-logged matches normalize once, so fees are not subtracted
+twice. Unmatched records use their logged amount with no invented fee. Game totals,
+entry amounts, XP and rung math remain unchanged. Existing pending/open/by-platform totals stay all time and are
+labeled accordingly; monthly earnings/expenses respond to each app's month picker.
+First Dime gets an additional monthly summary beside its unchanged game statistics.
+Stale in-flight responses cannot overwrite a newly selected month.
+
+TaskRabbit, Rover and Thumbtack are allowed delivery/service platforms in validation,
+the database constraint and UI. Help/Playbook cover the five apps, routing, suppliers,
+gross/net matching, free device suggestions and file imports.
+
+Delete my data requires exact typed DELETE MY DATA under the existing session,
+JSON/origin/rate guards. A transaction deletes the player; FK cascades remove all
+owned ledgers, imported payments, receipts, claims, quests, payouts and sessions.
+The session cookie is cleared; other players remain untouched. Global anonymous
+webhook event IDs remain for duplicate protection. Policies describe these boundaries.
+
+Privacy/terms are public local pages with required draft code comments. Their copy
+describes current private play-test behavior; it is not a claim of legal compliance.
+Operator contact, jurisdiction and backup-retention review remain Brandon's tasks
+before any public use. ICO transparency guidance informed the topics only.
+
+APP_BASE_URL aliases PUBLIC_BASE_URL, including numeric loopback. Empty aliases are
+ignored; conflicting nonempty aliases fail. Callback registration and browser origin
+must agree; real sandbox dashboard acceptance is not claimed without approved keys.
+
+Validation: build and 177 tests pass, including all owned-table cascades, another
+player's survival, bad confirmation/origin, monthly ownership/nonduplication, the
+three service enums, public policies and numeric-loopback config. Browser checks
+cover a past-month request, BLOCKED/HELD presentation, local AI/cache and typed
+account deletion. Provider connectivity and physical phone speed remain manual.
+
+Sources checked Oct 18, 2026:
+- https://developer.paypal.com/log-in/references
+- https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/individual-rights/the-right-to-be-informed/what-privacy-information-should-we-provide/
