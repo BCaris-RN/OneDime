@@ -213,6 +213,19 @@ is automatic. Turning it off terminates the worker. The server validates every r
 CSP permits only same-origin data/model connections. Mid-range physical phone speed is
 not measured; phone-width desktop checks only establish UI and cache behavior.
 
+## Beta feedback
+
+I collect beta feedback through **Menu > Send feedback** or the button in Help.
+The form selects the current app, accepts up to 1,000 characters and an optional
+blocking flag, and allows five submissions per player per rolling hour. Feedback
+is private to the operator and is removed when the player deletes their account.
+Please leave names, emails, passwords and client or study content out of the note.
+
+For my private operator report, I run `npm run feedback:export` with the database
+configured in `.env`. Reports go to gitignored `feedback/feedback-YYYY-MM-DD.md`,
+grouped by app with blockers first. Reports use short player tags instead of
+account names or emails; typed personal details still need review before sharing.
+
 ## Policies
 
 I keep the policies only on Google Sites. The footer and Help link directly to them;
@@ -259,6 +272,10 @@ Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not l
 | `DEMO_SEED_ENABLED` | `false`; explicit local seeding only |
 
 ## Review and deployment boundaries
+
+I keep the tester tasks in [the beta guide](docs/beta-guide.md) and the operator's
+step-by-step setup in [the Render deploy guide](docs/deploy-render.md). Brandon sends
+sandbox logins privately and performs each approved deployment himself.
 
 I prepared `render.yaml` with a free web service and free Postgres for beta testing,
 with automatic deploys disabled. I have not created or deployed Render resources.

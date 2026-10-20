@@ -51,7 +51,7 @@ Every handoff uses the same template: target repo, target and base branch, files
 | --- | --- | --- |
 | Local | Brandon's machine, Postgres in Docker | Sandbox |
 | CI | GitHub Actions on every push and pull request | Mocked |
-| Demo | Render web service and Postgres, from phase 3 | Sandbox |
+| Beta (planned) | Free Render web service and Postgres; deployment gated | Sandbox |
 | Production | Not planned before the hackathon | Live, only with Brandon's explicit go-ahead |
 
 ## Quality gates and definition of done
@@ -85,7 +85,7 @@ specific approval.
 | 2. Game | week2-game | Logging, XP, rested XP, streaks, quests, opt-in leaderboard, rung race | Merged (PR #2 and PR #3) |
 | 3. App | week3-onedime-app | Workspaces, exports, sandbox activity routing, disabled payouts, AI suggestions, deployment prep | Merged (PR #4) |
 | 4. Fixes and free AI | week4-playtest | Payout fixes, free browser suggestions, overview, settings and accessibility | Merged (PR #5) |
-| 5. Beta test | week5-beta | Hosted-policy links, free Render beta configuration and player testing | In progress; Nov 1-8, 2026 |
+| 5. Beta test | week5-beta | Feedback tools, beta/deploy guides, free Render configuration and player testing | In progress; Nov 1-8, 2026 |
 | 6. Ship | Not created | Demo video, submission, license and approved release steps | Planned; Nov 9-10, 2026 |
 
 Google Sites holds the only policy copies. Render's free web service and free Postgres are configured
