@@ -1,8 +1,9 @@
 # OneDime status
 
-Updated Oct 20, 2026 (Hawaii). Current review track: `fix-current-contrast`, based on
+Updated Oct 20, 2026 (Hawaii). R1 merge checkpoint on `fix-current-contrast`, based on
 main `ab7bc89bf12134b8c0d5015c64298ac44021ac49`. Runtime source commit:
-`f6734602339372431b9b1609abab0ee56976cf6e`.
+`f6734602339372431b9b1609abab0ee56976cf6e`; Claude-approved review head:
+`6cf916366969f870995059f9756e5fe15fb630f0`.
 
 Current contrast fixes preserve the existing palette fills, layout, copy, and behavior.
 The only runtime file changed is `public/styles.css`. Local build, 185 existing tests,
@@ -13,9 +14,25 @@ immutable baseline intentionally fails. Final report hashes/counts, screenshot l
 candidate measurements, command evidence, and remaining limits are in
 [the contrast review package](docs/contrast/review-evidence.md).
 
-CI is pending publication of the review package; the PR will record its exact final head
-and current check results. Claude review is pending for this contrast work and PR #6.
-Brandon decides merges separately. No merge, deploy, settings change, or live payment.
+Claude approved PR #7 in [the Oct 20 review](reviews/claude-review-2026-10-20.md), and
+Brandon explicitly authorized its merge in [R1](handoffs/long-run-2026-10-20.md).
+[Review-head CI](https://github.com/BCaris-RN/OneDime/actions/runs/39477721351) passed
+every step, including unit, contrast and browser tests; its tested tree equals that head.
+This metadata checkpoint adds the supplied long-run/feature handoffs and Claude review.
+Final checkpoint-head CI must pass before the guarded merge; its SHA/run and the resulting
+merge SHA will be recorded in PR #7 and the coordinator's R1 report.
+
+The screenshot P2 was answered and resolved in [the review thread](https://github.com/BCaris-RN/OneDime/pull/7#discussion_r4331507247).
+Independent decoded-pixel comparison reproduced Claude's 1,963 changed pixels, with the
+committed 1280x2410 image unchanged (Git blob `7e9089d8ff80829ee58e0c123e67beb653a8bc8d`,
+SHA-256 `a6f2122a85a914ef7372cf5d1cf41a57b27d655d7cf7ac1114be6d8f7f76e794`).
+P3 theme answer: `public/app.ts:247-254` synchronously sets `data-theme` to light/dark at
+startup, resolving an absent preference from the OS even when storage is unavailable.
+The ghost active rule therefore covers System-light; no further CSS change was needed.
+
+Next: merge only PR #7 after exact-head CI/file-list verification, refresh main, then the
+coordinator starts R2. PR #6 remains unmerged and awaits its source review. No other merge,
+deploy, settings change, payout enablement or live payment is authorized by this checkpoint.
 
 ## Previous Phase 4 checkpoint
 
