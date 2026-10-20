@@ -13,16 +13,20 @@ const eventSchema = z.object({
   resource: z.record(z.string(), z.unknown())
 });
 const statuses: Record<string, string> = {
-  "PAYMENT.PAYOUTSBATCH.SUCCESS": "SUCCESS",
-  "PAYMENT.PAYOUTSBATCH.DENIED": "DENIED",
-  "PAYMENT.PAYOUTSBATCH.PROCESSING": "PROCESSING",
   "PAYMENT.PAYOUTS-ITEM.SUCCEEDED": "SUCCESS",
   "PAYMENT.PAYOUTS-ITEM.FAILED": "FAILED",
   "PAYMENT.PAYOUTS-ITEM.DENIED": "DENIED",
   "PAYMENT.PAYOUTS-ITEM.RETURNED": "RETURNED",
   "PAYMENT.PAYOUTS-ITEM.REFUNDED": "REFUNDED",
   "PAYMENT.PAYOUTS-ITEM.CANCELED": "CANCELED",
-  "PAYMENT.PAYOUTS-ITEM.UNCLAIMED": "UNCLAIMED"
+  "PAYMENT.PAYOUTS-ITEM.UNCLAIMED": "UNCLAIMED",
+  "PAYMENT.PAYOUTS-ITEM.BLOCKED": "BLOCKED",
+  "PAYMENT.PAYOUTS-ITEM.HELD": "HELD"
+};
+const batchStatuses: Record<string, string> = {
+  "PAYMENT.PAYOUTSBATCH.SUCCESS": "SUCCESS",
+  "PAYMENT.PAYOUTSBATCH.DENIED": "DENIED",
+  "PAYMENT.PAYOUTSBATCH.PROCESSING": "PROCESSING"
 };
 export function webhookHandler(
   prisma: PrismaClient,
@@ -75,8 +79,9 @@ export function webhookHandler(
         .max(120)
         .safeParse(event.resource.payout_batch_id ?? header?.payout_batch_id);
       const status = Object.hasOwn(statuses, event.event_type) ? statuses[event.event_type] : null;
-      if (!batchId.success || !status) return;
-      const terminal = ["SUCCESS", "DENIED", "FAILED", "CANCELED", "RETURNED", "REFUNDED"];
+      const batchStatus = Object.hasOwn(batchStatuses, event.event_type) ? batchStatuses[event.event_type] : null;
+      if (!batchId.success || (!status && !batchStatus)) return;
+      const terminal = ["SUCCESS", "DENIED", "FAILED", "CANCELED", "RETURNED", "REFUNDED", "BLOCKED"];
       const sender = z
         .string()
         .max(256)
@@ -89,16 +94,26 @@ export function webhookHandler(
         .safeParse(
           (event.resource.payout_item as { sender_item_id?: unknown } | undefined)?.sender_item_id
         );
-      await tx.payout.updateMany({
-        where: {
+      const target = {
           OR: [
             { paypalBatchId: batchId.data },
             ...(sender.success ? [{ senderBatchId: sender.data }] : []),
             ...(item.success ? [{ id: item.data }] : [])
-          ],
-          ...(["RETURNED", "REFUNDED"].includes(status) ? {} : { status: { notIn: terminal } })
+          ]
+      };
+      if (batchStatus) {
+        await tx.payout.updateMany({
+          where: { AND: [target, { OR: [{ batchStatus: null }, { batchStatus: { notIn: ["SUCCESS", "DENIED", "CANCELED"] } }] }] },
+          data: { batchStatus, paypalBatchId: batchId.data }
+        });
+        return;
+      }
+      await tx.payout.updateMany({
+        where: {
+          ...target,
+          ...(["RETURNED", "REFUNDED"].includes(status!) ? {} : { status: { notIn: terminal } })
         },
-        data: { status, paypalBatchId: batchId.data }
+        data: { status: status!, paypalBatchId: batchId.data }
       });
     });
     res.status(200).json({ ok: true });

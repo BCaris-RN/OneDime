@@ -23,7 +23,7 @@
         <button type="button" class="text-button" id="logout">Log out</button>
       </div>
     </header>
-    <main class="shell" id="main"><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
+    <main class="shell" id="main" tabindex="-1"><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
 <div id="app-first" role="tabpanel" aria-labelledby="app-tab-first">
 
 
@@ -71,47 +71,16 @@
       </section>
       <section id="panel-quests" role="tabpanel" aria-labelledby="tab-quests" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Quests</p><h2 id="quest-level">Level 1 · Rookie</h2><p id="quest-xp" class="muted">0 XP</p><div id="xp-progress" class="xp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="xp-fill"></i></div><p id="quests-status" class="muted">Loading quests…</p><ul id="quest-list" class="plain-list"></ul></div></section>
       <section id="panel-leaderboard" role="tabpanel" aria-labelledby="tab-leaderboard" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Leaderboard</p><h2>The verified standings.</h2><p class="muted">Joining shares your display name, verified earnings by site, XP, level, and rung wins with other players. Your notes stay private.</p><button type="button" class="primary-button" id="leaderboard-toggle" disabled>Loading…</button><p id="leaderboard-empty" class="muted"></p><h3 class="board-heading">First to each rung</h3><div class="table-scroll"><table><thead><tr><th scope="col">Bonus quest</th><th scope="col">Claimed by</th><th scope="col">When</th></tr></thead><tbody id="race-body"></tbody></table></div><p class="field-help">Only opted-in winners appear here. Private winners retain their claims.</p><h3 class="board-heading">Top earners</h3><ol id="leaderboard-list" class="leaderboard-list"></ol><h3 class="board-heading">Top earner on each site</h3><ul id="site-leaders" class="plain-list"></ul></div></section>
-      <section id="panel-playbook" role="tabpanel" aria-labelledby="tab-playbook" tabindex="0" hidden><div class="reading-column workspace-section playbook-copy">
-    <section>
-      <h2>The one rule</h2>
-      <p>Automate everything around the work, never the work. All five sites pay for a human doing the task and actively catch bots and AI-written answers. A ban costs the unpaid balance and the account. Every tip below makes <em>you</em> faster instead.</p>
-    </section>
-    <section>
-      <h2>The daily loop</h2>
-      <ul>
-        <li><b>Start of your day:</b> check available studies when you have time to complete them carefully.</li>
-        <li><b>Gaps between studies:</b> transcription on Rev or TranscribeMe. Keep Prolific alerts on so you can switch the moment a study appears.</li>
-        <li><b>Evening:</b> a second Prolific check, then SideShift content in one batch.</li>
-        <li><b>Microworkers:</b> only when nothing else is available, and capped at 20 minutes.</li>
-        <li><b>Every session:</b> clock in, clock out, log it. The streak counts time-only days too.</li>
-      </ul>
-    </section>
-    <section>
-      <h2>More money for less time</h2>
-      <ul>
-        <li><b>Choose the file, not the queue.</b> On transcription, preview the first 30 seconds. Take clear audio with one or two speakers and skip heavy accents, crosstalk and noise. You're paid per audio minute, so a bad file can cut your hourly rate by more than half.</li>
-        <li><b>Text expansion.</b> Map short codes to the tags you type all day, such as [inaudible], [crosstalk] and speaker labels. macOS Text Replacements or the free tool espanso both work.</li>
-        <li><b>Learn the editor hotkeys</b> for play, pause and rewind 2 seconds until your hands never leave the keyboard. Then buy a USB foot pedal with your earnings, not before.</li>
-        <li><b>Typing speed compounds.</b> Ten minutes a day on a typing trainer. Every added word per minute raises every transcription hour from then on.</li>
-        <li><b>Prolific screeners.</b> Answer every About You question. More completed screeners means you qualify for more studies, including studies relevant to your experience.</li>
-        <li><b>Return fast, never rush.</b> If a study is broken or underpays, return it right away. Returning doesn't hurt you. Failing attention checks does.</li>
-        <li><b>SideShift as an assembly line.</b> One fixed filming spot, one light, one script skeleton (hook, demo, why it helps, call to action). Film three takes in one sitting and reuse the pitch message to brands.</li>
-        <li><b>Weekly cut.</b> Every Sunday, check the per-hour table. Drop time from whichever site sits at the bottom.</li>
-      </ul>
-    </section>
-    <section>
-      <h2>Back office on autopilot</h2>
-      <ul>
-        <li>One PayPal account and one personal email across every site.</li>
-        <li>Turn on every payout notification so deposits come to you instead of you checking dashboards.</li>
-        <li>Keep income and expense records, and check the tax rules that apply where you live.</li>
-        <li>Keep site passwords in a password manager. Never use a tool that auto-accepts tasks or fills in answers.</li>
-      </ul>
-    </section>
+      <section id="panel-playbook" role="tabpanel" aria-labelledby="tab-playbook" tabindex="0" hidden><div class="playbook-copy workspace-section">
+<section><h2>Never automate the work</h2><p>Do the work yourself. OneDime keeps your records and suggests where payments belong; it never scrapes, logs into gig platforms or does their tasks.</p></section>
+<section><h2>A daily loop for every app</h2><ul><li>First Dime: clock a starter task, log the time and earnings, then check quests.</li><li>Spotlight: record audience income, brand-deal stages and content costs.</li><li>Freelance: track client work, hours, platform fees and payment stages.</li><li>Market: log delivery or service shifts, or sales with fees, item cost and shipping.</li><li>PayPal: review imported payments, confirm one workspace each, and compare the monthly overview.</li></ul></section>
+<section><h2>Keep the route simple</h2><p>Needs an audience? Spotlight. Selling a skill to a client? Freelance. Driving, services or selling goods? Market. Everything else, including SideShift, is First Dime. Printify and Ninja Transfers are suppliers; Printify Shop is a store. Never count one payment twice.</p></section>
+<section><h2>Spend less time keeping records</h2><p>Use the clock and edit existing rows instead of adding duplicates. Keep fees and costs separate. Use month pickers to compare past work, and per-hour or per-mile totals to see what is worthwhile. Only First Dime earns XP and quests.</p></section>
+<section><h2>Match and export</h2><p>A First Dime entry verifies when payer/platform matches and its logged amount equals the payment's gross or net. Its PayPal badge shows gross, fee and net. Smart suggestions are optional and run on your device; you confirm each route. Use Export or Export everything, then Google Sheets File &gt; Import to open CSV or Excel files in a new sheet.</p></section>
 </div></section>
-      <section id="panel-help" role="tabpanel" aria-labelledby="tab-help" tabindex="0" hidden><div class="reading-column workspace-section playbook-copy">
+<section id="panel-help" role="tabpanel" aria-labelledby="tab-help" tabindex="0" hidden><div class="reading-column workspace-section playbook-copy">
     <section>
-      <h2>What OneDime is</h2>
+      <h2>Five places for your work</h2><p>First Dime holds starter gigs. Spotlight holds audience income and brand deals. Freelance holds client work. Market holds delivery, services and sales. PayPal reviews payments and shows the monthly overview; it does not add another copy of earnings.</p><p>Smart suggestions are off by default: opt in on PayPal to download the free local model. No payment data is sent for AI. Low confidence or an unsupported device keeps the fixed payer map. You confirm every route; the server validates it.</p><p><a href="/privacy">Privacy</a> and <a href="/terms">Terms</a> explain this adults-only private play-test. Export your records before using Delete my data in PayPal settings; type DELETE MY DATA to remove the account and owned active records.</p><h2>What OneDime is</h2>
       <p>OneDime is a quest game and scoreboard for remote gig work. You log what you earn and how long it took on sites like Prolific, Rev, TranscribeMe, SideShift and Microworkers. It turns that into goals, streaks, levels and an honest per-hour ranking of every site you use.</p>
       <p>The idea is simple: the hardest dollar is the first one. The first goal is a single dime, so you get a win early. Then the ladder keeps you climbing, and the numbers show you where your time is actually worth the most.</p>
     </section>
@@ -161,7 +130,7 @@
       <h2>Freelance: your client work</h2>
       <p class="muted">Projects you sell to clients on freelance marketplaces. Track what the client paid, what the platform kept, and when the money clears.</p>
     </div>
-    <dl class="stats" id="fiveStats" aria-label="Freelance this month"></dl>
+    <dl class="stats" id="fiveStats" aria-label="Freelance selected month"></dl>
 
     <section class="slip" aria-labelledby="jobTitle">
       <form id="jobForm">
@@ -182,7 +151,7 @@
     </section>
 
     <section class="slip" aria-labelledby="jPlatTitle">
-      <h2 id="jPlatTitle">By platform</h2>
+      <h2 id="jPlatTitle">By platform (all time)</h2>
       <p class="muted" style="margin-top:4px">Per hour uses what you keep after fees, on gigs with hours logged.</p>
       <div class="tablewrap" style="margin-top:10px"><table>
         <thead><tr><th>Platform</th><th class="r">Gigs</th><th class="r">Client paid</th><th class="r">Fees</th><th class="r">You keep</th><th class="r">Per hour</th></tr></thead>
@@ -193,7 +162,7 @@
     <section class="slip" aria-labelledby="jListTitle">
       <h2 id="jListTitle">Gigs</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
-        <thead><tr><th>Started</th><th>Client and project</th><th class="r">You keep</th><th class="r">Hours</th><th>Stage</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Started</th><th>Client and project</th><th class="r">You keep</th><th class="r">Hours</th><th>Stage</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="jBody"></tbody>
       </table></div>
       <p class="muted" style="margin-top:8px;font-size:.85rem">Stages: In progress, Delivered, Clearing (the platform is holding the money), Paid.</p>
@@ -208,12 +177,12 @@
   </nav>
 
   <section id="bal-drive" role="tabpanel" aria-labelledby="b-drive" style="display:grid;gap:18px">
-    <dl class="stats" id="driveStats" aria-label="Delivery and rides this month"></dl>
+    <dl class="stats" id="driveStats" aria-label="Delivery and rides selected month"></dl>
     <section class="slip" aria-labelledby="dTitle">
       <form id="driveForm">
         <h2 id="dTitle">Log a shift</h2>
         <div class="fields">
-          <label>Platform<select id="vPlat"><option>DoorDash</option><option>Uber</option><option>Uber Eats</option><option>Lyft</option><option>Instacart</option><option>Grubhub</option><option>Other</option></select></label>
+          <label>Platform<select id="vPlat"><option>DoorDash</option><option>Uber</option><option>Uber Eats</option><option>Lyft</option><option>Instacart</option><option>Grubhub</option><option>TaskRabbit</option><option>Rover</option><option>Thumbtack</option><option>Other</option></select></label>
           <label>Date<input id="vDate" type="date" required></label>
           <label>Pay ($)<input id="vPay" type="number" inputmode="decimal" min="0" step="0.01" required></label>
           <label>Tips ($)<input id="vTips" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></label>
@@ -225,7 +194,7 @@
       <p class="muted" style="margin-top:8px;font-size:.85rem">Log every mile. Business miles can usually be deducted at tax time, so they're worth keeping even on slow days.</p>
     </section>
     <section class="slip" aria-labelledby="dpTitle">
-      <h2 id="dpTitle">By platform</h2>
+      <h2 id="dpTitle">By platform (all time)</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
         <thead><tr><th>Platform</th><th class="r">Shifts</th><th class="r">Earned</th><th class="r">Per hour</th><th class="r">Per mile</th></tr></thead>
         <tbody id="dPlatBody"></tbody>
@@ -234,14 +203,14 @@
     <section class="slip" aria-labelledby="dlTitle">
       <h2 id="dlTitle">Shifts</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
-        <thead><tr><th>Date</th><th>Platform</th><th class="r">Pay</th><th class="r">Tips</th><th class="r">Hours</th><th class="r">Miles</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Date</th><th>Platform</th><th class="r">Pay</th><th class="r">Tips</th><th class="r">Hours</th><th class="r">Miles</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="dBody"></tbody>
       </table></div>
     </section>
   </section>
 
   <section id="bal-sell" role="tabpanel" aria-labelledby="b-sell" class="hide" style="display:grid;gap:18px">
-    <dl class="stats" id="sellStats" aria-label="Selling this month"></dl>
+    <dl class="stats" id="sellStats" aria-label="Selling selected month"></dl>
     <section class="slip" aria-labelledby="slTitle">
       <form id="sellForm">
         <h2 id="slTitle">Log a sale</h2>
@@ -261,7 +230,7 @@
       <p class="muted" style="margin-top:8px;font-size:.85rem">Log each sale under the store where the buyer paid. If it sold on your Printify Shop (Printify's free Pop-Up Store), pick that as the store. If Printify or Ninja Transfers made an item you sold somewhere else, pick them under Made by and put their charge in Item cost.</p>
     </section>
     <section class="slip" aria-labelledby="spTitle">
-      <h2 id="spTitle">By store</h2>
+      <h2 id="spTitle">By store (all time)</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
         <thead><tr><th>Store</th><th class="r">Sales</th><th class="r">Revenue</th><th class="r">Fees</th><th class="r">Profit</th><th class="r">Margin</th></tr></thead>
         <tbody id="sPlatBody2"></tbody>
@@ -270,7 +239,7 @@
     <section class="slip" aria-labelledby="ssTitle">
       <h2 id="ssTitle">Sales</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
-        <thead><tr><th>Date</th><th>Item</th><th class="r">Price</th><th class="r">Profit</th><th>Status</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Date</th><th>Item</th><th class="r">Price</th><th class="r">Profit</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="xBody"></tbody>
       </table></div>
     </section>
@@ -283,7 +252,7 @@
       <h2>Spotlight: your creator income</h2>
       <p class="muted">Money that comes from your own audience on YouTube, TikTok, Instagram and Facebook. Starter gigs like SideShift stay in First Dime, so nothing is counted twice.</p>
     </div>
-    <dl class="stats" id="sasuStats" aria-label="Spotlight this month"></dl>
+    <dl class="stats" id="sasuStats" aria-label="Spotlight selected month"></dl>
 
     <section class="slip" aria-labelledby="sStreamTitle">
       <form id="sStreamForm">
@@ -302,7 +271,7 @@
     </section>
 
     <section class="slip" aria-labelledby="sPlatTitle">
-      <h2 id="sPlatTitle">By platform</h2>
+      <h2 id="sPlatTitle">By platform (all time)</h2>
       <p class="muted" style="margin-top:4px">Per hour counts only income with content time logged.</p>
       <div class="tablewrap" style="margin-top:10px"><table>
         <thead><tr><th>Platform</th><th class="r">Earned</th><th class="r">Paid</th><th class="r">Pending</th><th class="r">Per hour</th></tr></thead>
@@ -313,7 +282,7 @@
     <section class="slip" aria-labelledby="sIncTitle">
       <h2 id="sIncTitle">Income</h2>
       <div class="tablewrap" style="margin-top:10px"><table>
-        <thead><tr><th>Earned</th><th>Platform</th><th>Stream</th><th class="r">Amount</th><th>Status</th><th>Note</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Earned</th><th>Platform</th><th>Stream</th><th class="r">Amount</th><th>Status</th><th>Note</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="sIncBody"></tbody>
       </table></div>
     </section>
@@ -331,7 +300,7 @@
         <div class="btns"><button class="act" type="submit">Add deal</button></div>
       </form>
       <div class="tablewrap" style="margin-top:14px"><table>
-        <thead><tr><th>Brand</th><th>Deliverables</th><th class="r">Agreed</th><th>Due</th><th>Stage</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Brand</th><th>Deliverables</th><th class="r">Agreed</th><th>Due</th><th>Stage</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="sDealBody"></tbody>
       </table></div>
       <p class="muted" style="margin-top:8px;font-size:.85rem">Marking a deal Paid adds it to your income automatically.</p>
@@ -348,13 +317,13 @@
         <div class="btns"><button class="act" type="submit">Add expense</button></div>
       </form>
       <div class="tablewrap" style="margin-top:14px"><table>
-        <thead><tr><th>Date</th><th>Item</th><th class="r">Amount</th><th><span class="hide">Actions</span></th></tr></thead>
+        <thead><tr><th>Date</th><th>Item</th><th class="r">Amount</th><th><span class="sr-only">Actions</span></th></tr></thead>
         <tbody id="sExpBody"></tbody>
       </table></div>
       <p class="muted" style="margin-top:8px;font-size:.85rem">Creator income is usually self-employment income. Set part of every payout aside for taxes, and share your totals with a tax preparer.</p>
     </section>
   </section>
 <section id="app-paypal" role="tabpanel" aria-labelledby="app-tab-paypal" hidden><div class="slip row"><h2>PayPal</h2><p id="paypal-connection">Your PayPal sandbox identity is connected.</p><p>Activity import and routing arrive in the PayPal milestone.</p></div></section>
-    </main><div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </main><footer class="shell"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>Adults 18+ | Private play-test</span></footer><div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
 </html>

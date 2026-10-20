@@ -80,8 +80,10 @@ The dated build timeline lives in the [OneDime vision doc](https://claude.ai/cod
 | --- | --- | --- | --- |
 | 1. Foundation and login | week1-foundation | Repo, schema, Log in with PayPal, sessions, CI | Merged (PR #1) |
 | 2. The game | week2-game | Logging, XP, rested XP, streaks, quests, opt-in leaderboard, rung race | Merged with review corrections (PR #2 and PR #3) |
-| 3. OneDime app | week3-onedime-app | Pilot workspaces, exports, sandbox activity routing, disabled payouts, AI suggestions, deployment prep | Built in PR #4; review and merge pending; no deployment |
-| 4. Real players | week4-playtest | Play-test fixes, accessibility pass, README | Not started |
+| 3. OneDime app | week3-onedime-app | Pilot workspaces, exports, sandbox activity routing, disabled payouts, AI suggestions, deployment prep | Merged PR #4 at 423c33d; no deployment |
+| 4. Real players | week4-playtest | Payout review fixes, free browser suggestions, overview/settings/policies, accessibility | P1-P4 ready for review; PR #5 unmerged |
 | 5. Ship | week5-ship | Demo video, submission, repo public, license | Not started |
 
-**Open decisions for Brandon:** license (MIT or AGPL-3.0), Render plan (paid starter or free), and enabling sandbox milestone payouts. Rested XP starting at zero after the first logged day is approved.
+**Open decisions for Brandon:** zero-cost hosting, draft policy/legal review, physical-device
+play-testing, and enabling sandbox milestone payouts.
+The existing root LICENSE is unchanged. Rested XP starting at zero after the first logged day is approved.

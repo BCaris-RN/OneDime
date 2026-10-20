@@ -3,6 +3,7 @@
  *  Private activity review; a confirmation creates or links one record.
  */
 import { request, showApp, toast } from "./workspaces.js";
+import { smartControls } from "./smart.js";
 import {
   creatorPlatforms,
   freelancePlatforms,
@@ -27,6 +28,7 @@ type Payment = {
   suggestion: { record_type: string; platform: string; app: string; confidence: number } | null;
 };
 type Payload = {
+  payouts: { id: string; rungCents: number; amountCents: number | null; status: string; batchStatus: string | null }[];
   connection: { name: string | null; verified: boolean | null };
   month: string;
   rows: Payment[];
@@ -157,6 +159,7 @@ panel.append(
 el("paypal-connection").parentElement!.replaceWith(panel);
 const settings = node("section");
 settings.className = "slip row";
+settings.id = "settings";
 settings.append(
   node("h2", "Settings"),
   node(
@@ -165,9 +168,28 @@ settings.append(
   )
 );
 el("app-paypal").append(settings);
+const deleteForm = node("form");
+const deleteInput = node("input"); deleteInput.type = "text"; deleteInput.autocomplete = "off";
+deleteInput.required = true; deleteInput.pattern = "DELETE MY DATA";
+deleteInput.setAttribute("aria-describedby", "delete-help");
+const deleteHelp = node("p", "Export first if you want a copy. This deletes your account and all its active records, then logs you out. Type DELETE MY DATA to confirm.");
+deleteHelp.id = "delete-help";
+const deleteButton = node("button", "Delete my data"); deleteButton.type = "submit"; deleteButton.className = "act";
+const deleteStatus = node("p"); deleteStatus.setAttribute("role", "status");
+deleteForm.append(node("h3", "Delete my data"), deleteHelp, labelControl("Deletion confirmation", deleteInput), deleteButton, deleteStatus);
+deleteForm.addEventListener("submit", event => {
+  event.preventDefault(); if (deleteButton.disabled || deleteInput.value !== "DELETE MY DATA") return;
+  deleteButton.disabled = true;
+  void request("/settings/data", { confirmation: deleteInput.value }, "DELETE").then(() => location.assign("/"))
+    .catch(() => { deleteButton.disabled = false; deleteStatus.textContent = "Could not delete your data. Try again."; });
+});
+settings.append(deleteForm);
 let payload: Payload | null = null,
   loading = false;
 const strips = new Map<string, HTMLElement>();
+const payoutSection = node("section");
+payoutSection.className = "slip row";
+panel.after(payoutSection);
 for (const app of ["first", "spotlight", "freelance", "market"]) {
   const strip = node("div");
   strip.className = "paypal-strip";
@@ -194,6 +216,12 @@ function badges() {
 }
 function render() {
   if (!payload) return;
+  const payoutList = node("ul");
+  for (const payout of payload.payouts) payoutList.append(node("li",
+    `${money(payout.rungCents)} milestone · Bonus ${money(payout.amountCents ?? 0)} · Item: ${payout.status} · Batch: ${payout.batchStatus ?? "not submitted"}`));
+  payoutSection.replaceChildren(node("h2", "Sandbox milestone bonuses"),
+    node("p", "Bonuses are disabled by default. Batch completion is separate from each item's outcome."),
+    payload.payouts.length ? payoutList : node("p", "No milestone bonuses yet."));
   connection.textContent = `${payload.connection.name ?? "PayPal player"} · Sandbox connected · ${payload.connection.verified === null ? "Account verification not returned" : payload.connection.verified ? "Verified PayPal account" : "Account not verified"}`;
   stats.replaceChildren(
     ...Object.entries(payload.totalsByApp).map(([app, total]) => {
@@ -230,7 +258,7 @@ function render() {
       node("span", `PayPal · ${money(total ?? 0)} routed here in ${payload.month}`),
       button(`Review ${payload.unrouted} unrouted`, () => {
         filter.value = app === "market" ? "market_delivery" : app;
-        showApp("paypal");
+        showApp("paypal", true);
         render();
       })
     );
@@ -271,7 +299,7 @@ function render() {
           `Paid via PayPal · ${p.routed_app}${p.mismatch ? " · Amount mismatch: your recorded amount was preserved." : ""}`
         ),
         button("Open workspace", () =>
-          showApp(p.routed_app!.startsWith("market_") ? "market" : p.routed_app!)
+          showApp(p.routed_app!.startsWith("market_") ? "market" : p.routed_app!, true)
         )
       );
     } else {
@@ -405,45 +433,8 @@ document.addEventListener("onedime:rendered", () => {
 });
 void load();
 
-const suggestButton = button("Suggest routing", () => {
-  suggestButton.disabled = true;
-  void (async () => {
-    try {
-      const result = await request<{
-        status: string;
-        suggestions: { id: string; suggestion: Payment["suggestion"] }[];
-      }>("/paypal/suggestions", {});
-      if (payload)
-        for (const value of result.suggestions) {
-          const payment = payload.rows.find((row) => row.id === value.id);
-          if (payment) payment.suggestion = value.suggestion;
-        }
-      const messages: Record<string, string> = {
-        missing_key: "AI is not configured. Using the fixed payer map.",
-        budget_reached: "The monthly AI budget is reached. Using the fixed payer map.",
-        unsupported_model: "This model has no verified budget policy. Using the fixed payer map.",
-        invalid: "No valid AI suggestion. Choose a workspace yourself.",
-        failed: "AI is unavailable. Using the fixed payer map.",
-        pending: "Suggestions are already being prepared. Try again shortly.",
-        complete: "Suggestions ready. Review and confirm each payment.",
-        cached: "Available suggestions loaded. Review and confirm each payment."
-      };
-      aiStatus.textContent = messages[result.status] ?? "No suggestions available.";
-      render();
-    } catch {
-      aiStatus.textContent = "Could not load suggestions. You can route payments manually.";
-    } finally {
-      suggestButton.disabled = false;
-    }
-  })();
+smartControls(ai, () => payload?.rows ?? [], (id, suggestion) => {
+  const payment = payload?.rows.find(row => row.id === id);
+  if (payment) payment.suggestion = suggestion;
+  render();
 });
-const aiStatus = node("p");
-aiStatus.setAttribute("role", "status");
-ai.append(
-  node(
-    "p",
-    "Optional AI sends only payer name, net amount and payment kind to Claude. Email-like payer text is redacted. It suggests; you confirm, and the server decides."
-  ),
-  suggestButton,
-  aiStatus
-);

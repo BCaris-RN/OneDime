@@ -139,43 +139,10 @@ Sources checked live:
 - https://csv.js.org/parse/options/
 - https://www.npmjs.com/package/csv-parse (7.0.3, MIT, audit clean)
 
-## M4: bounded AI suggestions
+## M4: historical routing assistant
 
-Anthropic's current model guide confirms `claude-haiku-5-5` with no date suffix.
-The Messages API receives structured-output JSON Schema, low effort, no tools and
-2,048 maximum output tokens. Names are JSON data under a fixed system instruction;
-only owned, incoming, unrouted payments participate. Names that look like email
-addresses are redacted before the client call. No notes, emails, player IDs or other
-players' rows enter the request. Fixed-map matches need no model call.
-
-Batches contain at most ten unique payer names. Server schemas check record/app/platform
-compatibility, indices and confidence. Invalid, refused, truncated or below-0.7 outputs
-create no suggestion. Suggestions never call routing or payout services. The player
-confirms and the server revalidates the actual financial operation.
-
-A shared UTC-month ai_budget row reserves two cents before each request, serialized
-across players/processes. The request is limited to 50 KB of text JSON and 2,048 output
-tokens. At checked Haiku 5.5 rates ($0.10 input / $0.50 output per million tokens below
-100k input), the reservation conservatively exceeds request cost. ai_usage records
-reservation, status, token counts and whole-cent rounded cost; failed requests keep
-the full reservation because billing may be unknown. Reservations are not refunded,
-so the global cap may stop earlier than actual invoice spend. Deleting a player does
-not reset the global counter. Other model overrides fall back until pricing is verified
-in code, rather than spending under an unknown policy.
-
-Cache keys are private per-player payer hashes plus model. Pending reservations suppress
-duplicate simultaneous requests for five minutes; completed suggestions (including no
-suggestion) last 30 days. Budget exhaustion, missing keys, unsupported models and provider
-failure use fixed-map fallback with a UI explanation. No billing code or player charges.
-157 tests passed, including concurrency, schema/injection/privacy and budget fallback;
-build passed, browser missing-key fallback passed. Actual Anthropic requests use mocks
-in tests; no real key was used.
-
-Sources checked live:
-- https://platform.claude.com/docs/en/models/haiku-5-5/migration-guide
-- https://platform.claude.com/docs/en/about-claude/pricing
-- https://platform.claude.com/docs/en/build-with-claude/structured-outputs
-- https://platform.claude.com/docs/en/api/messages/create
+The Phase 3 server assistant was replaced by free device-only suggestions in Phase 4.
+See phase4-decisions.md for the current model, download size, privacy and fallback.
 
 ## M5: local demo and review preparation
 
@@ -206,8 +173,7 @@ existing First Dime entry without changing its amount, matching verification and
 badge, and downloading the complete workbook. The browser console reported no errors or
 warnings. M5 screenshots capture desktop, phone and dark-mode examples.
 
-Provider tests remain mocked. Real sandbox OAuth/Payouts/webhooks, real Anthropic
-connectivity and interactive Excel/Google Sheets import need operator checks with approved
+Provider tests remain mocked. Real sandbox OAuth/Payouts/webhooks, interactive Excel/Google Sheets import need operator checks with approved
 accounts and keys. CSV source labels do not authenticate a file with PayPal. Google Sheets
 OAuth is deferred; file exports are complete. Reviewer sign-off and merge approval remain
 outstanding. This is implementation completion, not a merged or deployed phase.

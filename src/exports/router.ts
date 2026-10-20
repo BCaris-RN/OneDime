@@ -11,6 +11,7 @@ import { transactions } from "../paypal/routing.js";
 import { allRows } from "../ledger/router.js";
 import { tables, type TableKey } from "../ledger/catalog.js";
 import { summary } from "../ledger/summary.js";
+import { firstDimeTotals } from "../ledger/first-totals.js";
 import { BadRequest } from "../http/errors.js";
 import {
   combine,
@@ -64,6 +65,7 @@ export function createExportRouter(prisma: PrismaClient, now: () => Date) {
     const sheets = await prisma.$transaction(
       async (tx) => {
         const data = await allRows(tx, player.id);
+        const payments = await transactions(tx, player.id);
         const entries = await tx.logEntry.findMany({
           where: { playerId: player.id },
           orderBy: { workedOn: "asc" },
@@ -131,30 +133,24 @@ export function createExportRouter(prisma: PrismaClient, now: () => Date) {
               )
                 months.add(value.slice(0, 7));
         }
+        for (const payment of payments) {
+          if (payment.routed_record_type === "first" && inRange(payment.occurred_on)) {
+            months.add(payment.occurred_on.slice(0, 7));
+          }
+        }
         if (query.month) months.add(query.month);
         const totals: ExportRow[] = [];
         for (const month of [...months].sort()) {
-          const logged = first.rows.filter(
-            (row) =>
-              String(row.worked_on).startsWith(month) &&
-              inRange(String(row.worked_on)),
-          );
-          const earned = logged.reduce(
-              (s, row) => s + Number(row.amount_cents),
-              0,
-            ),
-            paid = logged
-              .filter((row) => row.verified)
-              .reduce((s, row) => s + Number(row.amount_cents), 0);
+          const financial = firstDimeTotals(entries, payments, month, inRange);
           totals.push({
             app: "first",
             month,
-            earned_cents: earned,
-            paid_cents: paid,
-            pending_cents: earned - paid,
-            fees_cents: 0,
+            earned_cents: financial.earnedCents,
+            paid_cents: financial.paidCents,
+            pending_cents: financial.pendingCents,
+            fees_cents: financial.feesCents,
             expenses_cents: 0,
-            net_cents: earned,
+            net_cents: financial.netCents,
           });
           for (const app of [
             "spotlight",
@@ -237,7 +233,6 @@ export function createExportRouter(prisma: PrismaClient, now: () => Date) {
             "routed_record_type",
             "routed_record_id",
           ];
-          const payments = await transactions(tx, player.id);
           const payouts = await tx.payout.findMany({
             where: { playerId: player.id },
           });
@@ -270,6 +265,7 @@ export function createExportRouter(prisma: PrismaClient, now: () => Date) {
                 "rung_cents",
                 "amount_cents",
                 "status",
+                  "batch_status",
                 "sender_batch_id",
                 "paypal_batch_id",
                 "created_on",
@@ -282,6 +278,7 @@ export function createExportRouter(prisma: PrismaClient, now: () => Date) {
                   rung_cents: row.rungCents,
                   amount_cents: row.amountCents,
                   status: row.status,
+                    batch_status: row.batchStatus,
                   sender_batch_id: row.senderBatchId,
                   paypal_batch_id: row.paypalBatchId,
                   created_on: localDay(row.createdAt, player.timeZone ?? "UTC"),

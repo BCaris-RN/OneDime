@@ -17,9 +17,6 @@ export type AppConfig = {
   paypalAuthUrl: string;
   paypalApiBaseUrl: string;
   paypalScope: string;
-  anthropicApiKey?: string;
-  anthropicModel?: string;
-  aiMonthlyBudgetCents?: number;
   payoutsEnabled?: boolean;
   paypalWebhookId?: string;
 };
@@ -27,7 +24,10 @@ export type AppConfig = {
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const nodeEnv = env.NODE_ENV ?? "development";
   const port = parseInteger(env.PORT, 3000);
-  const publicBaseUrl = env.PUBLIC_BASE_URL ?? `http://localhost:${port}`;
+  const appBase = blankToUndefined(env.APP_BASE_URL), publicBase = blankToUndefined(env.PUBLIC_BASE_URL);
+  if (appBase && publicBase && appBase !== publicBase)
+    throw new Error("APP_BASE_URL and PUBLIC_BASE_URL must agree.");
+  const publicBaseUrl = appBase ?? publicBase ?? `http://localhost:${port}`;
   const paypalEnvironment = env.PAYPAL_ENVIRONMENT ?? "sandbox";
   const paypalAuthUrl = env.PAYPAL_AUTH_URL ?? PAYPAL_AUTH_URL;
   const paypalApiBaseUrl = env.PAYPAL_API_BASE_URL ?? PAYPAL_API_BASE_URL;
@@ -48,12 +48,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if (nodeEnv === "production" && env.PAYOUTS_ENABLED === "true") throw new Error("Payouts may only be enabled locally.");
 
   if (env.GOOGLE_SHEETS_ENABLED === "true") throw new Error("Google Sheets integration is not enabled; use file exports.");
-  const aiBudget = Number(env.AI_MONTHLY_BUDGET_CENTS ?? "100");
-  if (!Number.isSafeInteger(aiBudget) || aiBudget < 0 || aiBudget > 1000000) throw new Error("Invalid AI monthly budget.");
   return {
-    anthropicApiKey: blankToUndefined(env.ANTHROPIC_API_KEY),
-    anthropicModel: env.ANTHROPIC_MODEL ?? "claude-haiku-5-5",
-    aiMonthlyBudgetCents: aiBudget,
     payoutsEnabled: env.PAYOUTS_ENABLED === "true",
     paypalWebhookId: blankToUndefined(env.PAYPAL_WEBHOOK_ID),
     nodeEnv,

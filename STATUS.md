@@ -1,6 +1,53 @@
 # OneDime status
 
-Updated Oct 17, 2026 (Hawaii). Branch: `week3-onedime-app`, base `9953600`.
+Updated Oct 19, 2026 (Hawaii). Branch: `week4-playtest`, base `423c33d`.
+
+Phase 3 merged as PR #4. Phase 4 follows `handoffs/week4-playtest.md`.
+
+| Phase 4 checkpoint | State | Validation / next |
+| --- | --- | --- |
+| P1 payout review fixes | Complete | b32fdd4; build/178 tests passed; CI green 39214704838 and 39214736585 |
+| P2 free on-device suggestions | Complete | 291a91c; 41.3 MB local model/runtime; build/170 tests/browser passed; CI green 39215863437 and 39215869049 |
+| P3 missing pieces | Complete | 053a84d; build/177 tests/browser passed; CI green 39217131318 and 39217135956 |
+| P4 accessibility/play-test | Complete | 6d24c54; build/179 tests/audit passed; 3,912 browser Tab steps, arrows, labels/captions, 320/390px and both themes; CI green 39219251774 and 39219258008 |
+
+Checkpoint commits and exact-head CI links are tracked in PR #5.
+No merge, deploy, public visibility change, live PayPal or payout enablement.
+
+PR #5 bot review follow-up (Oct 19): First Dime earned totals stay in the work
+month; linked paid totals use PayPal occurred_on, including Summary export month
+and date-range filters. Migration 000006 now backfills legacy batch states and
+flags ambiguous terminal values for manual review without resending. Node 24
+build and 185 tests pass locally, including adjacent-month gross/net cases and
+four isolated migration tests. The fix commit and exact-head CI results are
+recorded in both bot review threads on PR #5. Review and merge remain pending.
+
+P4 also preserves early batch webhooks against late create responses (6a4e011),
+with SUCCESS/DENIED regressions. The browser checks every app and sub-tab, visible
+focus above phone controls, persisted free suggestions and cache, public policies
+and typed account deletion. Twenty-four P4 screenshots contain fictional data only.
+Final source review found no remaining blocker. No Brandon play-test notes were
+present in this file or PR #5 when checked.
+
+P4 implementation head: `6d24c54d5652d4fd13caedf58500275a5a940d0c`.
+Both [push CI](https://github.com/BCaris-RN/OneDime/actions/runs/39219251774) and
+[PR CI](https://github.com/BCaris-RN/OneDime/actions/runs/39219258008) passed on that
+exact head, including the browser checks. This documentation checkpoint follows
+that verified implementation. Final documentation-head CI is linked in PR #5.
+The final policy drafts were added in `d2ead81`; this documentation update keeps the
+README, STATUS and SDLC roadmap aligned with the current app. PR #5 is ready for review
+and remains unmerged. Next: reviewer play-test and Brandon's separate merge decision.
+Do not merge.
+
+Remaining operator checks: physical phone inference speed/screen-reader testing,
+real sandbox connectivity, draft policy contact/jurisdiction/backup review and
+zero-cost hosting. Existing prepared Render starter plans are not approved hosting.
+Root LICENSE is unchanged. Reviewer/Brandon merge gates remain outstanding.
+
+The root drafts `privacy_policy.md` and `user_agreement.md` are plain-language play-test
+documents, not legal advice. Brandon must review them before public use.
+
+## Phase 3 checkpoint history
 
 | Milestone | Implementation commit | Validation | Next |
 | --- | --- | --- | --- |
@@ -24,8 +71,7 @@ History cleanup on main is accepted by Brandon; retained GitHub PR refs are his 
 No merge, deploy, live PayPal, public visibility or real credential use in Phase 3.
 Missing keys will use mocks. Defaults: file exports only; payouts off; no XP for other tabs.
 Open decisions: payout enablement, Google Sheets stretch, license, hosting and real sandbox keys.
-Model claude-haiku-5-5, structured output API and pricing checked live at M4.
-No real provider keys used; operator must validate real sandbox/AI connectivity.
+No real provider keys used; operator must validate real sandbox connectivity.
 Interactive Excel/Sheets import remains an operator check; file structures/downloads are tested.
 Development-only Testcontainers/archiver emits a glob 10.5.0 deprecation warning; audit is clean.
 Run `npm run demo` with Node 24 and Docker for a disposable fictional local demo.

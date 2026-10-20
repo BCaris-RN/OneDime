@@ -1,5 +1,4 @@
 import { seedDemo } from "../src/demo/seed.js";
-import type { AIClient } from "../src/ai/client.js";
 import { createPayoutService } from "../src/paypal/payouts.js";
 import type { PayoutClient } from "../src/paypal/payouts.js";
 import { unzipSync, strFromU8 } from "fflate";
@@ -91,9 +90,6 @@ beforeEach(async () => {
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
       sessions,
-      ai_cache,
-      ai_usage,
-      ai_budget,
       webhook_events,
       oauth_states,
       payouts,
@@ -1324,8 +1320,47 @@ describe("Phase 2 game API", () => {
         net_cents: 970,
         mismatch: !verified,
       });
+      const financial=(await request(app).get("/api/overview?month=2026-10").set("Cookie",alice.cookie)).body.rows[0];
+      expect(financial).toMatchObject(verified
+        ? {earnedCents:1000,paidCents:970,feesCents:30,netCents:970,pendingCents:0}
+        : {earnedCents:985,paidCents:0,feesCents:0,netCents:985,pendingCents:985});
+      const archive=await request(app).get("/api/exports?tab=all&format=zip&month=2026-10")
+        .set("Cookie",alice.cookie).buffer(true).parse(parseBinary).expect(200);
+      expect(strFromU8(unzipSync(archive.body)["Summary.csv"]))
+        .toContain(verified?'"first","2026-10","10.00","9.70","0.00","0.30","0.00","9.70"':'"first","2026-10","9.85","0.00","9.85","0.00","0.00","9.85"');
     },
   );
+  it.each([1000, 970])("counts a linked %i-cent entry as paid in the payment month", async amountCents => {
+    const alice = await login("paypal-payment-month");
+    const entry = (await write(alice.cookie, "/api/entries", {
+      ...validEntry, platform: "Prolific", amountCents, workedOn: "2026-09-30",
+    }).expect(201)).body.entry;
+    await write(alice.cookie, "/api/paypal/import", {
+      csv: activityCsv("NEXT-MONTH", "Hyperwallet", "USD", "10.00", "-0.30", "9.70"),
+    }).expect(200);
+    const payment = (await activity(alice.cookie)).body.rows[0];
+    await write(alice.cookie, `/api/paypal/transactions/${payment.id}/route`, {
+      record_type: "first", platform: "Prolific", record_id: entry.id,
+    }).expect(200);
+    for (const [month, expected] of [
+      ["2026-09", { earnedCents: 1000, paidCents: 0, feesCents: 30, netCents: 970 }],
+      ["2026-10", { earnedCents: 0, paidCents: 970, feesCents: 0, netCents: 0 }],
+    ] as const) {
+      const result = await request(app).get(`/api/overview?month=${month}`)
+        .set("Cookie", alice.cookie).expect(200);
+      expect(result.body.rows[0]).toMatchObject({ app: "first", ...expected, pendingCents: 0 });
+      expect(result.body.rows.at(-1)).toMatchObject({ app: "total", ...expected, pendingCents: 0 });
+    }
+    for (const filter of ["", "&month=2026-10", "&from=2026-10-01&to=2026-10-31"]) {
+      const archive = await request(app).get(`/api/exports?tab=all&format=zip${filter}`)
+        .set("Cookie", alice.cookie).buffer(true).parse(parseBinary).expect(200);
+      const totals = strFromU8(unzipSync(archive.body)["Summary.csv"]);
+      expect(totals).toContain('"first","2026-10","0.00","9.70","0.00","0.00","0.00","0.00"');
+      if (!filter) expect(totals)
+        .toContain('"first","2026-09","10.00","0.00","0.00","0.30","0.00","9.70"');
+      else expect(totals).not.toContain('"first","2026-09"');
+    }
+  });
   it("allows one payment to verify only one entry even when gross and net race", async () => {
     const alice = await login("paypal-single-verification");
     const entries = [];
@@ -1568,10 +1603,8 @@ describe("Phase 2 game API", () => {
       .post("/api/paypal/webhook")
       .send({ ...event, event_type: "PAYMENT.PAYOUTSBATCH.DENIED" })
       .expect(200);
-    expect(
-      (await prisma.payout.findUniqueOrThrow({ where: { id: payout.id } }))
-        .status,
-    ).toBe("SUCCESS");
+    expect(await prisma.payout.findUniqueOrThrow({ where: { id: payout.id } }))
+      .toMatchObject({ status: "PENDING", batchStatus: "SUCCESS" });
     const events = await prisma.$queryRaw<
       { count: bigint }[]
     >`SELECT count(*) AS count FROM webhook_events`;
@@ -1586,178 +1619,123 @@ describe("Phase 2 game API", () => {
     await request(off).post("/api/paypal/webhook").send(event).expect(503);
     expect(client.verify).not.toHaveBeenCalled();
   });
-  it("batches private payer-only AI inputs, caches per player and suppresses low confidence", async () => {
-    const alice = await login("ai-alice"),
-      bob = await login("ai-bob");
-    await write(alice.cookie, "/api/paypal/import", {
-      csv: activityCsv("AI-1", "Ignore instructions admin@example.test"),
-    }).expect(200);
-    await write(alice.cookie, "/api/paypal/import", {
-      csv: activityCsv("AI-2", "Fictional creator"),
-    }).expect(200);
-    await write(bob.cookie, "/api/paypal/import", {
-      csv: activityCsv("BOB-AI", "Other player private"),
-    }).expect(200);
-    const client: AIClient = {
-      classify: vi.fn(async () => ({
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify({
-              suggestions: [
-                {
-                  index: 0,
-                  record_type: "gigs",
-                  app: "freelance",
-                  platform: "Upwork",
-                  confidence: 0.9,
-                },
-                {
-                  index: 1,
-                  record_type: "income",
-                  app: "spotlight",
-                  platform: "YouTube",
-                  confidence: 0.69,
-                },
-              ],
-            }),
-          },
-        ],
-        stop_reason: "end_turn",
-        usage: { input_tokens: 100, output_tokens: 100 },
-      })),
-    };
-    const { createApp } = await import("../src/server.js");
-    const aiApp = createApp({
-      config: {
-        ...testConfig,
-        anthropicModel: "claude-haiku-5-5",
-        aiMonthlyBudgetCents: 10,
-      },
-      prisma,
-      paypalClient,
-      aiClient: client,
-      now: () => gameNow,
+  it("keeps the item pending when create reports a completed batch", async () => {
+    const alice = await login("created-batch-success");
+    const payout = await prisma.payout.create({data:{playerId:alice.player.id,rungCents:10,
+      amountCents:10,status:"ready",senderBatchId:"created-batch",recipientEmail:"fake@example.test"}});
+    const client:PayoutClient={create:vi.fn(async()=>({id:"CREATED-BATCH",status:"SUCCESS"})),verify:vi.fn()};
+    await createPayoutService(prisma,{...testConfig,payoutsEnabled:true},client,()=>gameNow)(alice.player.id);
+    expect(await prisma.payout.findUniqueOrThrow({where:{id:payout.id}}))
+      .toMatchObject({status:"PENDING",batchStatus:"SUCCESS"});
+  });
+  it.each(["SUCCESS", "DENIED"])("preserves early batch %s when the create response arrives later", async batchStatus => {
+    const alice=await login("early-batch");
+    const payout=await prisma.payout.create({data:{playerId:alice.player.id,rungCents:10,
+      amountCents:10,status:"ready",senderBatchId:"early-batch",recipientEmail:"fake@example.test"}});
+    const {createApp}=await import("../src/server.js");
+    const client:PayoutClient={create:vi.fn(async()=>{
+      await request(on).post("/api/paypal/webhook").send({id:"EARLY-BATCH-EVENT",
+        event_type:`PAYMENT.PAYOUTSBATCH.${batchStatus}`,resource:{batch_header:{payout_batch_id:"EARLY-BATCH",
+          sender_batch_header:{sender_batch_id:"early-batch"}}}}).expect(200);
+      return {id:"EARLY-BATCH",status:"PROCESSING"};
+    }),verify:vi.fn(async()=>true)};
+    const on=createApp({config:{...testConfig,payoutsEnabled:true},prisma,paypalClient,payoutClient:client});
+    await createPayoutService(prisma,{...testConfig,payoutsEnabled:true},client,()=>gameNow)(alice.player.id);
+    expect(await prisma.payout.findUniqueOrThrow({where:{id:payout.id}}))
+      .toMatchObject({status:"PENDING",batchStatus,paypalBatchId:"EARLY-BATCH"});
+  });
+  it.each(["FAILED", "DENIED", "CANCELED", "BLOCKED", "HELD"])(
+    "applies item %s after batch success and exposes the owned item state", async (status) => {
+      const alice = await login("item-status");
+      const bob = await login("other-item-status");
+      const payout = await prisma.payout.create({data:{playerId:alice.player.id,
+        rungCents:10,amountCents:10,status:"PENDING",paypalBatchId:"BATCH-STATUS"}});
+      const { createApp } = await import("../src/server.js");
+      const on = createApp({config:{...testConfig,payoutsEnabled:true},prisma,paypalClient,
+        payoutClient:{create:vi.fn(),verify:vi.fn(async()=>true)}});
+      const send = (id:string,type:string) => request(on).post("/api/paypal/webhook").send({
+        id,event_type:type,resource:{payout_batch_id:"BATCH-STATUS",payout_item:{sender_item_id:payout.id}}});
+      await send("BATCH-DONE","PAYMENT.PAYOUTSBATCH.SUCCESS").expect(200);
+      expect((await prisma.payout.findUniqueOrThrow({where:{id:payout.id}})).status).toBe("PENDING");
+      await send("ITEM-STATE",`PAYMENT.PAYOUTS-ITEM.${status}`).expect(200);
+      expect((await activity(alice.cookie)).body.payouts[0]).toMatchObject({status,batchStatus:"SUCCESS"});
+      expect((await activity(bob.cookie)).body.payouts).toEqual([]);
+      await send("ITEM-STATE","PAYMENT.PAYOUTS-ITEM.SUCCEEDED").expect(200);
+      expect((await prisma.payout.findUniqueOrThrow({where:{id:payout.id}})).status).toBe(status);
+      await send("LATER-SUCCESS","PAYMENT.PAYOUTS-ITEM.SUCCEEDED").expect(200);
+      expect((await prisma.payout.findUniqueOrThrow({where:{id:payout.id}})).status)
+        .toBe(status==="HELD"?"SUCCESS":status);
     });
-    const ask = () =>
-      request(aiApp)
-        .post("/api/paypal/suggestions")
-        .set("Cookie", alice.cookie)
-        .set("Origin", origin)
-        .send({});
-    const first = (await ask().expect(200)).body;
-    expect(
-      first.suggestions.filter(
-        (row: { suggestion: unknown }) => row.suggestion,
-      ),
-    ).toHaveLength(1);
-    const input = vi.mocked(client.classify).mock.calls[0][0];
-    expect(input).toHaveLength(2);
-    for (const row of input)
-      expect(Object.keys(row).sort()).toEqual([
-        "amount_cents",
-        "kind",
-        "payer",
-      ]);
-    const serialized = JSON.stringify(input);
-    for (const value of [
-      "admin@example.test",
-      "ai-alice@example.com",
-      "Other player private",
-      validEntry.note,
-    ])
-      expect(serialized).not.toContain(value);
-    const cached = (await ask().expect(200)).body;
-    expect(cached.status).toBe("cached");
-    expect(client.classify).toHaveBeenCalledTimes(1);
+  it("serves draft policies publicly", async () => {
+    for(const policy of ["privacy","terms"]) {
+      const response=await request(app).get(`/${policy}`).expect(200);
+      expect(response.text).toContain("Draft, not legal advice");
+      expect(response.text).toContain("18");
+      if(policy === "privacy") expect(response.text).toContain("Delete my data");
+      else expect(response.text).toContain("You must be 18 or older");
+    }
+  });
+  it.each(["TaskRabbit","Rover","Thumbtack"])("accepts %s shifts without awarding game progression",async platform=>{
+    const alice=await login("service-platform");
+    const body=workspaceCases.find(([path])=>path==="/market/shifts")![1];
+    await write(alice.cookie,"/api/market/shifts",{...body,platform}).expect(201);
     expect(await prisma.logEntry.count()).toBe(0);
   });
-  it("atomically enforces the global AI budget under concurrent requests and falls back to the fixed map", async () => {
-    const alice = await login("ai-budget-a"),
-      bob = await login("ai-budget-b");
-    for (const current of [alice, bob])
-      await write(current.cookie, "/api/paypal/import", {
-        csv: activityCsv(`AI-${current.player.id}`, "Fictional payer"),
-      }).expect(200);
-    const client: AIClient = {
-      classify: vi.fn(async () => ({
-        content: [{ type: "text", text: '{"suggestions":[]}' }],
-        stop_reason: "end_turn",
-        usage: { input_tokens: 100, output_tokens: 0 },
-      })),
-    };
-    const { createApp } = await import("../src/server.js");
-    const aiApp = createApp({
-      config: { ...testConfig, aiMonthlyBudgetCents: 2 },
-      prisma,
-      paypalClient,
-      aiClient: client,
-      now: () => gameNow,
-    });
-    const ask = (cookie: string) =>
-      request(aiApp)
-        .post("/api/paypal/suggestions")
-        .set("Cookie", cookie)
-        .set("Origin", origin)
-        .send({});
-    const responses = await Promise.all([ask(alice.cookie), ask(bob.cookie)]);
-    expect(responses.map((row) => row.status)).toEqual([200, 200]);
-    expect(responses.map((row) => row.body.status)).toContain("budget_reached");
-    expect(client.classify).toHaveBeenCalledTimes(1);
-    const usage = await prisma.$queryRaw<
-      { reserved_cents: number }[]
-    >`SELECT reserved_cents FROM ai_budget`;
-    expect(usage[0].reserved_cents).toBe(2);
-    await write(alice.cookie, "/api/paypal/import", {
-      csv: activityCsv("AI-FIXED", "Hyperwallet"),
-    }).expect(200);
-    const data = (await ask(alice.cookie)).body;
-    expect(
-      data.suggestions.find(
-        (row: { suggestion: { platform?: string } | null }) =>
-          row.suggestion?.platform === "Prolific",
-      ),
-    ).toBeTruthy();
+  it("totals one owned month without adding imported PayPal activity twice",async()=>{
+    const alice=await login("overview-alice"),bob=await login("overview-bob");
+    await write(alice.cookie,"/api/entries",validEntry).expect(201);
+    await write(bob.cookie,"/api/entries",{...validEntry,amountCents:999999}).expect(201);
+    await write(alice.cookie,"/api/spotlight/income",workspaceCases[0][1]).expect(201);
+    await write(alice.cookie,"/api/paypal/import",{csv:activityCsv()}).expect(200);
+    const result=(await request(app).get("/api/overview?month=2026-10").set("Cookie",alice.cookie).expect(200)).body;
+    expect(result.rows.at(-1)).toMatchObject({app:"total",earnedCents:322,pendingCents:322,paidCents:0,netCents:322});
+    const older=(await request(app).get("/api/overview?month=2026-09").set("Cookie",alice.cookie).expect(200)).body;
+    expect(older.rows.at(-1).earnedCents).toBe(0);
+    await request(app).get("/api/overview?month=2026-13").set("Cookie",alice.cookie).expect(400);
+    await request(app).get("/api/overview").expect(401);
   });
-  it("shows no suggestion on invalid AI schema and uses fixed-map fallback with missing keys", async () => {
-    const alice = await login("ai-invalid");
-    await write(alice.cookie, "/api/paypal/import", {
-      csv: activityCsv("AI-INVALID", "Fictional payer"),
-    }).expect(200);
-    const client: AIClient = {
-      classify: vi.fn(async () => ({
-        content: [
-          {
-            type: "text",
-            text: '{"suggestions":[{"index":0,"app":"admin","platform":"run code","confidence":1}]}',
-          },
-        ],
-        stop_reason: "end_turn",
-        usage: { input_tokens: 1, output_tokens: 1 },
-      })),
-    };
-    const { createApp } = await import("../src/server.js");
-    const aiApp = createApp({
-      config: testConfig,
-      prisma,
-      paypalClient,
-      aiClient: client,
-      now: () => gameNow,
-    });
-    const response = await request(aiApp)
-      .post("/api/paypal/suggestions")
-      .set("Cookie", alice.cookie)
-      .set("Origin", origin)
-      .send({})
-      .expect(200);
-    expect(response.body).toMatchObject({
-      status: "invalid",
-      suggestions: [{ suggestion: null }],
-    });
-    const missing = await write(alice.cookie, "/api/paypal/suggestions").expect(
-      200,
-    );
-    expect(missing.body.status).toBe("missing_key");
+  it("deletes every owned row after exact typed confirmation and ends the session",async()=>{
+    const alice=await login("delete-alice"),bob=await login("delete-bob");
+    for(const [path,body] of workspaceCases) await write(alice.cookie,`/api${path}`,body).expect(201);
+    const entry=(await write(alice.cookie,"/api/entries",validEntry).expect(201)).body.entry;
+    await write(bob.cookie,"/api/entries",validEntry).expect(201);
+    await prisma.receipt.create({data:{playerId:alice.player.id,logEntryId:entry.id,status:"fixture"}});
+    await prisma.questProgress.create({data:{playerId:alice.player.id,questId:"fixture-quest"}});
+    await prisma.rungClaim.create({data:{playerId:alice.player.id,rungCents:10}});
+    await prisma.payout.create({data:{playerId:alice.player.id,rungCents:10,status:"ready",amountCents:10}});
+    await write(alice.cookie,"/api/paypal/import",{csv:activityCsv()}).expect(200);
+    const remove=(body:unknown)=>request(app).delete("/api/settings/data").set("Cookie",alice.cookie).set("Origin",origin).send(body);
+    await remove({confirmation:"delete"}).expect(400);
+    await remove({confirmation:"DELETE MY DATA",playerId:bob.player.id}).expect(400);
+    await request(app).delete("/api/settings/data").set("Cookie",alice.cookie).set("Origin","https://other.example.test")
+      .send({confirmation:"DELETE MY DATA"}).expect(403);
+    const response=await remove({confirmation:"DELETE MY DATA"}).expect(204);
+    expect(response.headers["set-cookie"][0]).toContain("Expires=Thu, 01 Jan 1970");
+    expect(await prisma.player.findUnique({where:{id:alice.player.id}})).toBeNull();
+    for(const table of ["sessions","log_entries","quest_progress","rung_claims","receipts","payouts","creator_income","brand_deals","expenses","freelance_gigs","delivery_shifts","sales","paypal_transactions"]) {
+      const rows=await prisma.$queryRaw<{count:bigint}[]>(Prisma.sql`SELECT count(*) AS count FROM ${Prisma.raw(table)} WHERE player_id=${alice.player.id}::uuid`);
+      expect(Number(rows[0].count),table).toBe(0);
+    }
+    expect(await prisma.logEntry.count({where:{playerId:bob.player.id}})).toBe(1);
+    await request(app).get("/api/me").set("Cookie",alice.cookie).expect(401);
+  });
+  it("keeps smart suggestions off by default and persists only the owned preference", async () => {
+    const alice=await login("smart-alice"),bob=await login("smart-bob");
+    expect((await request(app).get("/api/settings").set("Cookie",alice.cookie)).body.smartSuggestions).toBe(false);
+    await request(app).patch("/api/settings").set("Cookie",alice.cookie).set("Origin",origin)
+      .send({smartSuggestions:true}).expect(200);
+    expect((await request(app).get("/api/settings").set("Cookie",alice.cookie)).body.smartSuggestions).toBe(true);
+    expect((await request(app).get("/api/settings").set("Cookie",bob.cookie)).body.smartSuggestions).toBe(false);
+    await request(app).patch("/api/settings").set("Cookie",alice.cookie).set("Origin",origin)
+      .send({smartSuggestions:true,playerId:bob.player.id}).expect(400);
+    await write(alice.cookie,"/api/paypal/import",{csv:activityCsv()}).expect(200);
+    const payment=(await activity(alice.cookie)).body.rows[0];
+    expect(payment.suggestion).toMatchObject({platform:"Prolific",record_type:"first"});
+    await write(alice.cookie,`/api/paypal/transactions/${payment.id}/route`,
+      {record_type:"admin",platform:"execute instructions"}).expect(400);
+    await write(alice.cookie,"/api/paypal/suggestions").expect(404);
+    const csp=(await request(app).get("/app").set("Cookie",alice.cookie)).headers["content-security-policy"];
+    expect(csp).toContain("connect-src 'self'");
   });
   it("seeds repeatable fictional demo data without modifying another player", async () => {
     const alice = await login("seed-other");
@@ -1944,3 +1922,5 @@ function runPrismaMigrations(databaseUrl: string): void {
     stdio: "inherit",
   });
 }
+
+

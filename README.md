@@ -52,8 +52,8 @@ npm run demo
 Docker Desktop must be running. This creates a disposable PostgreSQL 16 container,
 applies migrations, seeds fake data and binds only to `127.0.0.1:3403`. Open
 [the local demo](http://127.0.0.1:3403/demo-login). Stop with Ctrl+C to remove the container.
-The demo uses fake identity/session data, disabled payouts and no AI key. It does
-not contact PayPal or Anthropic. It does not demonstrate real PayPal authentication.
+The demo uses fake identity/session data, disabled payouts and no provider keys. It does
+not contact external providers. It does not demonstrate real PayPal authentication.
 All people, transaction IDs and financial events are fictional; platform names are
 labels and no third-party logos are included.
 
@@ -78,10 +78,33 @@ GitHub Actions uses a local PostgreSQL 16 service and Node 24, then installs, bu
 Coverage includes ownership, input/origin/rate checks, game math and clock races,
 brand-deal payment concurrency, ledger calculations, exports/formula protection,
 CSV privacy and re-imports, routing/unlink behavior, payout idempotency and webhook
-failures/deduplication, AI schema/privacy/cache/budget races, and repeatable fake seed data.
-Exact checkpoint SHAs, test counts and CI evidence are in `STATUS.md` and PR #4.
+failures/deduplication, device confidence/privacy/cache/preferences, and repeatable fake seed data.
+Exact checkpoint SHAs, test counts and CI evidence are in `STATUS.md` and [PR #5](https://github.com/BCaris-RN/OneDime/pull/5).
 
 ## Pick one workspace for each payment
+
+Each app has a stats month picker. PayPal's “This month, everywhere” overview adds
+the five income ledgers once, never the imported activity a second time. For a matched
+First Dime payment, financial earned/fee/paid/net totals use its actual gross/fee/net;
+the entry's logged amount and game progression are preserved. Unknown fees are not
+invented. All-time pending/open and platform comparisons are labeled separately.
+
+The footer and Help link to draft `/privacy` and `/terms` pages for Brandon's review.
+PayPal settings includes Delete my data. Export first, then type `DELETE MY DATA`:
+the server deletes the account and all owned active rows, clears the cookie and logs
+you out. Tests check every owned table and preserve another player's records.
+
+The current plain-language drafts are also kept as [privacy_policy.md](privacy_policy.md)
+and [user_agreement.md](user_agreement.md). They describe the data collected, PayPal CSV
+handling, device-only suggestions, account deletion, fair-play rules and current play-test
+boundaries. They are not legal advice and still need operator review.
+
+For the browser privacy/cache check, install Chromium with `npx playwright install chromium`,
+then run `npm run test:browser`. CI also runs this check. Screenshots use fictional data.
+The final check covers every app and sub-tab at 320px and 390px in both themes, keyboard
+tab/arrow/Home/End navigation, visible focus above the phone controls, table captions and
+input labels. Native date fields use a full row on narrow screens, and 320px forms use one
+column so dates remain readable.
 
 - **First Dime:** starter gigs and everything that does not fit below, including SideShift.
 - **Spotlight:** income that needs an audience: creator streams and brand deals, plus expenses.
@@ -105,7 +128,7 @@ sheets, Delivery and Selling, each including its corresponding expenses.
 
 **Export everything** in PayPal produces an XLSX workbook with monthly Summary rows and
 one sheet per financial/activity/game table, or a ZIP of CSV files. Sessions, OAuth state,
-credentials, AI prompts and payout recipient emails are never exported. PayPal rows
+credentials and payout recipient emails are never exported. PayPal rows
 are reconciliation metadata and are not counted again in Summary. First Dime treats
 verified earnings as paid because it has no separate payout status.
 
@@ -148,7 +171,7 @@ is not an authenticated PayPal activity lookup and does not prove the file is ge
 | Personal developer account | `<personal account, never employer>` |
 | OneDime sandbox business sender/app | `<sandbox business account>` |
 | Sandbox player login/recipient | `<sandbox personal account>` |
-| Registered callback | `<PUBLIC_BASE_URL>/auth/paypal/callback` |
+| Registered callback | http://127.0.0.1:3000/auth/paypal/callback |
 | Webhook listener | `<PUBLIC_BASE_URL>/api/paypal/webhook` |
 | Requested attributes | `openid profile email` and PayPal verification/account attributes |
 
@@ -170,25 +193,31 @@ are updated. The browser cannot choose a payout, amount or recipient. These flow
 mock-tested; actual sandbox authentication, payouts, app permissions and webhook delivery
 must be validated with Brandon's personal sandbox accounts before activation.
 
-## AI reads and suggests; the server decides
+## Smart suggestions stay on the device
 
-Optional routing suggestions use `claude-haiku-5-5`, verified against current Anthropic
-docs. A request sends only owned payer name, net amount and payment kind; email-like
-payer text is redacted. It sends no notes, emails, player IDs or other players' data.
-Names stay JSON data under a fixed instruction. There are no AI tools or automatic actions.
-The UI explains the data sent before the player requests suggestions.
+I use a small MIT-licensed classifier in an isolated browser worker. Smart suggestions
+are off by default and saved per player. The notice states the measured uncompressed
+first download: 41.3 MB including model, tokenizer, worker and WASM. Files are served
+by OneDime and cached by the browser. No inference API, keys or spending code is needed.
+The model receives only payer, net amount and payment kind locally. Imported activity
+is still stored in OneDime; it is never sent anywhere else for suggestions.
 
-The server validates JSON, allowed app/platform/record combinations, indices and confidence.
-Below 0.7, invalid JSON, refusal or truncation gives no suggestion. Fixed-map matches skip
-AI. Suggestions cache privately per player/payer/model for 30 days. The shared UTC-month
-budget reserves two cents atomically per batch of at most ten names, with a 50 KB text
-request limit and 2,048 output tokens. That conservatively covers the checked model's
-short-context rates; usage also records tokens and rounded cost. Reservations are not
-refunded, so the cap can stop before actual invoice spend. Missing keys, exhausted budget,
-unsupported model overrides or provider failure use a visible fixed-map fallback.
-There is no player billing. Real provider calls remain untested; tests use mocks.
+Five fixed intents map to allowed app/record types with platform Other. Known payers
+keep the fixed map. Low confidence, ambiguous results, loading errors or a two-minute
+timeout keep the fallback. Model scores are heuristic and need player review; no action
+is automatic. Turning it off terminates the worker. The server validates every route.
+CSP permits only same-origin data/model connections. Mid-range physical phone speed is
+not measured; phone-width desktop checks only establish UI and cache behavior.
 
 ## Environment variables
+
+For a numeric loopback sandbox callback, set `APP_BASE_URL=http://127.0.0.1:3000`
+and leave `PUBLIC_BASE_URL` blank (or set it to the same value). Register exactly
+`http://127.0.0.1:3000/auth/paypal/callback` in your sandbox app and browse the numeric
+origin throughout login. Alternatively use `PUBLIC_BASE_URL=http://localhost:3000`
+and its matching callback if the dashboard accepts it. Explicit `PAYPAL_REDIRECT_URI`
+must use that same chosen origin. Conflicting base aliases fail at startup.
+Real dashboard/account acceptance remains an operator check with approved sandbox keys.
 
 Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not log them.
 
@@ -198,21 +227,19 @@ Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not l
 | `SESSION_SECRET` | Required private random value, at least 32 characters |
 | `NODE_ENV` | `development`; production enables secure-cookie default |
 | `PORT` | `3000` |
-| `PUBLIC_BASE_URL` | `http://localhost:<PORT>`; exact origin for writes/callbacks |
+| `PUBLIC_BASE_URL` | http://127.0.0.1:3000; exact origin for writes/callbacks |
+| `APP_BASE_URL` | Optional alias for that origin; blank by default; both aliases must agree |
 | `COOKIE_SECURE` | `false` locally; production defaults true; Render sets true |
 | `SESSION_TTL_DAYS` | `14` |
 | `PAYPAL_ENVIRONMENT` | `sandbox`; every other value is rejected |
 | `PAYPAL_CLIENT_ID` | Personal sandbox business app ID; blank |
 | `PAYPAL_CLIENT_SECRET` | Sandbox app secret; blank |
-| `PAYPAL_REDIRECT_URI` | `<PUBLIC_BASE_URL>/auth/paypal/callback` |
+| `PAYPAL_REDIRECT_URI` | http://127.0.0.1:3000/auth/paypal/callback |
 | `PAYPAL_AUTH_URL` | Optional; only `https://www.sandbox.paypal.com/connect` accepted |
 | `PAYPAL_API_BASE_URL` | Optional; only `https://api-m.sandbox.paypal.com` accepted |
 | `PAYPAL_SCOPE` | `openid profile email https://uri.paypal.com/services/paypalattributes` |
 | `PAYPAL_WEBHOOK_ID` | Sandbox webhook ID; blank |
 | `PAYOUTS_ENABLED` | `false`; local activation requires separate approval |
-| `ANTHROPIC_API_KEY` | Personal API key; blank, fixed-map fallback when missing |
-| `ANTHROPIC_MODEL` | `claude-haiku-5-5`; other IDs fall back until priced in code |
-| `AI_MONTHLY_BUDGET_CENTS` | `100`, shared monthly reservation cap; integer 0..1,000,000 |
 | `GOOGLE_SHEETS_ENABLED` | `false`; true is rejected because the stretch is deferred |
 | `GOOGLE_CLIENT_ID` | Blank; reserved, unused by file exports |
 | `GOOGLE_CLIENT_SECRET` | Blank; reserved, unused |
@@ -225,11 +252,11 @@ Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not l
 hosting choice; no Render resources were created or deployed. Payouts, Google Sheets and
 seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
 Brandon accepted clean rewritten main `9953600` and owns GitHub Support cleanup of old PR refs.
-Do not merge old pre-cleanup history into this branch. No license has been selected or added.
+Do not merge old pre-cleanup history into this branch. The repository license is recorded in LICENSE.
 
-[The Phase 3 handoff](handoffs/week3-onedime-app.md) governs current scope; the older SDLC
+[The Phase 4 handoff](handoffs/week4-playtest.md) governs current scope; the SDLC
 roadmap has been updated to reflect this implementation. [Implementation decisions and
-primary documentation](docs/phase3-decisions.md) record calculations, dependencies, scope
+primary documentation](docs/phase4-decisions.md) record calculations, dependencies, scope
 choices and provider limitations. [Screenshots](docs/screenshots) use fictional data.
 
 Review and Brandon's merge approval are still required. This phase does not scrape,
