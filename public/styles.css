@@ -172,7 +172,9 @@ td.r,th.r{text-align:right}
 [hidden]{display:none!important}
 .shell,.topbar{max-width:880px;margin:auto;padding:18px 16px;display:grid;gap:18px}
 .topbar{display:flex}.brand{font:800 1.6rem var(--pixel);color:var(--head);text-decoration:none}.brand-dot{display:none}
-.player-strip{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.85rem}
+.player-strip{position:relative;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.85rem}
+.header-menu summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700;padding:8px 12px;border:2px solid var(--divider);border-radius:12px}.header-menu>div{position:absolute;right:0;top:calc(100% + 6px);z-index:70;min-width:180px;padding:10px;background:var(--shell);border:2px solid var(--divider);border-radius:6px}.header-menu button{width:100%;white-space:nowrap}
+.feedback-dialog{width:min(520px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto;border:2px solid var(--divider);border-radius:8px;padding:20px;background:var(--shell);color:var(--text)}.feedback-dialog::backdrop{background:rgb(0 0 0 / .6)}.feedback-dialog .section-heading{margin-bottom:18px}.feedback-blocking{display:flex;align-items:center;gap:10px}.feedback-dialog textarea{resize:vertical}.feedback-dialog #feedback-thanks{padding:12px 0}.feedback-dialog input,.feedback-dialog select,.feedback-dialog textarea,.feedback-dialog button{scroll-margin:12px}
 #app-first,#app-spotlight,#app-freelance,#app-market,#app-paypal{display:grid;gap:18px}
 .primary-button,.ghost-button,.text-button,.paypal-button{font:800 14px var(--code);padding:10px 18px;min-height:40px;border-radius:12px;border:2px solid var(--btn-edge);background:var(--btn);color:white;cursor:pointer;text-decoration:none}
 .ghost-button,.text-button{background:var(--shell-dark);color:var(--text);border-color:var(--divider)}

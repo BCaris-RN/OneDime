@@ -35,10 +35,64 @@ try {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
   const errors: string[] = [], requests: { url: string; body: string }[] = [];
+  let expectedFeedback429 = false;
+  let feedback429ConsoleErrors = 0;
   context.on("request", req => requests.push({ url: req.url(), body: req.postData() ?? "" }));
   page.on("pageerror", error => errors.push(error.message));
-  page.on("console", message => { if(message.type()==="error")errors.push(message.text()); });
+  page.on("console", message => {
+    if (message.type() !== "error") return;
+    if (expectedFeedback429 && message.location().url === "http://127.0.0.1:3404/api/feedback"
+      && /^Failed to load resource:.*\b429\b/.test(message.text()) && feedback429ConsoleErrors++ === 0) return;
+    errors.push(message.text());
+  });
   await page.goto("http://127.0.0.1:3404/browser-login");
+  await page.getByRole("tab", { name: "Market", exact: true }).click();
+  const menu = page.locator("#header-menu summary");
+  await menu.focus();
+  await menu.press("Enter");
+  await page.locator("#header-menu").getByRole("button", { name: "Send feedback", exact: true }).press("Enter");
+  const feedback = page.getByRole("dialog", { name: "Send feedback", exact: true });
+  const feedbackBody = feedback.getByRole("textbox", { name: "What happened", exact: true });
+  assert.equal(await feedback.getByRole("combobox", { name: "Which app", exact: true }).inputValue(), "market");
+  assert.equal(await feedbackBody.evaluate(node => document.activeElement === node), true);
+  await feedbackBody.fill("   ");
+  await feedback.getByRole("button", { name: "Send feedback", exact: true }).click();
+  assert.equal(await feedbackBody.getAttribute("aria-invalid"), "true");
+  assert.equal(await prisma.feedback.count({ where: { playerId: player.id } }), 0);
+  await feedbackBody.fill("  Fictional beta test: the Market form needs clearer labels.  ");
+  await feedback.getByRole("checkbox", { name: "This blocked me", exact: true }).check();
+  await page.route("**/api/feedback", route => route.fulfill({
+    status: 429, contentType: "application/json", body: JSON.stringify({ error: "feedback_rate_limited" })
+  }));
+  expectedFeedback429 = true;
+  const limitedFeedback = page.waitForResponse(response => response.url() === "http://127.0.0.1:3404/api/feedback" && response.status() === 429);
+  await feedback.getByRole("button", { name: "Send feedback", exact: true }).click();
+  await limitedFeedback;
+  await feedback.getByRole("alert").getByText("You have sent five notes in the past hour. Please wait before sending another.", { exact: true }).waitFor();
+  assert.equal(await feedbackBody.evaluate(node => document.activeElement === node), true);
+  assert.equal(await feedback.locator("form").isVisible(), true);
+  assert.equal(await prisma.feedback.count({ where: { playerId: player.id } }), 0);
+  await page.unroute("**/api/feedback");
+  expectedFeedback429 = false;
+  await feedback.getByRole("button", { name: "Send feedback", exact: true }).focus();
+  await feedback.getByRole("button", { name: "Send feedback", exact: true }).press("Enter");
+  await feedback.getByText("Thanks for your feedback. Your note has been sent.", { exact: true }).waitFor();
+  const savedFeedback = await prisma.feedback.findMany({ where: { playerId: player.id } });
+  assert.equal(savedFeedback.length, 1);
+  assert.equal(savedFeedback[0].app, "market");
+  assert.equal(savedFeedback[0].body, "Fictional beta test: the Market form needs clearer labels.");
+  assert.equal(savedFeedback[0].blocking, true);
+  assert.equal(await feedback.locator("form").isVisible(), false);
+  await feedback.getByRole("button", { name: "Close feedback", exact: true }).click();
+  assert.equal(await menu.evaluate(node => document.activeElement === node), true);
+  await page.getByRole("tab", { name: "First Dime", exact: true }).click();
+  await page.getByRole("tab", { name: "Help", exact: true }).click();
+  const helpFeedback = page.locator("#panel-help").getByRole("button", { name: "Send feedback", exact: true });
+  await helpFeedback.click();
+  assert.equal(await feedback.getByRole("combobox", { name: "Which app", exact: true }).inputValue(), "first");
+  assert.equal(await feedbackBody.inputValue(), "");
+  await feedbackBody.press("Escape");
+  assert.equal(await helpFeedback.evaluate(node => document.activeElement === node), true);
   await page.getByRole("tab", { name: "Spotlight", exact: true }).click();
   await page.waitForFunction(() => (document.getElementById("sasuStats")?.children.length??0)>0);
   const spotMonth=page.getByLabel("Stats month: Spotlight",{exact:true});
@@ -60,7 +114,7 @@ try {
   await page.locator("summary").filter({hasText:"Export everything"}).click();
   const toggle = page.getByRole("checkbox", { name: "Smart suggestions", exact: true });
   await toggle.waitFor();
-  await page.waitForFunction(() => !(document.querySelector('input[type="checkbox"]') as HTMLInputElement)?.disabled);
+  await page.waitForFunction(() => !(document.querySelector('#paypal-ai input[type="checkbox"]') as HTMLInputElement)?.disabled);
   assert.equal(await toggle.isChecked(), false);
   assert.equal(requests.some(req => req.url.includes("/models/")), false);
   await page.getByText("Suggested: First Dime / Prolific. Confirm or change it.", { exact: true }).waitFor();
@@ -189,6 +243,8 @@ try {
   await page.getByRole("button",{name:"Delete my data",exact:true}).press("Enter");
   await page.waitForURL("http://127.0.0.1:3404/");
   assert.equal(await prisma.player.findUnique({where:{id:player.id}}),null);
+  assert.equal(await prisma.feedback.count({where:{playerId:player.id}}),0);
+  await page.getByText("First visit after a quiet spell can take up to a minute to wake up.", { exact: true }).waitFor();
   console.log("browser smart check passed: opt-in, inference, private requests, cached reload");
 } finally {
   await browser?.close();
