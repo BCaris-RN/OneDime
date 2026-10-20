@@ -1,0 +1,3 @@
+
+> onedime@0.1.0 typecheck:contrast
+> tsc --noEmit --strict --target es2022 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck scripts/check-current-contrast.ts scripts/current-contrast.ts scripts/check-current-contrast-regressions.ts scripts/prove-current-contrast-scope.ts scripts/measure-current-contrast-candidates.ts

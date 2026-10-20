@@ -1,0 +1,103 @@
+{
+  "baselineCommit": "ab7bc89bf12134b8c0d5015c64298ac44021ac49",
+  "beforeSha256": "398ee191308e7e86653e4f99f1e1e180f3435c4e1a2cd3cb1d678e9b4ba8c7da",
+  "afterSha256": "7bad3a8d4c22a8e41d4684a8dc83062f0f08ce492058c560c2c9ad1f6f1fe65b",
+  "changed": [
+    {
+      "selector": "::selection",
+      "property": "background",
+      "before": "rgba(139, 172, 15, 0.47)",
+      "after": "rgba(139, 172, 15, 0.93)"
+    },
+    {
+      "selector": "nav button[aria-selected=\"true\"]",
+      "property": "border-bottom-color",
+      "before": "var(--btn)",
+      "after": "var(--selected-border)"
+    },
+    {
+      "selector": "nav.apps button[aria-selected=\"true\"]",
+      "property": "border-color",
+      "before": "var(--btn)",
+      "after": "var(--selected-border)"
+    },
+    {
+      "selector": ":root",
+      "property": "--selected-border",
+      "before": null,
+      "after": "var(--btn)"
+    },
+    {
+      "selector": ":root",
+      "property": "--link",
+      "before": null,
+      "after": "#0000E6"
+    },
+    {
+      "selector": ":root",
+      "property": "--ghost-active",
+      "before": null,
+      "after": "#D6296D"
+    },
+    {
+      "selector": ":root",
+      "property": "--native-icon-surface",
+      "before": null,
+      "after": "#82A00E"
+    },
+    {
+      "selector": "(prefers-color-scheme: dark) / :root:not([data-theme=\"light\"])",
+      "property": "--error",
+      "before": null,
+      "after": "#FF7A7A"
+    },
+    {
+      "selector": "(prefers-color-scheme: dark) / :root:not([data-theme=\"light\"])",
+      "property": "--selected-border",
+      "before": null,
+      "after": "#DB5283"
+    },
+    {
+      "selector": "(prefers-color-scheme: dark) / :root:not([data-theme=\"light\"])",
+      "property": "--link",
+      "before": null,
+      "after": "#ADADFF"
+    },
+    {
+      "selector": ":root[data-theme=\"dark\"]",
+      "property": "--error",
+      "before": null,
+      "after": "#FF7A7A"
+    },
+    {
+      "selector": ":root[data-theme=\"dark\"]",
+      "property": "--selected-border",
+      "before": null,
+      "after": "#DB5283"
+    },
+    {
+      "selector": ":root[data-theme=\"dark\"]",
+      "property": "--link",
+      "before": null,
+      "after": "#ADADFF"
+    },
+    {
+      "selector": "a",
+      "property": "color",
+      "before": null,
+      "after": "var(--link)"
+    },
+    {
+      "selector": ":root[data-theme=\"light\"] button.act.ghost:active",
+      "property": "background-color",
+      "before": null,
+      "after": "var(--ghost-active)"
+    },
+    {
+      "selector": "(prefers-color-scheme: dark) / input::-webkit-calendar-picker-indicator",
+      "property": "background-color",
+      "before": null,
+      "after": "var(--native-icon-surface)"
+    }
+  ]
+}

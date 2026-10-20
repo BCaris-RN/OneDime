@@ -1,0 +1,5 @@
+contrast coverage collected: theme=light, OS=light
+contrast coverage collected: theme=dark, OS=light
+contrast coverage collected: theme=light, OS=dark
+contrast coverage collected: theme=dark, OS=dark
+contrast report: G:\one_dime\docs\contrast\current-after.md; 0 failing pairs; 0 uncovered

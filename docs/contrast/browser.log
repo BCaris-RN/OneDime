@@ -1,0 +1,6 @@
+
+> onedime@0.1.0 test:browser
+> tsx scripts/check-browser-smart.ts
+
+browser accessibility check passed: 3912 tab steps, five apps, all sub-tabs, 320/390px, both themes
+browser smart check passed: opt-in, inference, private requests, cached reload

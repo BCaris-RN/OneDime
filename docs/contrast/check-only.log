@@ -1,0 +1,14 @@
+
+> onedime@0.1.0 test:contrast
+> npm run test:contrast:regressions && tsx scripts/check-current-contrast.ts --check-only
+
+
+> onedime@0.1.0 test:contrast:regressions
+> tsx scripts/check-current-contrast-regressions.ts
+
+contrast regression checks passed: 16
+contrast coverage collected: theme=light, OS=light
+contrast coverage collected: theme=dark, OS=light
+contrast coverage collected: theme=light, OS=dark
+contrast coverage collected: theme=dark, OS=dark
+contrast check; 0 failing pairs; 0 uncovered
