@@ -84,7 +84,7 @@ try {
   assert.equal(savedFeedback[0].blocking, true);
   assert.equal(await feedback.locator("form").isVisible(), false);
   await feedback.getByRole("button", { name: "Close feedback", exact: true }).click();
-  assert.equal(await menu.evaluate(node => document.activeElement === node), true);
+  await page.waitForFunction(() => document.activeElement === document.querySelector("#header-menu summary"));
   await page.getByRole("tab", { name: "First Dime", exact: true }).click();
   await page.getByRole("tab", { name: "Help", exact: true }).click();
   const helpFeedback = page.locator("#panel-help").getByRole("button", { name: "Send feedback", exact: true });
@@ -92,7 +92,7 @@ try {
   assert.equal(await feedback.getByRole("combobox", { name: "Which app", exact: true }).inputValue(), "first");
   assert.equal(await feedbackBody.inputValue(), "");
   await feedbackBody.press("Escape");
-  assert.equal(await helpFeedback.evaluate(node => document.activeElement === node), true);
+  await page.waitForFunction(() => document.activeElement === document.querySelector("#panel-help [data-feedback-open]"));
   await page.getByRole("tab", { name: "Spotlight", exact: true }).click();
   await page.waitForFunction(() => (document.getElementById("sasuStats")?.children.length??0)>0);
   const spotMonth=page.getByLabel("Stats month: Spotlight",{exact:true});
