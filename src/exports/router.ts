@@ -133,11 +133,15 @@ export function createExportRouter(prisma: PrismaClient, now: () => Date) {
               )
                 months.add(value.slice(0, 7));
         }
+        for (const payment of payments) {
+          if (payment.routed_record_type === "first" && inRange(payment.occurred_on)) {
+            months.add(payment.occurred_on.slice(0, 7));
+          }
+        }
         if (query.month) months.add(query.month);
         const totals: ExportRow[] = [];
         for (const month of [...months].sort()) {
-          const financial = firstDimeTotals(entries.filter(row =>
-            row.workedOn.toISOString().startsWith(month) && inRange(row.workedOn.toISOString().slice(0,10))), payments);
+          const financial = firstDimeTotals(entries, payments, month, inRange);
           totals.push({
             app: "first",
             month,

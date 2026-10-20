@@ -1330,6 +1330,37 @@ describe("Phase 2 game API", () => {
         .toContain(verified?'"first","2026-10","10.00","9.70","0.00","0.30","0.00","9.70"':'"first","2026-10","9.85","0.00","9.85","0.00","0.00","9.85"');
     },
   );
+  it.each([1000, 970])("counts a linked %i-cent entry as paid in the payment month", async amountCents => {
+    const alice = await login("paypal-payment-month");
+    const entry = (await write(alice.cookie, "/api/entries", {
+      ...validEntry, platform: "Prolific", amountCents, workedOn: "2026-09-30",
+    }).expect(201)).body.entry;
+    await write(alice.cookie, "/api/paypal/import", {
+      csv: activityCsv("NEXT-MONTH", "Hyperwallet", "USD", "10.00", "-0.30", "9.70"),
+    }).expect(200);
+    const payment = (await activity(alice.cookie)).body.rows[0];
+    await write(alice.cookie, `/api/paypal/transactions/${payment.id}/route`, {
+      record_type: "first", platform: "Prolific", record_id: entry.id,
+    }).expect(200);
+    for (const [month, expected] of [
+      ["2026-09", { earnedCents: 1000, paidCents: 0, feesCents: 30, netCents: 970 }],
+      ["2026-10", { earnedCents: 0, paidCents: 970, feesCents: 0, netCents: 0 }],
+    ] as const) {
+      const result = await request(app).get(`/api/overview?month=${month}`)
+        .set("Cookie", alice.cookie).expect(200);
+      expect(result.body.rows[0]).toMatchObject({ app: "first", ...expected, pendingCents: 0 });
+      expect(result.body.rows.at(-1)).toMatchObject({ app: "total", ...expected, pendingCents: 0 });
+    }
+    for (const filter of ["", "&month=2026-10", "&from=2026-10-01&to=2026-10-31"]) {
+      const archive = await request(app).get(`/api/exports?tab=all&format=zip${filter}`)
+        .set("Cookie", alice.cookie).buffer(true).parse(parseBinary).expect(200);
+      const totals = strFromU8(unzipSync(archive.body)["Summary.csv"]);
+      expect(totals).toContain('"first","2026-10","0.00","9.70","0.00","0.00","0.00","0.00"');
+      if (!filter) expect(totals)
+        .toContain('"first","2026-09","10.00","0.00","0.00","0.30","0.00","9.70"');
+      else expect(totals).not.toContain('"first","2026-09"');
+    }
+  });
   it("allows one payment to verify only one entry even when gross and net race", async () => {
     const alice = await login("paypal-single-verification");
     const entries = [];

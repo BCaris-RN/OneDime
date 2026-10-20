@@ -14,6 +14,14 @@ Phase 3 merged as PR #4. Phase 4 follows `handoffs/week4-playtest.md`.
 Checkpoint commits and exact-head CI links are tracked in PR #5.
 No merge, deploy, public visibility change, live PayPal or payout enablement.
 
+PR #5 bot review follow-up (Oct 19): First Dime earned totals stay in the work
+month; linked paid totals use PayPal occurred_on, including Summary export month
+and date-range filters. Migration 000006 now backfills legacy batch states and
+flags ambiguous terminal values for manual review without resending. Node 24
+build and 185 tests pass locally, including adjacent-month gross/net cases and
+four isolated migration tests. The fix commit and exact-head CI results are
+recorded in both bot review threads on PR #5. Review and merge remain pending.
+
 P4 also preserves early batch webhooks against late create responses (6a4e011),
 with SUCCESS/DENIED regressions. The browser checks every app and sub-tab, visible
 focus above phone controls, persisted free suggestions and cache, public policies

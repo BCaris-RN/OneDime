@@ -20,8 +20,7 @@ export function createOverviewRouter(prisma: PrismaClient, now: () => Date) {
     const rows = await prisma.$transaction(async tx => {
       const data = await allRows(tx, player.id);
       const entries = await tx.logEntry.findMany({ where: { playerId: player.id } });
-      const logged = entries.filter(row => row.workedOn.toISOString().startsWith(month));
-      const result = [{ app: "first", ...firstDimeTotals(logged, await transactions(tx,player.id)) }];
+      const result = [{ app: "first", ...firstDimeTotals(entries, await transactions(tx,player.id), month) }];
       for (const app of ["spotlight","freelance","market_delivery","market_selling"]) {
         const value = summary(app,data,month);
         const records = app === "spotlight" ? data.income : app === "freelance" ? data.gigs : app === "market_delivery" ? data.shifts : data.sales;

@@ -16,6 +16,15 @@ can supersede success. Stale processing events cannot undo a terminal outcome.
 All documented payout item webhook names are handled; DENIED remains supported.
 Tests use mocked signature verification and never enable a real payout connection.
 
+PR #5 migration review: legacy PENDING/PROCESSING values move into batch_status
+with item status PENDING. Legacy SUCCESS/DENIED/CANCELED could have come from a
+batch or an item; the old event table stores no payout link or payload to decide
+which. Preserve those values in batch_status and set the item to manual_review,
+avoiding both an unsupported paid claim and an automatic resend. Item-only outcomes
+and local outbox states are preserved. Tests execute the migration on isolated
+temporary tables. Batch/item definitions rechecked Oct 19, 2026:
+https://developer.paypal.com/api/payments.payouts-batch/v1/schema.json
+
 Primary docs checked Oct 18, 2026 (Hawaii):
 - https://developer.paypal.com/payouts/webhooks/
 - https://developer.paypal.com/api/payments.payouts-batch/v1/definitions/payout_batch_header/
