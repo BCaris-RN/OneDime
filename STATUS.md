@@ -1,5 +1,24 @@
 # OneDime status
 
+Updated Oct 20, 2026 (Hawaii). Current review track: `fix-current-contrast`, based on
+main `ab7bc89bf12134b8c0d5015c64298ac44021ac49`. Runtime source commit:
+`f6734602339372431b9b1609abab0ee56976cf6e`.
+
+Current contrast fixes preserve the existing palette fills, layout, copy, and behavior.
+The only runtime file changed is `public/styles.css`. Local build, 185 existing tests,
+16 contrast regression check groups, strict contrast-script TypeScript, and the unchanged
+browser suite pass. The browser exercised 3,912 Tab steps plus local inference/privacy/cache
+checks. The current contrast audit passes with zero failing or uncovered pairs; the
+immutable baseline intentionally fails. Final report hashes/counts, screenshot links,
+candidate measurements, command evidence, and remaining limits are in
+[the contrast review package](docs/contrast/review-evidence.md).
+
+CI is pending publication of the review package; the PR will record its exact final head
+and current check results. Claude review is pending for this contrast work and PR #6.
+Brandon decides merges separately. No merge, deploy, settings change, or live payment.
+
+## Previous Phase 4 checkpoint
+
 Updated Oct 19, 2026 (Hawaii). Branch: `week4-playtest`, base `423c33d`.
 
 Phase 3 merged as PR #4. Phase 4 follows `handoffs/week4-playtest.md`.

@@ -1,0 +1,30 @@
+contrast coverage collected: theme=light, OS=light
+contrast coverage collected: theme=dark, OS=light
+contrast coverage collected: theme=light, OS=dark
+contrast coverage collected: theme=dark, OS=dark
+contrast report: G:\one_dime\docs\contrast\current-before.md; 24 failing pairs; 1 uncovered
+fail: control text a; rgb(255 0 0) / rgb(192 192 192); 2.197697; a; Normal text.
+fail: control text a; rgb(0 0 238) / rgb(176 176 176); 4.333228; a; Normal text.
+fail: control text a; rgb(255 0 0) / rgb(176 176 176); 1.843692; a; Normal text.
+fail: control text a; rgb(0 0 238) / rgb(58 58 58); 1.210365; a; Normal text.
+fail: control text a; rgb(255 0 0) / rgb(58 58 58); 2.844719; a; Normal text.
+fail: control text a; rgb(0 0 238) / rgb(71 71 71); 1.011452; a; Normal text.
+fail: control text a; rgb(255 0 0) / rgb(71 71 71); 2.323688; a; Normal text.
+fail: control text a; rgb(158 158 255) / rgb(192 192 192); 1.313332; a; Normal text.
+fail: control text a; rgb(255 158 158) / rgb(192 192 192); 1.085163; a; Normal text.
+fail: control text a; rgb(158 158 255) / rgb(176 176 176); 1.101781; a; Normal text.
+fail: control text a; rgb(255 158 158) / rgb(176 176 176); 1.098460; a; Normal text.
+fail: control text a; rgb(158 158 255) / rgb(71 71 71); 3.888400; a; Normal text.
+fail: control text a.skip-link; rgb(0 0 238) / rgb(58 58 58); 1.210365; a.skip-link; Normal text.
+fail: control text a.skip-link; rgb(158 158 255) / rgb(192 192 192); 1.313332; a.skip-link; Normal text.
+fail: control text button.act.ghost.small; rgb(31 31 31) / rgb(126.2 65.4 89.4); 2.198599; button.act.ghost.small; Normal text.
+fail: error text; rgb(139 0 0) / rgb(58 58 58); 1.136259; p#message.message; Normal text.
+fail: native calendar icon; rgb(255 255 255) / rgb(139 172 15); 2.623131; input#worked-on; Solid glyph core sampled from the Chromium element screenshot against its actual adjacent backdrop (at least two agreeing corner samples around the core), not the input's dominant fill. Antialiased edge colors are not used.
+fail: native month-picker icon; rgb(255 255 255) / rgb(139 172 15); 2.623131; input; Solid glyph core sampled from the Chromium element screenshot against its actual adjacent backdrop (at least two agreeing corner samples around the core), not the input's dominant fill. Antialiased edge colors are not used.
+fail: selected app tab frame against outside; rgb(139 29 69) / rgb(58 58 58); 1.277997; button#app-tab-first;
+fail: selected tab underline; rgb(139 29 69) / rgb(58 58 58); 1.277997; button#tab-log;
+fail: selected text; rgb(15 56 15) / rgb(73.28 110.52 15); 2.225697; div#toast.toast.on; Selection background composited over the actual element background before luminance.
+fail: selected text; rgb(15 56 15) / rgb(96.07 111.58 37.79); 2.401319; a.brand; Selection background composited over the actual element background before luminance.
+fail: selected text; rgb(15 56 15) / rgb(96.07 111.58 37.79); 2.401319; p#control-status.status; Selection background composited over the actual element background before luminance.
+fail: selected text; rgb(15 56 15) / rgb(102.96 118.47 44.68); 2.653818; h2; Selection background composited over the actual element background before luminance.
+uncovered: visited link color; unknown / unknown; n/a; a; Chromium hides visited colors from getComputedStyle; no unconditional authored link color, or a visited-specific override exists. A passing ratio cannot be inferred.

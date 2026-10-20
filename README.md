@@ -81,6 +81,16 @@ CSV privacy and re-imports, routing/unlink behavior, payout idempotency and webh
 failures/deduplication, device confidence/privacy/cache/preferences, and repeatable fake seed data.
 Exact checkpoint SHAs, test counts and CI evidence are in `STATUS.md` and [PR #5](https://github.com/BCaris-RN/OneDime/pull/5).
 
+For Current theme contrast, I run `npm run typecheck:contrast` and `npm run test:contrast`
+after installing Chromium with `npx playwright install chromium`. The check uses fictional
+players in its own disposable PostgreSQL container and fails on insufficient contrast or
+unsupported coverage. It does not write reports or screenshots in CI.
+To regenerate the review artifacts, run `npx tsx scripts/check-current-contrast.ts --report
+docs/contrast/current-after.md --screenshots docs/screenshots/current-contrast/after`.
+The same command with `--before` reads the immutable main stylesheet snapshot; that baseline
+intentionally fails. [The contrast review](docs/contrast/review-evidence.md) explains the
+measured pairs, native-control exceptions, and minimum color candidates.
+
 ## Pick one workspace for each payment
 
 Each app has a stats month picker. PayPal's “This month, everywhere” overview adds

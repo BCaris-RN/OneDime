@@ -1,0 +1,20 @@
+
+> onedime@0.1.0 build
+> npm run build:server && npm run build:client
+
+
+> onedime@0.1.0 build:server
+> tsc -p tsconfig.json
+
+
+> onedime@0.1.0 build:client
+> node scripts/copy-fonts.mjs && tsc -p tsconfig.client.json && esbuild public/app.ts --bundle --format=esm --target=es2022 --outfile=public/app.js && esbuild public/smart-worker.ts --bundle --platform=browser --format=esm --target=es2022 --minify --outfile=public/smart-worker.js && node scripts/copy-smart-assets.mjs
+
+
+  public\app.js  66.4kb
+
+Done in 7ms
+
+  public\smart-worker.js  537.7kb
+
+Done in 358ms

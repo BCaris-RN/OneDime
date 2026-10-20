@@ -1,0 +1,66 @@
+{
+  "method": "Hold HSL hue and saturation fixed, change lightness monotonically in 0.00001 increments, round to 8-bit RGB, and choose the first unrounded passing ratio. This is minimum on this defined hue-preserving path, not a claim of a globally smallest perceptual color distance. Selection uses the existing 0.01 alpha grid; the darkest selectable surface is the toast.",
+  "cases": [
+    {
+      "name": "dark error",
+      "before": "#8B0000",
+      "after": "#FF7A7A",
+      "minimum": 4.5,
+      "ratio": 4.504774403219377,
+      "adjacentFailingCandidate": "#FF7979",
+      "adjacentFailingRatio": 4.47563526774839
+    },
+    {
+      "name": "light link",
+      "before": "#0000EE",
+      "after": "#0000E6",
+      "minimum": 4.5,
+      "ratio": 4.519237397926555,
+      "adjacentFailingCandidate": "#0000E7",
+      "adjacentFailingRatio": 4.495590858941174
+    },
+    {
+      "name": "dark link",
+      "before": "#9E9EFF",
+      "after": "#ADADFF",
+      "minimum": 4.5,
+      "ratio": 4.512111220952535,
+      "adjacentFailingCandidate": "#ACACFF",
+      "adjacentFailingRatio": 4.468250224861476
+    },
+    {
+      "name": "dark selected tab",
+      "before": "#8B1D45",
+      "after": "#DB5283",
+      "minimum": 3,
+      "ratio": 3.0043251587605786,
+      "adjacentFailingCandidate": "#DB5183",
+      "adjacentFailingRatio": 2.9881053399206077
+    },
+    {
+      "name": "light ghost active",
+      "before": "#5E1230",
+      "after": "#D6296D",
+      "minimum": 4.5,
+      "ratio": 4.507170831903216,
+      "adjacentFailingCandidate": "#D5296D",
+      "adjacentFailingRatio": 4.487363115208126
+    },
+    {
+      "name": "OS-dark calendar backdrop",
+      "before": "#8BAC0F",
+      "after": "#82A00E",
+      "minimum": 3,
+      "ratio": 3.006946553394676,
+      "adjacentFailingCandidate": "#82A10E",
+      "adjacentFailingRatio": 2.9772646802591005
+    }
+  ],
+  "selection": {
+    "beforeAlpha": 0.47,
+    "afterAlpha": 0.93,
+    "ratio": 4.559499027907045,
+    "adjacentFailingAlpha": 0.92,
+    "adjacentFailingRatio": 4.4953756035665124
+  }
+}
