@@ -1,6 +1,6 @@
 # OneDime Software Development Lifecycle
 
-Oct 13, 2026
+Updated Oct 19, 2026 (Hawaii).
 
 How OneDime gets built: who does what, how each phase moves from plan to merged code, and what has to be true before anything ships.
 
@@ -36,7 +36,7 @@ Every handoff uses the same template: target repo, target and base branch, files
 
 ## Branches, approvals and environments
 
-**Branches.** main always holds reviewed, merged work. Each phase gets one branch named for it, cut from main after the previous phase merges: week1-foundation, week2-game, week3-money-ai, and so on. Fixes from a review go on the same phase branch.
+**Branches.** main always holds reviewed, merged work. Each phase gets one branch named for it, cut from main after the previous phase merges: week1-foundation, week2-game, week3-onedime-app, week4-playtest, week5-beta, and so on. Fixes from a review go on the same phase branch.
 
 | Action | Who can do it |
 | --- | --- |
@@ -74,16 +74,23 @@ A phase is done only when every box is checked.
 
 ## Phase plan and current status
 
-The dated build timeline lives in the [OneDime vision doc](https://claude.ai/code/artifact/00bc4008-e708-4ef2-96a4-d02628342816). Submission target is Nov 10. The deadline is Nov 12 at 10:00 AM Hawaii time.
+This is the current phase table. [STATUS.md](../STATUS.md) records the active checkpoint and validation;
+it links here instead of maintaining a second phase table. Beta testing runs Nov 1-8, 2026, followed by
+shipping work on Nov 9-10, 2026. Each merge, deployment and visibility change still needs Brandon's
+specific approval.
 
-| Phase | Branch | Scope | Status |
+| Phase | Branch | Scope | Status / dates |
 | --- | --- | --- | --- |
-| 1. Foundation and login | week1-foundation | Repo, schema, Log in with PayPal, sessions, CI | Merged (PR #1) |
-| 2. The game | week2-game | Logging, XP, rested XP, streaks, quests, opt-in leaderboard, rung race | Merged with review corrections (PR #2 and PR #3) |
-| 3. OneDime app | week3-onedime-app | Pilot workspaces, exports, sandbox activity routing, disabled payouts, AI suggestions, deployment prep | Merged PR #4 at 423c33d; no deployment |
-| 4. Real players | week4-playtest | Payout review fixes, free browser suggestions, overview/settings/policies, accessibility | P1-P4 ready for review; PR #5 unmerged |
-| 5. Ship | week5-ship | Demo video, submission, repo public, license | Not started |
+| 1. Foundation | week1-foundation | Repo, schema, Log in with PayPal, sessions, CI | Merged (PR #1) |
+| 2. Game | week2-game | Logging, XP, rested XP, streaks, quests, opt-in leaderboard, rung race | Merged (PR #2 and PR #3) |
+| 3. App | week3-onedime-app | Workspaces, exports, sandbox activity routing, disabled payouts, AI suggestions, deployment prep | Merged (PR #4) |
+| 4. Fixes and free AI | week4-playtest | Payout fixes, free browser suggestions, overview, settings and accessibility | Merged (PR #5) |
+| 5. Beta test | week5-beta | Hosted-policy links, free Render beta configuration and player testing | In progress; Nov 1-8, 2026 |
+| 6. Ship | Not created | Demo video, submission, license and approved release steps | Planned; Nov 9-10, 2026 |
 
-**Open decisions for Brandon:** zero-cost hosting, draft policy/legal review, physical-device
-play-testing, and enabling sandbox milestone payouts.
-The existing root LICENSE is unchanged. Rested XP starting at zero after the first logged day is approved.
+Google Sites holds the only policy copies. Render's free web service and free Postgres are configured
+for beta testing; no deployment is authorized by that configuration.
+
+**Open operator checks:** physical-device inference speed and screen-reader testing, real sandbox
+connectivity, and any decision to enable sandbox milestone payouts. The existing root LICENSE is
+unchanged. Rested XP starting at zero after the first logged day is approved.

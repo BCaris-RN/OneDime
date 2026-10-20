@@ -99,15 +99,9 @@ First Dime payment, financial earned/fee/paid/net totals use its actual gross/fe
 the entry's logged amount and game progression are preserved. Unknown fees are not
 invented. All-time pending/open and platform comparisons are labeled separately.
 
-The footer and Help link to draft `/privacy` and `/terms` pages for Brandon's review.
 PayPal settings includes Delete my data. Export first, then type `DELETE MY DATA`:
 the server deletes the account and all owned active rows, clears the cookie and logs
 you out. Tests check every owned table and preserve another player's records.
-
-The current plain-language drafts are also kept as [privacy_policy.md](privacy_policy.md)
-and [user_agreement.md](user_agreement.md). They describe the data collected, PayPal CSV
-handling, device-only suggestions, account deletion, fair-play rules and current play-test
-boundaries. They are not legal advice and still need operator review.
 
 For the browser privacy/cache check, install Chromium with `npx playwright install chromium`,
 then run `npm run test:browser`. CI also runs this check. Screenshots use fictional data.
@@ -219,6 +213,14 @@ is automatic. Turning it off terminates the worker. The server validates every r
 CSP permits only same-origin data/model connections. Mid-range physical phone speed is
 not measured; phone-width desktop checks only establish UI and cache behavior.
 
+## Policies
+
+I keep the policies only on Google Sites. The footer and Help link directly to them;
+`/privacy` and `/terms` redirect to the same pages.
+
+- [Privacy policy](https://sites.google.com/view/onedime-privacy-policy/home)
+- [User agreement](https://sites.google.com/view/onedime-user-agreement/home)
+
 ## Environment variables
 
 For a numeric loopback sandbox callback, set `APP_BASE_URL=http://127.0.0.1:3000`
@@ -258,20 +260,25 @@ Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not l
 
 ## Review and deployment boundaries
 
-`render.yaml` is preparation only. Its starter-plan setting is a placeholder for Brandon's
-hosting choice; no Render resources were created or deployed. Payouts, Google Sheets and
-seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
+I prepared `render.yaml` with a free web service and free Postgres for beta testing,
+with automatic deploys disabled. I have not created or deployed Render resources.
+[Render's free services](https://render.com/docs/free) sleep after 15 minutes without
+inbound traffic, and free databases expire 30 days after creation. Payouts, Google Sheets
+and seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
 Brandon accepted clean rewritten main `9953600` and owns GitHub Support cleanup of old PR refs.
 Do not merge old pre-cleanup history into this branch. The repository license is recorded in LICENSE.
 
-[The Phase 4 handoff](handoffs/week4-playtest.md) governs current scope; the SDLC
-roadmap has been updated to reflect this implementation. [Implementation decisions and
-primary documentation](docs/phase4-decisions.md) record calculations, dependencies, scope
-choices and provider limitations. [Screenshots](docs/screenshots) use fictional data.
+I merged Phase 3 App in [PR #4](https://github.com/BCaris-RN/OneDime/pull/4) and Phase 4
+Fixes and free AI in [PR #5](https://github.com/BCaris-RN/OneDime/pull/5). I am preparing
+Phase 5 Beta test for November 1-8, followed by Phase 6 Ship on November 9-10.
+I keep the current phase table in [the SDLC](docs/SDLC.md) and checkpoint evidence in
+[STATUS.md](STATUS.md). [Phase 4 decisions](docs/phase4-decisions.md) record calculations,
+dependencies, scope choices and provider limitations. [Screenshots](docs/screenshots)
+use fictional data.
 
-Review and Brandon's merge approval are still required. This phase does not scrape,
-automate or log into gig platforms, implement receipt-image verification, award XP
-outside First Dime, use live PayPal, deploy or change repository visibility.
+I still require review and explicit approval for each merge, deploy and visibility change.
+The app does not scrape, automate or log into gig platforms, implement receipt-image
+verification, award XP outside First Dime or use live PayPal.
 
 ## Built with
 

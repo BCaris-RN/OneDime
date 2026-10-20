@@ -1,11 +1,12 @@
 #  (o) OneDime | render.yaml
 #  ----------------------------------------------------------
-#  Prepared configuration only. Brandon decides deployment.
+#  Render blueprint: web service and Postgres. Brandon deploys.
 services:
   - type: web
     name: onedime-web
     runtime: node
-    plan: starter
+    plan: free
+    autoDeployTrigger: "off"
     buildCommand: npm ci --include=dev && npm run build && npm run db:migrate
     startCommand: npm start
     envVars:
@@ -52,5 +53,5 @@ databases:
   - name: onedime-db
     databaseName: onedime
     user: onedime
-    plan: starter
+    plan: free
 

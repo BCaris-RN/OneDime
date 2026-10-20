@@ -119,7 +119,10 @@ export function createApp(options: CreateAppOptions = {}) {
   app.get("/app", sessions.requirePlayer(), (_request, response) => {
     response.sendFile(path.join(publicDir, "app.html"));
   });
-  for (const policy of ["privacy","terms"]) app.get(`/${policy}`, (_req,res) => res.sendFile(path.join(publicDir, `${policy}.html`)));
+  app.get("/privacy", (_req, res) =>
+    res.redirect(302, "https://sites.google.com/view/onedime-privacy-policy/home"));
+  app.get("/terms", (_req, res) =>
+    res.redirect(302, "https://sites.google.com/view/onedime-user-agreement/home"));
 
   app.use(express.static(publicDir));
 

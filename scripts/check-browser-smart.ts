@@ -174,13 +174,15 @@ try {
   await page.getByText(/^Suggestions ready\./).waitFor({ timeout: 125000 });
   assert.equal(requests.slice(secondStart).filter(req => req.url.endsWith("model_quantized.onnx")).length, 0);
   assert.equal(errors.length, 0, errors.join("\n"));
-  for(const policy of ["privacy","terms"]) {
-    const response=await page.request.get(`http://127.0.0.1:3404/${policy}`);
-    assert.equal(response.status(),200);
-    const policyPage=await context.newPage();
-    await policyPage.goto(`http://127.0.0.1:3404/${policy}`);
-    await policyPage.screenshot({path:`docs/screenshots/p3-phone-${policy}.png`,fullPage:true});
-    await policyPage.close();
+  for (const [policy, url] of [
+    ["privacy", "https://sites.google.com/view/onedime-privacy-policy/home"],
+    ["terms", "https://sites.google.com/view/onedime-user-agreement/home"],
+  ]) {
+    const response = await page.request.get(`http://127.0.0.1:3404/${policy}`, { maxRedirects: 0 });
+    assert.equal(response.status(), 302);
+    assert.equal(response.headers().location, url);
+    assert.equal(await page.locator(`footer a[href="${url}"]`).count(), 1);
+    assert.equal(await page.locator(`#panel-help a[href="${url}"]`).count(), 1);
   }
   await page.getByRole("textbox",{name:"Deletion confirmation",exact:true}).fill("DELETE MY DATA");
   await page.getByRole("button",{name:"Delete my data",exact:true}).focus();

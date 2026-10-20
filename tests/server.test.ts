@@ -1666,13 +1666,14 @@ describe("Phase 2 game API", () => {
       expect((await prisma.payout.findUniqueOrThrow({where:{id:payout.id}})).status)
         .toBe(status==="HELD"?"SUCCESS":status);
     });
-  it("serves draft policies publicly", async () => {
-    for(const policy of ["privacy","terms"]) {
-      const response=await request(app).get(`/${policy}`).expect(200);
-      expect(response.text).toContain("Draft, not legal advice");
-      expect(response.text).toContain("18");
-      if(policy === "privacy") expect(response.text).toContain("Delete my data");
-      else expect(response.text).toContain("You must be 18 or older");
+  it("redirects public policy routes to the Google Sites policies", async () => {
+    for (const [route, url] of [
+      ["privacy", "https://sites.google.com/view/onedime-privacy-policy/home"],
+      ["terms", "https://sites.google.com/view/onedime-user-agreement/home"],
+    ]) {
+      await request(app).get(`/${route}`).expect(302).expect("Location", url);
+      await request(app).get(`/${route}?next=https://other.example.test`).expect(302).expect("Location", url);
+      await request(app).get(`/${route}.html`).expect(404);
     }
   });
   it.each(["TaskRabbit","Rover","Thumbtack"])("accepts %s shifts without awarding game progression",async platform=>{
