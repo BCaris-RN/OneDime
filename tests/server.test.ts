@@ -7,7 +7,10 @@ import {
   PostgreSqlContainer,
   type StartedPostgreSqlContainer,
 } from "@testcontainers/postgresql";
-import { execSync } from "node:child_process";
+import { execFileSync, execSync, spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { createHash } from "node:crypto";
 import request from "supertest";
 import {
@@ -90,6 +93,7 @@ beforeEach(async () => {
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
       sessions,
+      feedback,
       webhook_events,
       oauth_states,
       payouts,
@@ -299,6 +303,7 @@ describe("Phase 2 game API", () => {
     "/api/leaderboard/leave",
     "/api/me/time-zone",
     "/api/logout",
+    "/api/feedback",
   ])("requires a session for POST %s", async (route) => {
     await request(app).post(route).set("Origin", origin).send({}).expect(401);
   });
@@ -1666,6 +1671,125 @@ describe("Phase 2 game API", () => {
       expect((await prisma.payout.findUniqueOrThrow({where:{id:payout.id}})).status)
         .toBe(status==="HELD"?"SUCCESS":status);
     });
+  it("stores feedback for each app and returns only a thank-you acknowledgement", async () => {
+    const alice = await login("feedback-apps");
+    for (const appKey of ["first", "spotlight", "freelance", "market", "paypal"]) {
+      await write(alice.cookie, "/api/feedback", { app: appKey, body: "  Fictional beta feedback.  " })
+        .expect(201, { ok: true });
+    }
+    const rows = await prisma.feedback.findMany();
+    expect(rows).toHaveLength(5);
+    expect(rows.every(row => row.playerId === alice.player.id && row.body === "Fictional beta feedback."
+      && !row.blocking && row.status === "new")).toBe(true);
+    expect(await prisma.logEntry.count()).toBe(0);
+    expect(await prisma.rungClaim.count()).toBe(0);
+  });
+  it.each([
+    { app: "first", body: "" },
+    { app: "first", body: "   " },
+    { app: "first", body: "x".repeat(1001) },
+    { app: "first", body: "bad\0text" },
+    { app: "admin", body: "Fictional feedback" },
+    { app: "first", body: "Fictional feedback", blocking: "yes" },
+    { app: "first", body: "Fictional feedback", playerId: "another-player" },
+    { app: "first", body: "Fictional feedback", status: "fixed" },
+  ])("rejects invalid or unowned feedback fields: %j", async body => {
+    const alice = await login("feedback-invalid");
+    await write(alice.cookie, "/api/feedback", body).expect(400);
+    expect(await prisma.feedback.count()).toBe(0);
+  });
+  it("requires JSON and same-origin requests for feedback", async () => {
+    const alice = await login("feedback-guards");
+    const body = { app: "first", body: "Fictional feedback" };
+    await request(app).post("/api/feedback").set("Cookie", alice.cookie).set("Origin", origin)
+      .type("form").send(body).expect(415);
+    await request(app).post("/api/feedback").set("Cookie", alice.cookie).send(body).expect(403);
+    await request(app).post("/api/feedback").set("Cookie", alice.cookie).set("Origin", "https://other.example.test")
+      .send(body).expect(403);
+    await request(app).post("/api/feedback").set("Cookie", alice.cookie).set("Origin", origin)
+      .set("Sec-Fetch-Site", "cross-site").send(body).expect(403);
+    expect(await prisma.feedback.count()).toBe(0);
+  });
+  it("accepts exactly one thousand feedback characters", async () => {
+    const alice = await login("feedback-boundary");
+    await write(alice.cookie, "/api/feedback", { app: "first", body: "x".repeat(1000) }).expect(201);
+    expect((await prisma.feedback.findFirstOrThrow()).body).toHaveLength(1000);
+  });
+  it("exports persisted feedback without account metadata and honors the explicit database", async () => {
+    const alice = await login("feedback-export");
+    await write(alice.cookie, "/api/feedback", { app: "market", body: "Fictional export note", blocking: true }).expect(201);
+    const directory = mkdtempSync(join(tmpdir(), "onedime-feedback-test-"));
+    try {
+      writeFileSync(join(directory, ".env"), "DATABASE_URL=postgresql://fictional:unused@127.0.0.1:1/missing_test\n");
+      const output = execFileSync(process.execPath,
+        [resolve("node_modules/tsx/dist/cli.mjs"), resolve("scripts/export-feedback.ts")],
+        { cwd: directory, env: process.env, encoding: "utf8" });
+      expect(output).toMatch(/^feedback exported to feedback\/feedback-\d{4}-\d{2}-\d{2}\.md\s*$/);
+      const filenames = readdirSync(join(directory, "feedback"));
+      expect(filenames).toHaveLength(1);
+      expect(filenames[0]).toMatch(/^feedback-\d{4}-\d{2}-\d{2}\.md$/);
+      const report = readFileSync(join(directory, "feedback", filenames[0]), "utf8");
+      expect(report).toContain("## Market");
+      expect(report).toContain("Fictional export note");
+      expect(report).toContain("- Blocking: yes");
+      expect(report).toMatch(/- Player: player-[a-f0-9]{12}/);
+      for (const value of [alice.player.id, alice.player.displayName!, alice.player.email!]) {
+        expect(report).not.toContain(value);
+      }
+      expect(await prisma.feedback.count()).toBe(1);
+    } finally {
+      const feedbackDirectory = join(directory, "feedback");
+      if (existsSync(feedbackDirectory)) {
+        for (const name of readdirSync(feedbackDirectory)) unlinkSync(join(feedbackDirectory, name));
+        rmdirSync(feedbackDirectory);
+      }
+      unlinkSync(join(directory, ".env"));
+      rmdirSync(directory);
+    }
+  }, 20_000);
+  it("keeps database details out of failed feedback export output", () => {
+    const databaseUrl = "postgresql://fictional_export_user:fictional_export_password@127.0.0.1:1/missing_test";
+    const result = spawnSync(process.execPath,
+      [resolve("node_modules/tsx/dist/cli.mjs"), resolve("scripts/export-feedback.ts")],
+      { env: { ...process.env, DATABASE_URL: databaseUrl }, encoding: "utf8" });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("feedback export failed; check database configuration and migrations privately");
+    for (const value of [databaseUrl, "fictional_export_user", "fictional_export_password"]) {
+      expect(result.stdout + result.stderr).not.toContain(value);
+    }
+  }, 20_000);
+  it("allows at most five concurrent feedback submissions per player per rolling hour", async () => {
+    const alice = await login("feedback-limit"), bob = await login("feedback-other");
+    const body = { app: "paypal", body: "Fictional blocked action", blocking: true };
+    const responses = await Promise.all(Array.from({ length: 6 }, () => write(alice.cookie, "/api/feedback", body)));
+    expect(responses.map(row => row.status).sort()).toEqual([201, 201, 201, 201, 201, 429]);
+    const limited = responses.find(row => row.status === 429)!;
+    expect(limited.headers["retry-after"]).toBe("3600");
+    expect(limited.body).toEqual({ error: "feedback_rate_limited" });
+    await write(bob.cookie, "/api/feedback", body).expect(201);
+    const rows = await prisma.feedback.findMany({ where: { playerId: alice.player.id } });
+    expect(rows).toHaveLength(5);
+    expect(rows.every(row => row.blocking)).toBe(true);
+    const { createApp } = await import("../src/server.js");
+    const restarted = createApp({ prisma, config: testConfig, paypalClient, now: () => gameNow });
+    await request(restarted).post("/api/feedback").set("Cookie", alice.cookie).set("Origin", origin).send(body).expect(429);
+    gameNow = new Date(gameNow.getTime() + 60 * 60 * 1000 - 1);
+    await write(alice.cookie, "/api/feedback", body).expect(429);
+    gameNow = new Date(gameNow.getTime() + 1);
+    await write(alice.cookie, "/api/feedback", body).expect(201);
+  });
+  it("does not expose any player's feedback through HTTP", async () => {
+    const alice = await login("feedback-private"), bob = await login("feedback-viewer");
+    const body = "Fictional private feedback";
+    await write(alice.cookie, "/api/feedback", { app: "market", body }).expect(201);
+    const row = await prisma.feedback.findFirstOrThrow();
+    for (const route of ["/api/feedback", `/api/feedback/${row.id}`, `/api/feedback?playerId=${alice.player.id}`]) {
+      const response = await request(app).get(route).set("Cookie", bob.cookie).expect(404);
+      expect(response.text).not.toContain(body);
+    }
+    await request(app).patch(`/api/feedback/${row.id}`).set("Cookie", bob.cookie).set("Origin", origin)
+      .send({ status: "fixed" }).expect(404);
+  });
   it("redirects public policy routes to the Google Sites policies", async () => {
     for (const [route, url] of [
       ["privacy", "https://sites.google.com/view/onedime-privacy-policy/home"],
@@ -1700,6 +1824,8 @@ describe("Phase 2 game API", () => {
     for(const [path,body] of workspaceCases) await write(alice.cookie,`/api${path}`,body).expect(201);
     const entry=(await write(alice.cookie,"/api/entries",validEntry).expect(201)).body.entry;
     await write(bob.cookie,"/api/entries",validEntry).expect(201);
+    await write(alice.cookie,"/api/feedback",{app:"first",body:"Fictional deletion feedback"}).expect(201);
+    await write(bob.cookie,"/api/feedback",{app:"paypal",body:"Fictional retained feedback"}).expect(201);
     await prisma.receipt.create({data:{playerId:alice.player.id,logEntryId:entry.id,status:"fixture"}});
     await prisma.questProgress.create({data:{playerId:alice.player.id,questId:"fixture-quest"}});
     await prisma.rungClaim.create({data:{playerId:alice.player.id,rungCents:10}});
@@ -1713,11 +1839,12 @@ describe("Phase 2 game API", () => {
     const response=await remove({confirmation:"DELETE MY DATA"}).expect(204);
     expect(response.headers["set-cookie"][0]).toContain("Expires=Thu, 01 Jan 1970");
     expect(await prisma.player.findUnique({where:{id:alice.player.id}})).toBeNull();
-    for(const table of ["sessions","log_entries","quest_progress","rung_claims","receipts","payouts","creator_income","brand_deals","expenses","freelance_gigs","delivery_shifts","sales","paypal_transactions"]) {
+    for(const table of ["sessions","feedback","log_entries","quest_progress","rung_claims","receipts","payouts","creator_income","brand_deals","expenses","freelance_gigs","delivery_shifts","sales","paypal_transactions"]) {
       const rows=await prisma.$queryRaw<{count:bigint}[]>(Prisma.sql`SELECT count(*) AS count FROM ${Prisma.raw(table)} WHERE player_id=${alice.player.id}::uuid`);
       expect(Number(rows[0].count),table).toBe(0);
     }
     expect(await prisma.logEntry.count({where:{playerId:bob.player.id}})).toBe(1);
+    expect(await prisma.feedback.count({where:{playerId:bob.player.id}})).toBe(1);
     await request(app).get("/api/me").set("Cookie",alice.cookie).expect(401);
   });
   it("keeps smart suggestions off by default and persists only the owned preference", async () => {

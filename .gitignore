@@ -6,6 +6,7 @@ public/app.js
 coverage/
 .vitest/
 reference/
+/feedback/
 
 public/fonts/
 public/fonts.css
