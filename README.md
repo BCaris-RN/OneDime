@@ -273,6 +273,13 @@ Secrets are blank in `.env.example` and `sync: false` in `render.yaml`. Do not l
 
 ## Review and deployment boundaries
 
+Browser checks default to port 3404 and contrast checks to 3406. For isolated local
+runs, set `BROWSER_TEST_PORT` and `CONTRAST_TEST_PORT`; `TEST_DATABASE_NAME` selects
+the name inside each check's own disposable PostgreSQL container. The contrast check
+covers the feedback menu and modal's empty, invalid, error, sending and sent states
+in both themes against both OS color schemes. It checks policy redirects without
+fetching or auditing third-party policy pages.
+
 I keep the tester tasks in [the beta guide](docs/beta-guide.md) and the operator's
 step-by-step setup in [the Render deploy guide](docs/deploy-render.md). Brandon sends
 sandbox logins privately and performs each approved deployment himself.

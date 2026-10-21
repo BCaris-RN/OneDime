@@ -9,7 +9,10 @@ import { createApp } from "../src/server.js";
 import { loadConfig } from "../src/config.js";
 import { SessionStore } from "../src/auth/session.js";
 import { seedDemo } from "../src/demo/seed.js";
-const container = await new PostgreSqlContainer("postgres:16").start();
+const port = Number(process.env.BROWSER_TEST_PORT ?? 3404);
+assert(Number.isInteger(port) && port > 0 && port <= 65535, "Invalid BROWSER_TEST_PORT");
+const baseUrl = `http://127.0.0.1:${port}`;
+const container = await new PostgreSqlContainer("postgres:16").withDatabase(process.env.TEST_DATABASE_NAME ?? "onedime_browser_test").start();
 const prisma = new PrismaClient({ datasources: { db: { url: container.getConnectionUri() } } });
 let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
 let server: ReturnType<ReturnType<typeof createApp>["listen"]> | undefined;
@@ -25,12 +28,12 @@ try {
   const canary = "creator audience income advertisements sponsorships CANARY-DEVICE";
   await prisma.$executeRaw`INSERT INTO paypal_transactions(player_id,txn_id,occurred_on,payer,gross_cents,fee_cents,net_cents,currency,kind)
     VALUES(${player.id}::uuid,'FAKE-SMART','2026-10-18'::date,${canary},1000,0,1000,'USD','General Payment')`;
-  const config = loadConfig({ NODE_ENV: "test", PORT: "3404", PUBLIC_BASE_URL: "http://127.0.0.1:3404",
+  const config = loadConfig({ NODE_ENV: "test", PORT: String(port), PUBLIC_BASE_URL: baseUrl,
     SESSION_SECRET: randomBytes(32).toString("hex"), PAYOUTS_ENABLED: "false" });
   const sessions = new SessionStore(prisma, config);
   const app = createApp({ config, prisma });
   app.get("/browser-login", async (_req, res) => { await sessions.createSession(player.id, res); res.redirect("/app"); });
-  server = await new Promise(resolve => { const value = app.listen(3404, "127.0.0.1", () => resolve(value)); });
+  server = await new Promise(resolve => { const value = app.listen(port, "127.0.0.1", () => resolve(value)); });
   browser = await chromium.launch();
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
@@ -41,11 +44,11 @@ try {
   page.on("pageerror", error => errors.push(error.message));
   page.on("console", message => {
     if (message.type() !== "error") return;
-    if (expectedFeedback429 && message.location().url === "http://127.0.0.1:3404/api/feedback"
+    if (expectedFeedback429 && message.location().url === `${baseUrl}/api/feedback`
       && /^Failed to load resource:.*\b429\b/.test(message.text()) && feedback429ConsoleErrors++ === 0) return;
     errors.push(message.text());
   });
-  await page.goto("http://127.0.0.1:3404/browser-login");
+  await page.goto(`${baseUrl}/browser-login`);
   await page.getByRole("tab", { name: "Market", exact: true }).click();
   const menu = page.locator("#header-menu summary");
   await menu.focus();
@@ -65,7 +68,7 @@ try {
     status: 429, contentType: "application/json", body: JSON.stringify({ error: "feedback_rate_limited" })
   }));
   expectedFeedback429 = true;
-  const limitedFeedback = page.waitForResponse(response => response.url() === "http://127.0.0.1:3404/api/feedback" && response.status() === 429);
+  const limitedFeedback = page.waitForResponse(response => response.url() === `${baseUrl}/api/feedback` && response.status() === 429);
   await feedback.getByRole("button", { name: "Send feedback", exact: true }).click();
   await limitedFeedback;
   await feedback.getByRole("alert").getByText("You have sent five notes in the past hour. Please wait before sending another.", { exact: true }).waitFor();
@@ -130,7 +133,7 @@ try {
   const firstRequests = requests.slice(begin);
   assert(firstRequests.some(req => req.url.endsWith("model_quantized.onnx")));
   assert(firstRequests.every(req => !`${req.url}${req.body}`.includes("CANARY-DEVICE")));
-  assert(firstRequests.every(req => new URL(req.url).origin === "http://127.0.0.1:3404"));
+  assert(firstRequests.every(req => new URL(req.url).origin === baseUrl));
   assert.equal(errors.length, 0, errors.join("\n"));
   await page.getByRole("tab",{name:"Spotlight",exact:true}).click();
   assert.equal(await page.getByRole("button",{name:"Cancel edit",exact:true}).count(),0);
@@ -232,7 +235,7 @@ try {
     ["privacy", "https://sites.google.com/view/onedime-privacy-policy/home"],
     ["terms", "https://sites.google.com/view/onedime-user-agreement/home"],
   ]) {
-    const response = await page.request.get(`http://127.0.0.1:3404/${policy}`, { maxRedirects: 0 });
+    const response = await page.request.get(`${baseUrl}/${policy}`, { maxRedirects: 0 });
     assert.equal(response.status(), 302);
     assert.equal(response.headers().location, url);
     assert.equal(await page.locator(`footer a[href="${url}"]`).count(), 1);
@@ -241,7 +244,7 @@ try {
   await page.getByRole("textbox",{name:"Deletion confirmation",exact:true}).fill("DELETE MY DATA");
   await page.getByRole("button",{name:"Delete my data",exact:true}).focus();
   await page.getByRole("button",{name:"Delete my data",exact:true}).press("Enter");
-  await page.waitForURL("http://127.0.0.1:3404/");
+  await page.waitForURL(`${baseUrl}/`);
   assert.equal(await prisma.player.findUnique({where:{id:player.id}}),null);
   assert.equal(await prisma.feedback.count({where:{playerId:player.id}}),0);
   await page.getByText("First visit after a quiet spell can take up to a minute to wake up.", { exact: true }).waitFor();

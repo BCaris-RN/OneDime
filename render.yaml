@@ -9,6 +9,7 @@ services:
     autoDeployTrigger: "off"
     buildCommand: npm ci --include=dev && npm run build && npm run db:migrate
     startCommand: npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
@@ -51,6 +52,7 @@ services:
 
 databases:
   - name: onedime-db
+    postgresMajorVersion: "16"
     databaseName: onedime
     user: onedime
     plan: free

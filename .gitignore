@@ -7,6 +7,9 @@ coverage/
 .vitest/
 reference/
 /feedback/
+/reviews/claude-pr6/*.zip
+/reviews/claude-pr6/ci-final.json
+/reviews/claude-pr6/bot-comments.json
 
 public/fonts/
 public/fonts.css

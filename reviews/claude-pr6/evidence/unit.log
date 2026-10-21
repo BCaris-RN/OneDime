@@ -1,0 +1,81 @@
+
+> onedime@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.4 G:/one_dime_worktrees/long-run-beta
+
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "test", schema "public" at "localhost:32816"
+
+9 migrations found in prisma/migrations
+
+Applying migration `000001_init`
+Applying migration `000002_game`
+Applying migration `000003_workspaces`
+Applying migration `000004_paypal`
+Applying migration `000005_ai`
+Applying migration `000006_payout_batch_status`
+Applying migration `000007_device_suggestions`
+Applying migration `000008_service_platforms`
+Applying migration `000009_feedback`
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.12.0 -> 8.0.0-rc.23                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+The following migration(s) have been applied:
+
+migrations/
+  └─ 000001_init/
+    └─ migration.sql
+  └─ 000002_game/
+    └─ migration.sql
+  └─ 000003_workspaces/
+    └─ migration.sql
+  └─ 000004_paypal/
+    └─ migration.sql
+  └─ 000005_ai/
+    └─ migration.sql
+  └─ 000006_payout_batch_status/
+    └─ migration.sql
+  └─ 000007_device_suggestions/
+    └─ migration.sql
+  └─ 000008_service_platforms/
+    └─ migration.sql
+  └─ 000009_feedback/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+ ❯ tests/server.test.ts (127 tests | 127 skipped) 171319ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/server.test.ts [ tests/server.test.ts ]
+Error: Hook timed out in 120000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/server.test.ts:52:1
+     50| let gameNow = new Date("2026-10-14T20:00:00Z");
+     51|
+     52| beforeAll(async () => {
+       | ^
+     53|   const databaseUrl = await resolveDatabaseUrl();
+     54|   process.env.DATABASE_URL = databaseUrl;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  81 passed | 127 skipped (208)
+   Start at  13:58:02
+   Duration  368.76s (tests 87%, import 11%, transform 1%)
+
+    Isolate  9 workers spawned · ~3.12s startup each (spawn + environment, per file)
+             at least ~24.93s faster with isolate: false — reuses workers across files instead of one per file
+

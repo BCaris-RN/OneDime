@@ -44,6 +44,11 @@ its `sync: false` fields are entered privately during creation. Later changes to
 fields go through the web service's **Environment** page, as described in
 [Render's environment-variable guide](https://render.com/docs/configure-environment-variables).
 
+The database is pinned to PostgreSQL 16 to match local and CI fixtures. The web service
+uses the existing `/health` endpoint for readiness. These are the `postgresMajorVersion`
+and `healthCheckPath` fields in [Render's Blueprint reference](https://render.com/docs/blueprint-spec)
+(checked October 20, 2026); the version pin applies when creating the database.
+
 ## Environment-variable checklist
 
 This lists every key in `render.yaml`, with its source rather than credential values.

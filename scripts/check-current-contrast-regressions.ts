@@ -37,6 +37,18 @@ try {
     await page.setContent(`<style>${css}</style><body><p style="background-image:linear-gradient(black,white)">Unsupported background fixture</p></body>`);
     assert.equal((await inspectContrast(page, "gradient mutation")).some(pair => pair.result === "uncovered"), true);
     checks++;
+    await page.setContent(`<html data-theme="${theme}"><style>${css}</style><body><p style="color:black;background:black">Inert background failure</p><input type="date" id="background-date"><dialog class="feedback-dialog"><form><label>Feedback<textarea id="feedback-body">Fictional modal fixture</textarea></label><label><input type="checkbox" id="feedback-blocking">Blocked</label></form></dialog></body></html>`);
+    await page.locator("dialog").evaluate(node => (node as HTMLDialogElement).showModal());
+    const modal = await inspectContrast(page, "modal scope regression");
+    const nativeModal = await inspectNativeGlyphs(page, "modal native reference regression");
+    assert(modal.some(pair => pair.example === "textarea#feedback-body"));
+    assert(!modal.some(pair => pair.example === "input#background-date" || pair.result === "fail" || pair.result === "uncovered"), JSON.stringify(modal));
+    assert(nativeModal.length > 0 && nativeModal.every(pair => pair.example === "input#feedback-blocking"));
+    assert(nativeModal.some(pair => pair.role === "native checkbox unchecked" && pair.result === "exempt"), JSON.stringify(nativeModal));
+    checks++;
+    await page.locator("#feedback-blocking").evaluate(node => { (node as HTMLElement).style.setProperty("appearance", "none"); });
+    assert((await inspectNativeGlyphs(page, "modal authored checkbox mutation")).some(pair => pair.result === "uncovered"));
+    checks++;
     await page.close();
   }
   console.log(`contrast regression checks passed: ${checks}`);
