@@ -53,6 +53,7 @@ try {
       await page.keyboard.press("Tab");
       for (let index = 0; index < await links.count(); index++) {
         const link = links.nth(index);
+        await page.keyboard.press("Tab");
         await link.focus();
         assert(await link.evaluate(node => node.matches(":focus-visible")), label);
         assert(await link.evaluate(node => {
