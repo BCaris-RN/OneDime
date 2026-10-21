@@ -46,7 +46,28 @@ or assertion was weakened, and no tests were skipped intentionally.
 Build, strict contrast typing, strict browser/export typing, dependency installation
 and a full `npm audit --json` pass. Audit reports zero vulnerabilities. The contrast
 regression suite passes 24 check groups, including eight modal guard checks.
-Full unit/browser/contrast results and exact CI evidence are recorded at completion.
+The unchanged serial unit rerun passed all 208 tests in nine files, exit 0, in 470.48s.
+The initial contrast run was interrupted before a scheme completion; it is not an
+assertion failure or a pass. A potential held-response cleanup path now releases in
+`finally`, and stage logs distinguish slow fixture work from UI progress. That cleanup
+path was identified by inspection, not proven to have caused the interrupted run.
+Full checkpoint CI 39519609047 passed on `72abfe22920eebcd628bb1123678fc19bb0c9380`,
+including 208 tests, 24 contrast checks, zero failing/uncovered contrast pairs and
+3,920 browser Tab steps. PR 6 was marked ready after that exact-head CI success.
+The final local contrast audit passes with 242 unique semantic/color pairs, zero
+failures and zero uncovered pairs. The complete serial browser rerun passes with
+3,920 Tab steps across five apps/all sub-tabs at 320/390px and both themes, plus
+feedback validation/rate-limit/submission/focus/deletion and local inference/privacy/
+cache checks. Both verified process exits are 0. Generated historical browser
+screenshots were restored; they are not additional source changes.
+
+The bot's summary comment 6304773647 completed on implementation head `72abfe2`
+with no findings or unresolved findings; there are no inline threads. This is a code
+bot result, not Claude approval or a security-review result. Protected runtime,
+scripts, Prisma, existing tests, package, workflow and Render files remain unchanged
+after that implementation head. Later commits only finalize status/evidence and the
+source-package generator. Final metadata-head CI is recorded in the generated
+`ci-final.json` and ZIP, avoiding a self-referential source edit.
 
 ## Final source package
 
@@ -63,6 +84,8 @@ the repository root using Node 24. The stable ignored output is
 Generated final-head CI/comment JSON and the ZIP are ignored to avoid embedding their
 own SHA or nesting an archive inside its own diff. The committed sources and logs are
 the review materials; the manifest identifies the final archive's exact source head.
+Audit hashes describe files read from the Windows worktree. Source copies in the ZIP
+use committed Git bytes; line endings can differ from a Windows checkout.
 
 ## Remaining limits and gates
 

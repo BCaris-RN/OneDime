@@ -2,15 +2,5 @@
 > onedime@0.1.0 test:browser
 > tsx scripts/check-browser-smart.ts
 
-G:\one_dime_worktrees\long-run-beta\node_modules\testcontainers\build\wait-strategies\health-check-wait-strategy.js:16
-            throw new Error(message);
-                  ^
-
-Error: Health check not healthy after 120000ms
-    at G:\one_dime_worktrees\long-run-beta\node_modules\testcontainers\build\wait-strategies\health-check-wait-strategy.js:16:19
-    at IntervalRetry.retryUntil (G:\one_dime_worktrees\long-run-beta\node_modules\testcontainers\build\common\retry.js:29:24)
-    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at async HealthCheckWaitStrategy.waitUntilReady (G:\one_dime_worktrees\long-run-beta\node_modules\testcontainers\build\wait-strategies\health-check-wait-strategy.js:12:24)
-    at async Promise.all (index 0)
-
-Node.js v24.14.0
+browser accessibility check passed: 3920 tab steps, five apps, all sub-tabs, 320/390px, both themes
+browser smart check passed: opt-in, inference, private requests, cached reload

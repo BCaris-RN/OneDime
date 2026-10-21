@@ -1,1 +1,2 @@
 Interrupted after no scheme completion; QA held-response cleanup path lacked finally release. No contrast pass claimed.
+Verified wrapper exit 1 after operator stopped only the identified lane-owned test process tree; not a contrast assertion result.

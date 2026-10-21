@@ -1,0 +1,66 @@
+contrast local fixture initialized
+contrast workspace collected: First Dime; populated; theme=light; OS=light
+contrast workspace collected: Spotlight; populated; theme=light; OS=light
+contrast workspace collected: Freelance; populated; theme=light; OS=light
+contrast workspace collected: Market; populated; theme=light; OS=light
+contrast workspace collected: PayPal; populated; theme=light; OS=light
+contrast feedback starting: Feedback; theme=light; OS=light; empty
+contrast feedback collected: Feedback; theme=light; OS=light; empty
+contrast feedback starting: Feedback; theme=light; OS=light; invalid
+contrast feedback collected: Feedback; theme=light; OS=light; invalid
+contrast feedback starting: Feedback; theme=light; OS=light; error
+contrast feedback collected: Feedback; theme=light; OS=light; error
+contrast feedback starting: Feedback; theme=light; OS=light; sending
+contrast feedback collected: Feedback; theme=light; OS=light; sending
+contrast feedback starting: Feedback; theme=light; OS=light; sent
+contrast feedback collected: Feedback; theme=light; OS=light; sent
+contrast coverage collected: theme=light, OS=light
+contrast workspace collected: First Dime; populated; theme=dark; OS=light
+contrast workspace collected: Spotlight; populated; theme=dark; OS=light
+contrast workspace collected: Freelance; populated; theme=dark; OS=light
+contrast workspace collected: Market; populated; theme=dark; OS=light
+contrast workspace collected: PayPal; populated; theme=dark; OS=light
+contrast feedback starting: Feedback; theme=dark; OS=light; empty
+contrast feedback collected: Feedback; theme=dark; OS=light; empty
+contrast feedback starting: Feedback; theme=dark; OS=light; invalid
+contrast feedback collected: Feedback; theme=dark; OS=light; invalid
+contrast feedback starting: Feedback; theme=dark; OS=light; error
+contrast feedback collected: Feedback; theme=dark; OS=light; error
+contrast feedback starting: Feedback; theme=dark; OS=light; sending
+contrast feedback collected: Feedback; theme=dark; OS=light; sending
+contrast feedback starting: Feedback; theme=dark; OS=light; sent
+contrast feedback collected: Feedback; theme=dark; OS=light; sent
+contrast coverage collected: theme=dark, OS=light
+contrast workspace collected: First Dime; populated; theme=light; OS=dark
+contrast workspace collected: Spotlight; populated; theme=light; OS=dark
+contrast workspace collected: Freelance; populated; theme=light; OS=dark
+contrast workspace collected: Market; populated; theme=light; OS=dark
+contrast workspace collected: PayPal; populated; theme=light; OS=dark
+contrast feedback starting: Feedback; theme=light; OS=dark; empty
+contrast feedback collected: Feedback; theme=light; OS=dark; empty
+contrast feedback starting: Feedback; theme=light; OS=dark; invalid
+contrast feedback collected: Feedback; theme=light; OS=dark; invalid
+contrast feedback starting: Feedback; theme=light; OS=dark; error
+contrast feedback collected: Feedback; theme=light; OS=dark; error
+contrast feedback starting: Feedback; theme=light; OS=dark; sending
+contrast feedback collected: Feedback; theme=light; OS=dark; sending
+contrast feedback starting: Feedback; theme=light; OS=dark; sent
+contrast feedback collected: Feedback; theme=light; OS=dark; sent
+contrast coverage collected: theme=light, OS=dark
+contrast workspace collected: First Dime; populated; theme=dark; OS=dark
+contrast workspace collected: Spotlight; populated; theme=dark; OS=dark
+contrast workspace collected: Freelance; populated; theme=dark; OS=dark
+contrast workspace collected: Market; populated; theme=dark; OS=dark
+contrast workspace collected: PayPal; populated; theme=dark; OS=dark
+contrast feedback starting: Feedback; theme=dark; OS=dark; empty
+contrast feedback collected: Feedback; theme=dark; OS=dark; empty
+contrast feedback starting: Feedback; theme=dark; OS=dark; invalid
+contrast feedback collected: Feedback; theme=dark; OS=dark; invalid
+contrast feedback starting: Feedback; theme=dark; OS=dark; error
+contrast feedback collected: Feedback; theme=dark; OS=dark; error
+contrast feedback starting: Feedback; theme=dark; OS=dark; sending
+contrast feedback collected: Feedback; theme=dark; OS=dark; sending
+contrast feedback starting: Feedback; theme=dark; OS=dark; sent
+contrast feedback collected: Feedback; theme=dark; OS=dark; sent
+contrast coverage collected: theme=dark, OS=dark
+contrast report: G:\one_dime_worktrees\long-run-beta\reviews\claude-pr6\contrast-after.md; 0 failing pairs; 0 uncovered
