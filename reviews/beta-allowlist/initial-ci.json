@@ -1,0 +1,11 @@
+{
+  "head": "ccf4b78ef908e246e328bd7d834ad7a87615423d",
+  "run": "https://github.com/BCaris-RN/OneDime/actions/runs/39525697102",
+  "jobId": 118979697797,
+  "conclusion": "failure",
+  "passedSteps": ["install", "build", "strict contrast/browser typing", "236 tests in 9 files", "install Chromium"],
+  "failedStep": "npm run test:beta",
+  "failure": "The new runner checked focus-visible after a mouse interaction without restoring keyboard modality; the assertion failed at scripts/check-beta-access.ts:57 for System/light OS/320px.",
+  "skippedSteps": ["full Current contrast", "full application browser check"],
+  "fix": "Commit 68ac040 restores keyboard modality with an actual Tab before focusing each link, matching the existing auditor. The focus-visible assertion is retained. No runtime or layout change."
+}

@@ -1,6 +1,6 @@
 # OneDime status
 
-R3 implementation checkpoint, October 20, 2026 (Hawaii), branch `beta-allowlist`.
+R3 checkpoint, October 20, 2026 (Hawaii), branch `beta-allowlist`.
 Stacked parent: `week5-beta` at `214307161bcd544ae02ac1eadf111a6e9b5a3ec8`.
 Main remains `4be44f57dd18e4ed7dd80eb3666e525f2f9bb955` after the authorized R1
 merge of PR #7. R2 final CI [39523317686](https://github.com/BCaris-RN/OneDime/actions/runs/39523317686)
@@ -14,12 +14,35 @@ before account/session creation, central rejection/revocation of removed session
 a static token-styled beta page, private environment configuration and targeted tests.
 Unset/blank keeps old behavior; invalid nonblank configuration fails with no input
 echo. No list or rejected email is logged. Financial, game and other authentication
-rules remain unchanged. Local validation and exact-head CI are pending at this
-implementation checkpoint; no pass or approval is claimed here. The final validation
-report will be saved under `reviews/beta-allowlist/` before opening the stacked draft PR.
-Only this agent writes this branch/worktree, using port 3433 and disposable database
-`onedime_allowlist_test`. No deployment, provider call, setting/secret/account action,
-tester invitation or further merge is authorized or performed.
+rules remain unchanged. Local build/typecheck and targeted test evidence are saved
+under `reviews/beta-allowlist/`. Focused auth/config coverage passed 41 tests (118
+filtered tests intentionally excluded from that targeted invocation); the beta page
+matrix covered 18 mode/OS/width combinations, with 19 passing contrast pairs, 3
+documented exemptions, zero failures and zero uncovered pairs. Six local screenshots
+are retained for review.
+
+Exact-head CI passed on `68ac0406d2c1531541b3abff3cbebd9559ac2353` in run
+[39526082045](https://github.com/BCaris-RN/OneDime/actions/runs/39526082045): build,
+strict contrast/browser typing, all 236 unit tests, beta-page browser check, full
+Current contrast suite and full browser suite all succeeded. The first implementation
+run on `ccf4b78` failed only the new focus-visible audit because the runner had entered
+pointer modality; the fix uses a real Tab before asserting focus-visible and retains
+the assertion. The full final CI rerun passed. PR #8 remains a draft and unmerged,
+stacked on PR #6; see [R3 review package](reviews/beta-allowlist/README.md).
+
+The coordinator run stopped at the end of R3 because the delegated operator reached
+its account usage limit. R4–R8 were not started. The current checkpoint preserves
+the confirmed F1 interpretation: First Dime keeps its existing XP; rank bonuses apply
+only to Creator, Freelancer, Driver and Seller. The previously missing design sources
+are now present in canonical main: `reference/pilot.html` (SHA-256
+`D83A9DE592E5E26761FA00E23B30FCCAEF7C36428FC175D35E082F2F9736A45C`) and
+`docs/designs/skins-report.md` (SHA-256
+`6B01C8E6240FD493227E0B3B4F669CC1CBD38056ACE85D74E48E844E0F99AD63`).
+
+No deployment, provider call, setting/secret/account action, tester invitation or
+further merge is authorized or performed. Only PR #7 was authorized to merge, and it
+merged in R1. Resume with Claude's review of PR #6 and the approved remaining R4–R8
+sequence after this usage-limit stop.
 
 ## Preserved R2 checkpoint
 

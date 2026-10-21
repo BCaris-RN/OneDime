@@ -1,0 +1,689 @@
+{
+  "sourceHead": "68ac0406d2c1531541b3abff3cbebd9559ac2353",
+  "node": "v24.14.0",
+  "postgresImage": "postgres:16",
+  "database": "onedime_allowlist_test",
+  "exitCode": 0,
+  "passed": 41,
+  "failed": 0,
+  "skipped": 118,
+  "tests": [
+    {
+      "name": "configuration boundaries keeps beta access unchanged for a blank allowlist",
+      "status": "passed",
+      "durationMs": 35.40479999999934
+    },
+    {
+      "name": "configuration boundaries keeps beta access unchanged for a blank allowlist",
+      "status": "passed",
+      "durationMs": 3.0097999999998137
+    },
+    {
+      "name": "configuration boundaries keeps beta access unchanged for a blank allowlist",
+      "status": "passed",
+      "durationMs": 2.73279999999977
+    },
+    {
+      "name": "configuration boundaries normalizes and deduplicates exact beta account addresses",
+      "status": "passed",
+      "durationMs": 39.42419999999947
+    },
+    {
+      "name": "configuration boundaries rejects a malformed nonblank beta allowlist without exposing its contents",
+      "status": "passed",
+      "durationMs": 7.42489999999998
+    },
+    {
+      "name": "configuration boundaries rejects a malformed nonblank beta allowlist without exposing its contents",
+      "status": "passed",
+      "durationMs": 5.321600000000217
+    },
+    {
+      "name": "configuration boundaries rejects a malformed nonblank beta allowlist without exposing its contents",
+      "status": "passed",
+      "durationMs": 5.430500000000393
+    },
+    {
+      "name": "configuration boundaries keeps payout network calls disabled by default",
+      "status": "passed",
+      "durationMs": 13.566499999999905
+    },
+    {
+      "name": "configuration boundaries uses the numeric loopback app origin for the sandbox callback",
+      "status": "passed",
+      "durationMs": 17.908000000000357
+    },
+    {
+      "name": "configuration boundaries rejects non-sandbox environments and alternate provider endpoints",
+      "status": "passed",
+      "durationMs": 12.614300000000185
+    },
+    {
+      "name": "configuration boundaries rejects production payout activation and the deferred Sheets integration",
+      "status": "passed",
+      "durationMs": 6.409899999999652
+    },
+    {
+      "name": "server returns 200 for GET /health",
+      "status": "passed",
+      "durationMs": 3714.4974999999977
+    },
+    {
+      "name": "server rejects an OAuth callback with missing state",
+      "status": "passed",
+      "durationMs": 1504.1992000000027
+    },
+    {
+      "name": "server rejects an OAuth callback with mismatched state",
+      "status": "passed",
+      "durationMs": 1498.1740999999893
+    },
+    {
+      "name": "server creates a player and session from a mocked PayPal response",
+      "status": "passed",
+      "durationMs": 1552.4042999999947
+    },
+    {
+      "name": "server allows only one simultaneous callback to consume an OAuth state",
+      "status": "passed",
+      "durationMs": 2075.9023000000016
+    },
+    {
+      "name": "server stores a hash of the session ID instead of the raw cookie value",
+      "status": "passed",
+      "durationMs": 2084.8859000000084
+    },
+    {
+      "name": "server updates an existing player on a second login with the same PayPal user",
+      "status": "passed",
+      "durationMs": 1491.2305000000051
+    },
+    {
+      "name": "server rejects a second claim on the same rung",
+      "status": "passed",
+      "durationMs": 1327.487500000003
+    },
+    {
+      "name": "server clears the session on logout",
+      "status": "passed",
+      "durationMs": 2296.0859999999957
+    },
+    {
+      "name": "beta allowlist admits a listed account using normalized exact email matching",
+      "status": "passed",
+      "durationMs": 1298.0334000000003
+    },
+    {
+      "name": "beta allowlist rejects an unlisted account without creating a player or session or logging an address",
+      "status": "passed",
+      "durationMs": 1347.9278999999951
+    },
+    {
+      "name": "beta allowlist rejects a missing or empty provider email when beta access is restricted",
+      "status": "passed",
+      "durationMs": 2031.386200000008
+    },
+    {
+      "name": "beta allowlist rejects a missing or empty provider email when beta access is restricted",
+      "status": "passed",
+      "durationMs": 1575.2390000000014
+    },
+    {
+      "name": "beta allowlist rejects a missing or empty provider email when beta access is restricted",
+      "status": "passed",
+      "durationMs": 1444.2822999999917
+    },
+    {
+      "name": "beta allowlist does not treat plus aliases or dotted addresses as the same beta account",
+      "status": "passed",
+      "durationMs": 1443.631699999998
+    },
+    {
+      "name": "beta allowlist preserves login without provider email when the allowlist is unset or blank",
+      "status": "passed",
+      "durationMs": 1498.924399999989
+    },
+    {
+      "name": "beta allowlist preserves login without provider email when the allowlist is unset or blank",
+      "status": "passed",
+      "durationMs": 2114.135300000009
+    },
+    {
+      "name": "beta allowlist preserves login without provider email when the allowlist is unset or blank",
+      "status": "passed",
+      "durationMs": 1795.102199999994
+    },
+    {
+      "name": "beta allowlist does not update an existing player or create a session for a denied login",
+      "status": "passed",
+      "durationMs": 1421.9272999999957
+    },
+    {
+      "name": "beta allowlist consumes OAuth state once even when beta admission is denied",
+      "status": "passed",
+      "durationMs": 1654.5144
+    },
+    {
+      "name": "beta allowlist rejects a removed account on the next request to /api/me",
+      "status": "passed",
+      "durationMs": 1360.5281000000105
+    },
+    {
+      "name": "beta allowlist rejects a removed account on the next request to /api/entries",
+      "status": "passed",
+      "durationMs": 1340.1422999999922
+    },
+    {
+      "name": "beta allowlist rejects a removed account on the next request to /api/settings",
+      "status": "passed",
+      "durationMs": 1247.0763000000006
+    },
+    {
+      "name": "beta allowlist rejects a removed account on the next request to /api/paypal/transactions",
+      "status": "passed",
+      "durationMs": 1721.9087
+    },
+    {
+      "name": "beta allowlist rejects a removed account on the next request to /api/overview",
+      "status": "passed",
+      "durationMs": 2008.844900000011
+    },
+    {
+      "name": "beta allowlist rejects a removed account before feedback is written",
+      "status": "passed",
+      "durationMs": 1398.986499999999
+    },
+    {
+      "name": "beta allowlist removes a denied session when an existing player opens /",
+      "status": "passed",
+      "durationMs": 1511.12049999999
+    },
+    {
+      "name": "beta allowlist removes a denied session when an existing player opens /app",
+      "status": "passed",
+      "durationMs": 1701.9216000000015
+    },
+    {
+      "name": "beta allowlist keeps a rejected cookie invalid after its account is re-added",
+      "status": "passed",
+      "durationMs": 1935.4328999999998
+    },
+    {
+      "name": "beta allowlist rejects an older session whose stored account email is missing",
+      "status": "passed",
+      "durationMs": 1831.2229999999981
+    },
+    {
+      "name": "Phase 2 game API requires a session for GET /api/entries",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for GET /api/me/stats",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for GET /api/clock",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for GET /api/quests",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for GET /api/leaderboard",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for POST /api/entries",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for POST /api/clock/in",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for POST /api/clock/out",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for POST /api/quests/fixture-quest",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for POST /api/leaderboard/join",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for POST /api/leaderboard/leave",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for POST /api/me/time-zone",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for POST /api/logout",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session for POST /api/feedback",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires a session to delete entries",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API logs only owned, unverified entries and keeps private stats private",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects amount -1",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects amount 0.5",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects amount 1000001",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects amount 100",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects amount null",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API accepts boundary amount 0",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API accepts boundary amount 1000000",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or privileged entry fields: {\"verified\":true}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or privileged entry fields: {\"playerId\":\"other-player\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or privileged entry fields: {\"platform\":\"\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or privileged entry fields: {\"minutes\":-1}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or privileged entry fields: {\"minutes\":0.1}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or privileged entry fields: {\"workedOn\":\"2026-02-30\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or privileged entry fields: {\"workedOn\":\"2026-10-15\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or privileged entry fields: {\"note\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects missing, null, cross-origin and malformed origins, plus non-JSON writes",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API persists the browser time zone and computes dates in it",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API makes concurrent entries safe for the same player",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API clock out returns whole minutes rounded down without auto-logging",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API only allows one concurrent clock in",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API toggles only a player's own quest and counts its XP once",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API serves the 19 real quests and rejects unknown quest IDs",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API floors clock duration 0 ms to 0 minutes",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API floors clock duration 45000 ms to 0 minutes",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API floors clock duration 59999 ms to 0 minutes",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API floors clock duration 60000 ms to 1 minutes",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API floors clock duration 90000 ms to 1 minutes",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API floors clock duration 119999 ms to 1 minutes",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API floors clock duration 120000 ms to 2 minutes",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API joining completes the pilot's leaderboard quest once and leaving retains that progress",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API sorts leaderboard by verified total descending, then XP descending",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires opt-in and whitelists leaderboard fields",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API unverified earnings cannot claim rungs, verified earnings can claim all crossed rungs",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API two players crossing a rung simultaneously yield exactly one winner and no loser error",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rolls back a claim with its enclosing verification transaction",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API isolates reads, edits and deletes for /spotlight/income",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API isolates reads, edits and deletes for /spotlight/deals",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API isolates reads, edits and deletes for /spotlight/expenses",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API isolates reads, edits and deletes for /freelance/expenses",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API isolates reads, edits and deletes for /market/expenses",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API isolates reads, edits and deletes for /freelance/gigs",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API isolates reads, edits and deletes for /market/shifts",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API isolates reads, edits and deletes for /market/sales",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid workspace money -1",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid workspace money 1.5",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid workspace money 1000001",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects excessive fees on creates and partial edits",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API creates one paid income row when a brand deal is paid concurrently or repeatedly",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API uses the player's local month for workspace summaries",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API cascades workspace rows on player deletion",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API exports only the current player's data and makes Summary agree with monthly workspace totals",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API validates export filters and rate limits exports without blocking other reads",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API imports whitelisted fields once per player and isolates routing",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API checks a fee-bearing payment against the logged gross amount",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API checks a fee-bearing payment against the logged net amount",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API checks a fee-bearing payment against the logged another amount amount",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API counts a linked 1000-cent entry as paid in the payment month",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API counts a linked 970-cent entry as paid in the payment month",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API allows one payment to verify only one entry even when gross and net race",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API does not verify unmatched payers or mismatched existing amounts",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API lists non-USD activity without permitting routing",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API routes and unlinks income without granting game XP",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API routes and unlinks gigs without granting game XP",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API routes and unlinks shifts without granting game XP",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API routes and unlinks sales without granting game XP",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API reserves an idempotent payout outbox before API calls and retries with identical keys",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects failed webhook signatures and processes an event only once",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API keeps the item pending when create reports a completed batch",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API preserves early batch SUCCESS when the create response arrives later",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API preserves early batch DENIED when the create response arrives later",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API applies item FAILED after batch success and exposes the owned item state",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API applies item DENIED after batch success and exposes the owned item state",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API applies item CANCELED after batch success and exposes the owned item state",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API applies item BLOCKED after batch success and exposes the owned item state",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API applies item HELD after batch success and exposes the owned item state",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API stores feedback for each app and returns only a thank-you acknowledgement",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or unowned feedback fields: {\"app\":\"first\",\"body\":\"\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or unowned feedback fields: {\"app\":\"first\",\"body\":\"   \"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or unowned feedback fields: {\"app\":\"first\",\"body\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or unowned feedback fields: {\"app\":\"first\",\"body\":\"bad\\u0000text\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or unowned feedback fields: {\"app\":\"admin\",\"body\":\"Fictional feedback\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or unowned feedback fields: {\"app\":\"first\",\"body\":\"Fictional feedback\",\"blocking\":\"yes\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or unowned feedback fields: {\"app\":\"first\",\"body\":\"Fictional feedback\",\"playerId\":\"another-player\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rejects invalid or unowned feedback fields: {\"app\":\"first\",\"body\":\"Fictional feedback\",\"status\":\"fixed\"}",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API requires JSON and same-origin requests for feedback",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API accepts exactly one thousand feedback characters",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API exports persisted feedback without account metadata and honors the explicit database",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API keeps database details out of failed feedback export output",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API allows at most five concurrent feedback submissions per player per rolling hour",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API does not expose any player's feedback through HTTP",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API redirects public policy routes to the Google Sites policies",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API accepts TaskRabbit shifts without awarding game progression",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API accepts Rover shifts without awarding game progression",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API accepts Thumbtack shifts without awarding game progression",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API totals one owned month without adding imported PayPal activity twice",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API deletes every owned row after exact typed confirmation and ends the session",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API keeps smart suggestions off by default and persists only the owned preference",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API seeds repeatable fictional demo data without modifying another player",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API keeps missing-name PayPal emails private and records account verification only when returned",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API does not retry an ambiguous payout outside the safe idempotency window",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API reconciles a signed payout item event before the create response arrives",
+      "status": "skipped"
+    },
+    {
+      "name": "Phase 2 game API rate limits writes per player and permits reads, other players, and later windows",
+      "status": "skipped"
+    }
+  ]
+}
