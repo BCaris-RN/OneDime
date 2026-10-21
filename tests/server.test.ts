@@ -25,6 +25,7 @@ import {
 import type { AppConfig } from "../src/config.js";
 import type { PayPalIdentityClient } from "../src/auth/paypal.js";
 import { claimEligibleRungs } from "../src/game/rungs.js";
+import { parseBetaAllowlist } from "../src/auth/beta.js";
 
 const testConfig: AppConfig = {
   nodeEnv: "test",
@@ -248,6 +249,144 @@ describe("server", () => {
     expect(logoutResponse.headers["set-cookie"]?.[0]).toContain(
       "onedime_session=;",
     );
+    await expect(prisma.session.count()).resolves.toBe(0);
+  });
+});
+
+describe("beta allowlist", () => {
+  async function configuredApp(value?: string) {
+    const { createApp } = await import("../src/server.js");
+    return createApp({ config: { ...testConfig, betaAllowlist: parseBetaAllowlist(value) }, prisma, paypalClient });
+  }
+  async function attemptLogin(target: typeof app) {
+    const start = await request(target).get("/auth/paypal").expect(302);
+    const state = new URL(start.headers.location).searchParams.get("state");
+    return request(target).get(`/auth/paypal/callback?code=fixture&state=${state}`);
+  }
+
+  it("admits a listed account using normalized exact email matching", async () => {
+    const target = await configuredApp("other@example.test, FIRST@EXAMPLE.COM ");
+    vi.mocked(paypalClient.fetchUserInfo).mockResolvedValueOnce({ user_id: "BETA-1", email: " First@Example.COM " });
+    const response = await attemptLogin(target);
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe("/app");
+    const cookie = response.headers["set-cookie"]![0];
+    await expect(prisma.player.count()).resolves.toBe(1);
+    await expect(prisma.session.count()).resolves.toBe(1);
+    await request(target).get("/api/me").set("Cookie", cookie).expect(200);
+  });
+
+  it("rejects an unlisted account without creating a player or session or logging an address", async () => {
+    const target = await configuredApp("other@example.test");
+    const logs = [vi.spyOn(console, "log"), vi.spyOn(console, "info"), vi.spyOn(console, "error")];
+    try {
+      const response = await attemptLogin(target);
+      expect(response.status).toBe(403);
+      expect(response.text).toContain("OneDime is in a private beta");
+      expect(response.text).not.toContain("first@example.com");
+      expect(response.headers["cache-control"]).toBe("no-store");
+      expect(response.headers["set-cookie"]).toBeUndefined();
+      await expect(prisma.player.count()).resolves.toBe(0);
+      await expect(prisma.session.count()).resolves.toBe(0);
+      for (const log of logs) expect(log).not.toHaveBeenCalled();
+    } finally { for (const log of logs) log.mockRestore(); }
+  });
+
+  it.each([undefined, "", "  "])("rejects a missing or empty provider email when beta access is restricted", async email => {
+    const target = await configuredApp("first@example.com");
+    vi.mocked(paypalClient.fetchUserInfo).mockResolvedValueOnce({ user_id: "BETA-MISSING", email });
+    expect((await attemptLogin(target)).status).toBe(403);
+    await expect(prisma.player.count()).resolves.toBe(0);
+    await expect(prisma.session.count()).resolves.toBe(0);
+  });
+
+  it("does not treat plus aliases or dotted addresses as the same beta account", async () => {
+    const target = await configuredApp("first@example.com");
+    for (const email of ["first+beta@example.com", "f.irst@example.com"]) {
+      vi.mocked(paypalClient.fetchUserInfo).mockResolvedValueOnce({ user_id: "BETA-ALIAS", email });
+      expect((await attemptLogin(target)).status).toBe(403);
+    }
+    await expect(prisma.player.count()).resolves.toBe(0);
+  });
+
+  it.each([undefined, "", "  "])("preserves login without provider email when the allowlist is unset or blank", async value => {
+    const target = await configuredApp(value);
+    vi.mocked(paypalClient.fetchUserInfo).mockResolvedValueOnce({ user_id: "BETA-UNSET" });
+    const response = await attemptLogin(target);
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe("/app");
+    await request(target).get("/api/me").set("Cookie", response.headers["set-cookie"]![0]).expect(200);
+  });
+
+  it("does not update an existing player or create a session for a denied login", async () => {
+    await attemptLogin(app);
+    const original = await prisma.player.findFirstOrThrow();
+    const target = await configuredApp("other@example.test");
+    vi.mocked(paypalClient.fetchUserInfo).mockResolvedValueOnce({ user_id: original.paypalUserId, name: "Changed", email: "denied@example.test" });
+    expect((await attemptLogin(target)).status).toBe(403);
+    expect(await prisma.player.findUniqueOrThrow({ where: { id: original.id } })).toEqual(original);
+    await expect(prisma.session.count()).resolves.toBe(1);
+  });
+
+  it("consumes OAuth state once even when beta admission is denied", async () => {
+    const target = await configuredApp("other@example.test");
+    const start = await request(target).get("/auth/paypal").expect(302);
+    const state = new URL(start.headers.location).searchParams.get("state");
+    const callback = `/auth/paypal/callback?code=fixture&state=${state}`;
+    await request(target).get(callback).expect(403);
+    await request(target).get(callback).expect(400);
+    expect(paypalClient.exchangeCodeForToken).toHaveBeenCalledTimes(1);
+    await expect(prisma.oauthState.count()).resolves.toBe(0);
+  });
+
+  it.each(["/api/me", "/api/entries", "/api/settings", "/api/paypal/transactions", "/api/overview"])(
+    "rejects a removed account on the next request to %s", async route => {
+      const response = await attemptLogin(app);
+      const cookie = response.headers["set-cookie"]![0];
+      const target = await configuredApp("other@example.test");
+      await request(target).get(route).set("Cookie", cookie).expect(401);
+      await expect(prisma.session.count()).resolves.toBe(0);
+      await expect(prisma.player.count()).resolves.toBe(1);
+    }
+  );
+
+  it("rejects a removed account before feedback is written", async () => {
+    const response = await attemptLogin(app);
+    const target = await configuredApp("other@example.test");
+    await request(target).post("/api/feedback").set("Cookie", response.headers["set-cookie"]![0])
+      .set("Origin", testConfig.publicBaseUrl).send({ app: "first", body: "Fictional feedback", blocking: false }).expect(401);
+    await expect(prisma.feedback.count()).resolves.toBe(0);
+    await expect(prisma.session.count()).resolves.toBe(0);
+  });
+
+  it.each(["/", "/app"])("removes a denied session when an existing player opens %s", async route => {
+    const response = await attemptLogin(app);
+    const cookie = response.headers["set-cookie"]![0];
+    const target = await configuredApp("other@example.test");
+    const page = await request(target).get(route).set("Cookie", cookie);
+    expect(page.status).toBe(route === "/" ? 200 : 302);
+    if (route === "/") expect(page.text).toContain("Log in with PayPal");
+    else expect(page.headers.location).toBe("/");
+    await expect(prisma.session.count()).resolves.toBe(0);
+  });
+
+  it("keeps a rejected cookie invalid after its account is re-added", async () => {
+    const response = await attemptLogin(app);
+    const cookie = response.headers["set-cookie"]![0];
+    const denied = await configuredApp("other@example.test");
+    await request(denied).get("/api/me").set("Cookie", cookie).expect(401);
+    const restored = await configuredApp("first@example.com");
+    await request(restored).get("/api/me").set("Cookie", cookie).expect(401);
+    const fresh = await attemptLogin(restored);
+    expect(fresh.status).toBe(302);
+    await request(restored).get("/api/me").set("Cookie", fresh.headers["set-cookie"]![0]).expect(200);
+  });
+
+  it("rejects an older session whose stored account email is missing", async () => {
+    const response = await attemptLogin(app);
+    await prisma.player.updateMany({ data: { email: null } });
+    const target = await configuredApp("first@example.com");
+    await request(target).get("/api/me").set("Cookie", response.headers["set-cookie"]![0]).expect(401);
     await expect(prisma.session.count()).resolves.toBe(0);
   });
 });

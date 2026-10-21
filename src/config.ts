@@ -1,3 +1,5 @@
+import { parseBetaAllowlist } from "./auth/beta.js";
+
 export const PAYPAL_AUTH_URL = "https://www.sandbox.paypal.com/connect";
 export const PAYPAL_API_BASE_URL = "https://api-m.sandbox.paypal.com";
 export const PAYPAL_USERINFO_PATH = "/v1/identity/openidconnect/userinfo";
@@ -19,6 +21,7 @@ export type AppConfig = {
   paypalScope: string;
   payoutsEnabled?: boolean;
   paypalWebhookId?: string;
+  betaAllowlist?: ReadonlySet<string>;
 };
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -49,6 +52,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
 
   if (env.GOOGLE_SHEETS_ENABLED === "true") throw new Error("Google Sheets integration is not enabled; use file exports.");
   return {
+    betaAllowlist: parseBetaAllowlist(env.BETA_ALLOWLIST),
     payoutsEnabled: env.PAYOUTS_ENABLED === "true",
     paypalWebhookId: blankToUndefined(env.PAYPAL_WEBHOOK_ID),
     nodeEnv,

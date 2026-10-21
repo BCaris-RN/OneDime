@@ -1,5 +1,28 @@
 # OneDime status
 
+R3 implementation checkpoint, October 20, 2026 (Hawaii), branch `beta-allowlist`.
+Stacked parent: `week5-beta` at `214307161bcd544ae02ac1eadf111a6e9b5a3ec8`.
+Main remains `4be44f57dd18e4ed7dd80eb3666e525f2f9bb955` after the authorized R1
+merge of PR #7. R2 final CI [39523317686](https://github.com/BCaris-RN/OneDime/actions/runs/39523317686)
+passed at that parent; PR #6 is ready, unmerged, and awaits Claude's source review.
+Its verified source ZIP is
+`G:\one_dime_worktrees\long-run-beta\reviews\claude-pr6\onedime-pr6-source-review.zip`,
+SHA-256 `4fcdc63bd7dde47226bf950482c317f93f39a626746899a7c4be4ae5254ea457`.
+
+R3 implements only the approved tester allowlist: exact normalized provider email
+before account/session creation, central rejection/revocation of removed sessions,
+a static token-styled beta page, private environment configuration and targeted tests.
+Unset/blank keeps old behavior; invalid nonblank configuration fails with no input
+echo. No list or rejected email is logged. Financial, game and other authentication
+rules remain unchanged. Local validation and exact-head CI are pending at this
+implementation checkpoint; no pass or approval is claimed here. The final validation
+report will be saved under `reviews/beta-allowlist/` before opening the stacked draft PR.
+Only this agent writes this branch/worktree, using port 3433 and disposable database
+`onedime_allowlist_test`. No deployment, provider call, setting/secret/account action,
+tester invitation or further merge is authorized or performed.
+
+## Preserved R2 checkpoint
+
 Updated October 20, 2026 (Hawaii). R2 beta validation checkpoint on `week5-beta`,
 rebased onto main `4be44f57dd18e4ed7dd80eb3666e525f2f9bb955` (merged PR #7).
 Reviewed implementation head: `72abfe22920eebcd628bb1123678fc19bb0c9380`.

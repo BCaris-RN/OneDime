@@ -36,5 +36,6 @@ jobs:
       - run: npm run typecheck:contrast
       - run: npm test
       - run: npx playwright install --with-deps chromium
+      - run: npm run test:beta
       - run: npm run test:contrast
       - run: npm run test:browser

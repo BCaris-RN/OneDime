@@ -215,6 +215,21 @@ not measured; phone-width desktop checks only establish UI and cache behavior.
 
 ## Beta feedback
 
+For a private sandbox beta, I set `BETA_ALLOWLIST` privately to the tester accounts'
+comma-separated PayPal emails. Matching trims and lowercases the complete address;
+plus aliases and dotted addresses stay distinct. Leaving it unset or blank preserves
+the existing login behavior. A malformed nonblank list stops startup with a generic
+error instead of opening access. See the [deployment guide](docs/deploy-render.md)
+for the empty-slot rule and the separately approved deployment needed to apply a
+changed list. Removed accounts are rejected on their next request, and a rejected
+session cannot be reused after re-adding the account. Stored financial records remain.
+
+I check the private-beta page with `npm run test:beta` after installing Chromium.
+It checks keyboard navigation, local-only requests and Current-theme contrast at
+320/390/1280px in System, Light and Dark against both OS preferences. It uses no
+provider credentials or database. `npx tsx scripts/check-beta-access.ts` also generates
+the review table, sanitized evidence and screenshots under `reviews/beta-allowlist/`.
+
 I collect beta feedback through **Menu > Send feedback** or the button in Help.
 The form selects the current app, accepts up to 1,000 characters and an optional
 blocking flag, and allows five submissions per player per rolling hour. Feedback

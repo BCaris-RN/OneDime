@@ -67,6 +67,7 @@ it may contain local URLs or flags that are unsuitable for Render.
 | `PUBLIC_BASE_URL` | Initially your existing local sandbox origin; replace with `<RENDER_ORIGIN>` below. Required before testing writes or login. |
 | `COOKIE_SECURE` | Supplied by the Blueprint for HTTPS cookies. |
 | `PAYPAL_ENVIRONMENT` | Supplied by the Blueprint; keep sandbox. |
+| `BETA_ALLOWLIST` | Privately enter the sandbox test accounts' PayPal emails, separated by commas. Do not put the list in this guide, logs or GitHub. Blank keeps login unrestricted. |
 | `SESSION_TTL_DAYS` | Supplied by the Blueprint for session lifetime. |
 | `PAYPAL_WEBHOOK_ID` | Leave blank. Payouts are disabled; this beta does not require a webhook. Do not create or enable one as part of these steps. |
 | `PAYOUTS_ENABLED` | Supplied by the Blueprint; keep disabled. |
@@ -80,6 +81,19 @@ Render supplies `PORT`; do not replace it with the local development port. Leave
 `APP_BASE_URL` unset, because a conflicting alias makes startup fail. Leave the optional
 PayPal endpoint and scope overrides unset so the app keeps its reviewed sandbox defaults.
 Placeholders in angle brackets are instructions for Brandon, never literal final values.
+
+The tester allowlist trims and lowercases exact email addresses; it does not merge
+plus aliases or dotted addresses. Missing, blank or whitespace-only `BETA_ALLOWLIST`
+keeps the existing login behavior. A nonblank value containing only separators or
+any malformed address stops startup with a generic error. Empty comma-separated
+slots are ignored when at least one valid address remains. An enabled list rejects
+provider identities without an email before creating or updating a player/session.
+After an approved deployment applies a changed list, removed accounts lose access
+on their next request; the rejected session is deleted. Re-adding an account requires
+signing in again for a session that was rejected. Existing financial records remain.
+Changing this setting on Render requires Brandon's separate deployment approval;
+**Save only** does not change the running process. No allowlist has been configured
+on a hosted service by this code change.
 
 ## Migrations, address and sandbox login
 
