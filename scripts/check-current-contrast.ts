@@ -51,6 +51,7 @@ try {
   app.get("/contrast-login", async (req, res) => { await sessions.createSession(req.query.empty === "1" ? empty.id : player.id, res); res.redirect("/app"); });
   server = await new Promise(resolve => { const value = app.listen(port, "127.0.0.1", () => resolve(value)); });
   browser = await chromium.launch();
+  console.log("contrast local fixture initialized");
   if (screenshotDirectory) await mkdir(resolve(screenshotDirectory), { recursive: true });
 
   const inspect = async (page: Page, label: string, selection = true) => {
@@ -132,6 +133,7 @@ try {
         await screenshot(page, `${appName.toLowerCase().replaceAll(" ", "-")}-${theme}-${width}.png`);
       }
       await page.setViewportSize({ width: 1280, height: 900 });
+      console.log(`contrast workspace collected: ${label}`);
     }
     await page.getByRole("tab", { name: "First Dime", exact: true }).click();
     await page.getByRole("tab", { name: "Log", exact: true }).click();
@@ -160,6 +162,7 @@ try {
     const body = dialog.locator("#feedback-body");
     const feedbackInspect = async (state: string, formVisible: boolean) => {
       const label = `${feedbackLabel}; ${state}`;
+      console.log(`contrast feedback starting: ${label}`);
       const measured = await inspectContrast(page, label);
       const native = await inspectNativeGlyphs(page, label);
       pairs.push(...measured, ...native);
@@ -171,6 +174,7 @@ try {
       if (formVisible) assert(native.some(pair => pair.example === "input#feedback-blocking" && pair.role === "native checkbox unchecked" && pair.result === "exempt"), `${label}: neutral native reference painted in modal`);
       await states(page, label);
       if (os === theme) await screenshot(page, `feedback-${state}-${theme}-1280.png`);
+      console.log(`contrast feedback collected: ${label}`);
     };
     await feedbackInspect("empty", true);
     await body.fill("   ");
@@ -193,9 +197,10 @@ try {
       await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ ok: true }) });
     });
     await dialog.locator("#feedback-submit").click();
-    await page.waitForFunction(() => (document.getElementById("feedback-submit") as HTMLButtonElement).disabled);
-    await feedbackInspect("sending", true);
-    release();
+    try {
+      await page.waitForFunction(() => (document.getElementById("feedback-submit") as HTMLButtonElement).disabled);
+      await feedbackInspect("sending", true);
+    } finally { release(); }
     await dialog.locator("#feedback-thanks").waitFor();
     assert.equal(requests, 1);
     await feedbackInspect("sent", false);
