@@ -34,9 +34,10 @@ The coordinator run stopped at the end of R3 because the delegated operator reac
 its account usage limit. R4–R8 were not started. The current checkpoint preserves
 the confirmed F1 interpretation: First Dime keeps its existing XP; rank bonuses apply
 only to Creator, Freelancer, Driver and Seller. The previously missing design sources
-are now present in canonical main: `reference/pilot.html` (SHA-256
+are now present in the canonical working copy as local supplied files, but are not
+tracked by `main`: `reference/pilot.html` is ignored by Git (SHA-256
 `D83A9DE592E5E26761FA00E23B30FCCAEF7C36428FC175D35E082F2F9736A45C`) and
-`docs/designs/skins-report.md` (SHA-256
+`docs/designs/skins-report.md` is untracked (SHA-256
 `6B01C8E6240FD493227E0B3B4F669CC1CBD38056ACE85D74E48E844E0F99AD63`).
 
 No deployment, provider call, setting/secret/account action, tester invitation or

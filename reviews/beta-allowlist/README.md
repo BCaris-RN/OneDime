@@ -64,4 +64,4 @@ Detailed machine-readable evidence is in `targeted-tests.json`, `page-evidence.j
 
 ## Resume details
 
-The user confirmed that F1 must preserve current First Dime XP; rank bonuses apply only to Creator, Freelancer, Driver and Seller. Canonical sources now present on main are `reference/pilot.html` (SHA-256 `D83A9DE592E5E26761FA00E23B30FCCAEF7C36428FC175D35E082F2F9736A45C`) and `docs/designs/skins-report.md` (SHA-256 `6B01C8E6240FD493227E0B3B4F669CC1CBD38056ACE85D74E48E844E0F99AD63`).
+The user confirmed that F1 must preserve current First Dime XP; rank bonuses apply only to Creator, Freelancer, Driver and Seller. Rechecked design sources are present in the canonical working copy as local supplied files, but are not tracked by `main`: `reference/pilot.html` is Git-ignored (SHA-256 `D83A9DE592E5E26761FA00E23B30FCCAEF7C36428FC175D35E082F2F9736A45C`) and `docs/designs/skins-report.md` is untracked (SHA-256 `6B01C8E6240FD493227E0B3B4F669CC1CBD38056ACE85D74E48E844E0F99AD63`).
