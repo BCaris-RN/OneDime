@@ -92,7 +92,10 @@ retention proxies, verified share, mismatch, hourly rate and feedback totals. A 
 PostgreSQL 16 database applied all 12 migrations; a synthetic verified record plus a
 same-day unverified duplicate produced $10 verified / $20 logged and one import. Sentinel
 account and free-text values were absent from the report. Formatter tests: 2 passed;
-build and focused strict TypeScript check passed. Exact-head CI is pending.
+build and focused strict TypeScript check passed. Exact-head CI passed on F4 code head
+`cd44609df7a617ea7e9abd8418d53a637ab361c8`, run
+[40455059177](https://github.com/BCaris-RN/OneDime/actions/runs/40455059177): build,
+contrast typing, unit tests, beta, full contrast and browser checks all succeeded.
 
 Open question: the F4 handoff references a separate “metrics doc,” which is absent from
 the repository. F4 uses its explicit KPI list. “First-entry rate” means accounts with
