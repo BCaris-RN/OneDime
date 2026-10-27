@@ -12,7 +12,9 @@ type Player = { displayName: string | null; timeZone: string | null; leaderboard
 type Entry = { id: string; platform: string; workedOn: string; minutes: number; amountCents: number; note: string | null; verified: boolean };
 type Clock = { platform: string | null; startedAt: string | null };
 type QuestPayload = { quests: QuestDefinition[]; completed: string[]; pilotAvailable: boolean };
-type Leader = { displayName: string; verifiedTotalCents: number; xp: number; level: number; sites: { platform: string; verifiedCents: number }[]; rungClaims: { rungCents: number; claimedAt: string }[] };
+type ProfessionRank = { profession: "creator" | "freelancer" | "driver" | "seller" | "starter"; rank: number; verifiedCents: number; nextRankCents: number | null };
+type GameStatsWithProfessions = GameStats & { professions: ProfessionRank[]; professionClass: ProfessionRank | null; verifiedOtherCents: number };
+type Leader = { displayName: string; verifiedTotalCents: number; xp: number; level: number; sites: { platform: string; verifiedCents: number }[]; rungClaims: { rungCents: number; claimedAt: string }[]; professionClass: ProfessionRank | null; professions: ProfessionRank[] };
 const element = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const input = (id: string) => element<HTMLInputElement>(id);
 const money = (cents: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
@@ -77,14 +79,24 @@ async function perform(task: () => Promise<void>) {
   finally { busy = false; availability(); }
 }
 
-function renderStats(stats: GameStats) {
+function rankText(rank: ProfessionRank) {
+  const title = rank.profession[0].toUpperCase() + rank.profession.slice(1);
+  const progress = rank.nextRankCents === null ? "Top rank reached" : `${money(rank.nextRankCents - rank.verifiedCents)} to rank ${rank.rank + 1}`;
+  return `${title} · ${rank.rank ? `rank ${rank.rank}` : "working toward rank 1"} · ${money(rank.verifiedCents)} verified · ${progress}`;
+}
+function renderStats(stats: GameStatsWithProfessions) {
   element("total-amount").textContent = money(stats.totals.amountCents);
   element("verified-amount").textContent = money(stats.totals.verifiedCents);
   element("week-amount").textContent = money(stats.week.amountCents);
   element("total-minutes").textContent = number(stats.totals.minutes);
   element("streak").textContent = number(stats.streak);
   element("rested-pool").textContent = `${stats.restedPool} XP`;
-  element("level-summary").textContent = `Level ${stats.level} · ${stats.title} · ${number(stats.xp)} XP`;
+  element("level-summary").textContent = `Level ${stats.level} · ${stats.title}${stats.professionClass ? ` · ${stats.professionClass.profession[0].toUpperCase() + stats.professionClass.profession.slice(1)} class` : ""} · ${number(stats.xp)} XP`;
+  for (const [id, profession] of [["rank-first", "starter"], ["rank-spotlight", "creator"], ["rank-freelance", "freelancer"]] as const) {
+    const rank = stats.professions.find(item => item.profession === profession)!;
+    element(id).textContent = rankText(rank);
+  }
+  element("rank-market").textContent = ["driver", "seller"].map(profession => rankText(stats.professions.find(item => item.profession === profession)!)).join(" · ");
   element("quest-level").textContent = `Level ${stats.level} · ${stats.title}`;
   element("quest-xp").textContent = `${stats.xp} XP · next level at ${stats.nextLevelXp}`;
   element("xp-progress").setAttribute("aria-valuenow", String(stats.levelProgress));
@@ -184,7 +196,8 @@ function renderLeaders(leaders: Leader[]) {
   }) : [node("li", "No verified site leaders yet.", "muted")]));
   element("leaderboard-list").replaceChildren(...leaders.map((leader, index) => {
     const row = node("li");
-    row.append(node("h3", `${index + 1}. ${leader.displayName}`), node("p", `${money(leader.verifiedTotalCents)} verified · ${number(leader.xp)} XP · Level ${leader.level}`));
+    row.append(node("h3", `${index + 1}. ${leader.displayName}`), node("p", `${money(leader.verifiedTotalCents)} verified · ${number(leader.xp)} XP · Level ${leader.level}${leader.professionClass ? ` · ${leader.professionClass.profession[0].toUpperCase() + leader.professionClass.profession.slice(1)} class` : ""}`));
+    if (leader.professions.length) row.append(node("p", leader.professions.map(rank => `${rank.profession[0].toUpperCase() + rank.profession.slice(1)} rank ${rank.rank}`).join(" · ")));
     if (leader.sites.length) row.append(node("p", leader.sites.map((site) => `${site.platform}: ${money(site.verifiedCents)}`).join(" · ")));
     for (const claim of leader.rungClaims) row.append(node("p", `Claimed ${money(claim.rungCents)} · ${new Date(claim.claimedAt).toLocaleString([], { timeZone: player?.timeZone ?? "UTC" })}`));
     if (!leader.rungClaims.length) row.append(node("small", "No rung claims yet."));
@@ -193,7 +206,7 @@ function renderLeaders(leaders: Leader[]) {
 }
 async function refresh() {
   const [me, stats, entries, value, quests, leaders] = await Promise.all([
-    api<{ player: Player }>("/api/me"), api<GameStats>("/api/me/stats"), api<{ entries: Entry[] }>("/api/entries"),
+    api<{ player: Player }>("/api/me"), api<GameStatsWithProfessions>("/api/me/stats"), api<{ entries: Entry[] }>("/api/entries"),
     api<Clock>("/api/clock"), api<QuestPayload>("/api/quests"), api<{ players: Leader[] }>("/api/leaderboard")
   ]);
   player = me.player;

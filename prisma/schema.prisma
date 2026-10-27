@@ -30,6 +30,7 @@ model Player {
   rungClaims   RungClaim[]
   sessions     Session[]
   feedback     Feedback[]
+  professionRankClaims ProfessionRankClaim[]
 
   @@map("players")
 }
@@ -106,6 +107,18 @@ model RungClaim {
 
   @@index([playerId])
   @@map("rung_claims")
+}
+
+model ProfessionRankClaim {
+  playerId   String   @map("player_id") @db.Uuid
+  profession String
+  rank       Int
+  claimedAt  DateTime @default(now()) @map("claimed_at") @db.Timestamptz
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@id([playerId, profession, rank])
+  @@index([playerId])
+  @@map("profession_rank_claims")
 }
 
 model Receipt {

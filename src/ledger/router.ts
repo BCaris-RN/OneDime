@@ -1,6 +1,6 @@
 /*  (o) OneDime | src/ledger/router.ts
  *  ----------------------------------------------------------
- *  Owned workspace records; game progression stays in First Dime.
+ *  Owned workspace records and permanent verified profession ranks.
  */
 import { Router } from "express";
 import { Prisma, type PrismaClient } from "@prisma/client";
@@ -20,6 +20,7 @@ import {
 } from "./store.js";
 import { summary } from "./summary.js";
 import { NotFound } from "../http/errors.js";
+import { syncProfessionRankClaims } from "../game/professions.js";
 
 export function createLedgerRouter(prisma: PrismaClient, now: () => Date) {
   const router = Router();
@@ -74,13 +75,15 @@ export function createLedgerRouter(prisma: PrismaClient, now: () => Date) {
           const data = validateRow(key, { ...input, ...patch });
           if (key === "expenses" && !allowedExpense("app" in data ? data.app : null))
             throw new NotFound();
-          return stampPayment(
+          const updated = await stampPayment(
             tx,
             key,
             player(req).id,
             await updateRow(tx, key, player(req).id, id, data),
             today(req)
           );
+          await syncProfessionRankClaims(tx, player(req).id);
+          return updated;
         });
         res.json({ row });
       });

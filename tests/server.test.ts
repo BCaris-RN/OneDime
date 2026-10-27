@@ -100,6 +100,7 @@ beforeEach(async () => {
       payouts,
       receipts,
       rung_claims,
+      profession_rank_claims,
       quest_progress,
       log_entries,
       players
@@ -1643,6 +1644,7 @@ describe("Phase 2 game API", () => {
         where: { playerId: alice.player.id, verified: true },
       }),
     ).toBe(0);
+    expect((await request(app).get("/api/me/stats").set("Cookie", alice.cookie)).body.xp).toBe(0);
   });
   it("lists non-USD activity without permitting routing", async () => {
     const alice = await login("paypal-eur");
@@ -1662,7 +1664,7 @@ describe("Phase 2 game API", () => {
     ["shifts", "Uber", "/market/shifts"],
     ["sales", "eBay", "/market/sales"],
   ])(
-    "routes and unlinks %s without granting game XP",
+    "routes and unlinks %s while retaining earned rank XP",
     async (recordType, platform, path) => {
       const alice = await login(`paypal-${recordType}`);
       await write(alice.cookie, "/api/paypal/import", {
@@ -1685,6 +1687,12 @@ describe("Phase 2 game API", () => {
         },
       ).expect(200);
       const id = result.body.transaction.routed_record_id;
+      const duplicateRoutes = await Promise.all([1, 2].map(() => write(
+        alice.cookie,
+        `/api/paypal/transactions/${payment.id}/route`,
+        { record_type: recordType, platform },
+      )));
+      expect(duplicateRoutes.map(response => response.status)).toEqual([200, 200]);
       expect(
         (await request(app).get(`/api${path}`).set("Cookie", alice.cookie)).body
           .rows,
@@ -1692,13 +1700,15 @@ describe("Phase 2 game API", () => {
       expect(
         (await request(app).get("/api/me/stats").set("Cookie", alice.cookie))
           .body.xp,
-      ).toBe(0);
+      ).toBe(recordType === "gigs" || recordType === "sales" ? 400 : 390);
       await request(app)
         .delete(`/api${path}/${id}`)
         .set("Cookie", alice.cookie)
         .set("Origin", origin)
         .send({})
         .expect(204);
+      expect((await request(app).get("/api/me/stats").set("Cookie", alice.cookie)).body.xp).toBe(200);
+      expect(await prisma.professionRankClaim.count({ where: { playerId: alice.player.id } })).toBe(2);
       expect(
         (await activity(alice.cookie)).body.rows[0].routed_record_id,
       ).toBeNull();

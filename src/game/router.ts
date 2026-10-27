@@ -1,3 +1,7 @@
+/*  (o) OneDime | src/game/router.ts
+ *  ----------------------------------------------------------
+ *  Player-owned game progress, profession ranks and leaderboard.
+ */
 import { Router, type RequestHandler } from "express";
 import type { LogEntry, PrismaClient } from "@prisma/client";
 import { z } from "zod";
@@ -6,6 +10,7 @@ import { SessionStore, type AuthedRequest } from "../auth/session.js";
 import { QUESTS, PILOT_AVAILABLE, TITLES, type QuestDefinition } from "./catalog.js";
 import { gameStats, localDay } from "./rules.js";
 import { claimEligibleRungs } from "./rungs.js";
+import { loadProfessionTotals, professionClass, professionView } from "./professions.js";
 import { emptyBody, entrySchema, idSchema, platformSchema, timeZoneSchema } from "./validation.js";
 
 type Options = {
@@ -140,13 +145,23 @@ export function createGameRouter(options: Options) {
   });
 
   async function statsFor(id: string, timeZone: string) {
-    const [entries, progress, claimedRungs] = await Promise.all([
+    const [entries, progress, claimedRungs, claims] = await Promise.all([
       prisma.logEntry.findMany({ where: { playerId: id } }),
       prisma.questProgress.findMany({ where: { playerId: id } }),
-      prisma.rungClaim.count({ where: { playerId: id } })
+      prisma.rungClaim.count({ where: { playerId: id } }),
+      prisma.professionRankClaim.count({ where: { playerId: id } })
     ]);
     const questXp = progress.reduce((xp, item) => xp + (quests.find((quest) => quest.id === item.questId)?.xp ?? 0), 0);
-    return gameStats(entries, { now: now(), timeZone, questXp, claimedRungs });
+    const totals = await loadProfessionTotals(prisma, id, entries);
+    const verifiedOtherCents = totals.creator + totals.freelancer + totals.driver + totals.seller;
+    const stats = gameStats(entries, {
+      now: now(), timeZone, questXp, claimedRungs, verifiedOtherCents,
+      claimedProfessionRanks: claims
+    });
+    return {
+      ...stats, professions: professionView(totals), professionClass: professionClass(totals),
+      professionRankClaims: claims, verifiedOtherCents
+    };
   }
   router.get("/me/stats", async (request: AuthedRequest, response) => {
     response.json(await statsFor(player(request).id, player(request).timeZone ?? "UTC"));
@@ -197,8 +212,13 @@ export function createGameRouter(options: Options) {
       const stats = await statsFor(row.id, row.timeZone ?? "UTC");
       // Explicit whitelist: never spread a player, entry, or private stats object.
       return {
-        displayName: row.displayName ?? "Player", verifiedTotalCents: stats.totals.verifiedCents,
+        displayName: row.displayName ?? "Player",
+        verifiedTotalCents: stats.totals.verifiedCents + stats.verifiedOtherCents,
         xp: stats.xp, level: stats.level,
+        professionClass: stats.professionClass,
+        professions: stats.professions.filter(rank => rank.rank > 0)
+          .sort((left, right) => right.rank - left.rank || right.verifiedCents - left.verifiedCents)
+          .slice(0, 2),
         sites: stats.sites.filter((site) => site.verifiedCents > 0).map((site) => ({ platform: site.platform, verifiedCents: site.verifiedCents })),
         rungClaims: row.rungClaims
       };

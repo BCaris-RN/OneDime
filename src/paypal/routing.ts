@@ -1,3 +1,7 @@
+/*  (o) OneDime | src/paypal/routing.ts
+ *  ----------------------------------------------------------
+ *  Links one incoming activity transaction to one owned record.
+ */
 import type { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { incoming, fixedSuggestion, type Activity } from "./activity.js";
@@ -5,6 +9,7 @@ import { NotFound, BadRequest, Conflict } from "../http/errors.js";
 import { insertRow, ownRow, updateRow, validateRow, view } from "../ledger/store.js";
 import type { TableKey, LedgerRow } from "../ledger/catalog.js";
 import { claimEligibleRungs } from "../game/rungs.js";
+import { syncProfessionRankClaims } from "../game/professions.js";
 export type Transaction = Activity & {
   id: string;
   player_id: string;
@@ -112,6 +117,7 @@ export async function routePayment(
         (input.record_id && p.routed_record_id !== input.record_id)
       )
         throw new Conflict("payment_already_routed");
+      await syncProfessionRankClaims(tx, playerId);
       return { transaction: p };
     }
     let row: LedgerRow;
@@ -168,6 +174,7 @@ export async function routePayment(
     >`SELECT id FROM paypal_transactions WHERE player_id=${playerId}::uuid AND routed_record_type=${input.record_type} AND routed_record_id=${row.id}::uuid`;
     if (other.length) throw new Conflict("record_already_linked");
     await tx.$executeRaw`UPDATE paypal_transactions SET routed_app=${routeApps[input.record_type]}, routed_record_type=${input.record_type},routed_record_id=${row.id}::uuid WHERE id=${id}::uuid AND player_id=${playerId}::uuid`;
+    await syncProfessionRankClaims(tx, playerId);
     return {
       transaction: {
         ...p,

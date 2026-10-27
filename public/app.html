@@ -50,7 +50,9 @@
       </nav>
       <p id="message" role="status" aria-live="polite" class="message"></p>
       <section id="panel-log" role="tabpanel" aria-labelledby="tab-log" tabindex="0">
-        <section class="goal-hero" aria-labelledby="goal-title"><div class="goal-coin" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="goal-ring" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg><div class="coin-face"><b id="goal-percent">0%</b><span>of goal</span></div></div><div><p class="eyebrow">Current goal</p><h2 id="goal-title">Earn your first dime</h2><p id="goal-sub" class="muted"></p><p class="field-help">Your personal goal uses logged earnings. The rung race requires verified earnings.</p><p id="level-summary" class="level-summary">Loading your progress…</p></div></section>      <dl class="stats" aria-label="Player statistics">
+        <section class="goal-hero" aria-labelledby="goal-title"><div class="goal-coin" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="goal-ring" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg><div class="coin-face"><b id="goal-percent">0%</b><span>of goal</span></div></div><div><p class="eyebrow">Current goal</p><h2 id="goal-title">Earn your first dime</h2><p id="goal-sub" class="muted"></p><p class="field-help">Your personal goal uses logged earnings. The rung race requires verified earnings.</p><p id="level-summary" class="level-summary">Loading your progress…</p></div></section>
+      <p id="rank-first" class="rank-summary" aria-live="polite">Starter rank loads with your progress.</p><p class="field-help">How to get verified: match a First Dime entry to an incoming PayPal payment from its mapped payer; the logged amount must equal gross or net.</p>
+      <dl class="stats" aria-label="Player statistics">
         <div><dt>Logged</dt><dd id="total-amount">—</dd></div>
         <div><dt>Verified</dt><dd id="verified-amount">—</dd></div>
         <div><dt>This week</dt><dd id="week-amount">—</dd></div>
@@ -114,7 +116,7 @@
       <ul>
         <li><b>The coin</b> shows progress toward your current goal. Goals go $0.10, $1, $10, $50, $100, $250, $500, $1,000, and the next one unlocks as soon as you pass the last.</li>
         <li><b>Streak</b> counts days in a row with at least one entry. Days where you worked but earned nothing count too, using <b>Log time only, $0</b>. Approvals and tests take time before money shows up, and that effort still counts.</li>
-        <li><b>Level and XP:</b> 1 XP per minute worked, 10 XP per dollar earned, plus each quest's reward, 100 XP per rung claimed, and any rested bonus. Total XP is rounded down to a whole number. Each level takes a little more XP than the last.</li>
+        <li><b>Level and XP:</b> First Dime keeps its existing XP for minutes and logged dollars. Verified dollars in Spotlight, Freelance and Market add 10 XP per dollar; each new Creator, Freelancer, Driver or Seller rank adds 100 XP once. Quests, rung claims and rested time keep their existing rewards. Each level takes a little more XP than the last.</li>
         <li><b>Which site pays you best</b> divides what you earned by the time you logged on each site. Only sessions with minutes count, so time your sessions for honest numbers.</li>
         <li><b>Rested XP:</b> your pool starts at zero. After your first logged day, each full day without an entry adds 25, capped at 100. Minutes earn double while the pool lasts, using one pool XP per bonus XP.</li>
         <li><b>History</b> shows your recent entries. Use <b>Delete</b> to fix a mistake, then log it again.</li>
@@ -126,7 +128,7 @@
         <li><b>Joining is optional.</b> When you join, other players see your display name, verified total, XP, level and verified earnings by site. Your rung claims are also visible. Your email, log entries and notes stay private.</li>
         <li><b>Bonus quests:</b> each rung of the goal ladder ($0.10, $1, $10 and up) can be claimed once, by the first player whose verified total reaches it. Claiming one is worth +100 XP.</li>
         <li><b>Rankings</b> show the top earners overall and the top earner on each site.</li>
-        <li><b>Verified earnings only:</b> logged entries await verification before they count toward rungs or public earnings. A rung claim stays with its winner, including after deleting an entry or leaving the leaderboard. Logged earnings still earn progression XP; only verified earnings count toward rung eligibility and leaderboard earnings totals. Use PayPal activity import to match a payment by payer/platform and a logged amount equal to that payment's gross or net. CSV matching records source paypal_csv; it does not authenticate the uploaded file with PayPal.</li>
+        <li><b>Verified earnings only:</b> logged entries await verification before they count toward rungs or public earnings. A rung claim stays with its winner, including after deleting an entry or leaving the leaderboard. First Dime keeps its existing progression XP; unverified Spotlight, Freelance and Market amounts give no XP. Use PayPal activity import to match a payment by payer/platform and a logged amount equal to that payment's gross or net. CSV matching records source paypal_csv; it does not authenticate the uploaded file with PayPal. Many delivery apps and stores pay to a bank, so those earnings cannot be verified through PayPal yet.</li>
       </ul>
     </section>
     <section>
@@ -144,6 +146,8 @@
     <div class="slip row">
       <h2>Freelance: your client work</h2>
       <p class="muted">Projects you sell to clients on freelance marketplaces. Track what the client paid, what the platform kept, and when the money clears.</p>
+      <p id="rank-freelance" class="rank-summary" aria-live="polite">Freelancer rank loads with your progress.</p>
+      <p class="field-help">How to get verified: route an incoming PayPal payment to a paid gig. The logged client-paid or take-home amount must equal its gross or net.</p>
     </div>
     <dl class="stats" id="fiveStats" aria-label="Freelance selected month"></dl>
 
@@ -186,6 +190,7 @@
 
   <!-- BALITZU -->
   <div id="app-market" role="tabpanel" aria-labelledby="app-tab-market" hidden style="display:grid;gap:18px">
+  <section class="slip row"><p id="rank-market" class="rank-summary" aria-live="polite">Driver and Seller ranks load with your progress.</p><p class="field-help">How to get verified: route an incoming PayPal payment to a delivery shift or paid sale. The logged pay and tips, sale price, or take-home sale amount must equal its gross or net.</p></section>
   <nav id="balNav" role="tablist" aria-label="Market sections">
     <button role="tab" aria-selected="true" aria-controls="bal-drive" id="b-drive">Delivery and rides</button>
     <button role="tab" aria-selected="false" aria-controls="bal-sell" id="b-sell">Selling</button>
@@ -266,6 +271,8 @@
     <div class="slip row">
       <h2>Spotlight: your creator income</h2>
       <p class="muted">Money that comes from your own audience on YouTube, TikTok, Instagram and Facebook. Starter gigs like SideShift stay in First Dime, so nothing is counted twice.</p>
+      <p id="rank-spotlight" class="rank-summary" aria-live="polite">Creator rank loads with your progress.</p>
+      <p class="field-help">How to get verified: route an incoming PayPal payment to paid creator income. The logged amount must equal its gross or net.</p>
     </div>
     <dl class="stats" id="sasuStats" aria-label="Spotlight selected month"></dl>
 

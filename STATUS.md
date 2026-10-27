@@ -1,47 +1,31 @@
 # OneDime status
 
-## OAuth-first run, October 29, 2026 (Hawaii)
+## M2 checkpoint, October 26, 2026 (Hawaii)
 
-October 30 continuation: head 8ef74c5 passed bot review, but CI 41021724204
-failed in the new browser fixture: Playwright did not intercept a redirected
-provider navigation. The fixture now starts that mocked navigation explicitly
-with the same cookie jar. No production logic or timeout was relaxed. Full CI
-and bot review must pass again on the new head. Claude Code owns beta-smoke,
-ship-license and public-export; this run does not modify those branches.
+Branch `week5-features`, based on M1 main `756cc93e2f6a8a99db5861ca030bbbdefb7bd197`.
+F1 adds verified Creator, Freelancer, Driver, Seller and Starter ranks across the
+workspaces; only the four non-Starter ranks grant one-time 100 XP bonuses. Spotlight,
+Freelance and Market award 10 XP per verified dollar. First Dime's existing XP, streak,
+rested XP and rung behavior remain unchanged. Verified ranks are backed by permanent,
+player-scoped claims; migration 000010 backfills eligible claims from existing routed
+payments. The feedback/rank UI shows each title, current verified total and next threshold.
 
-`fix-oauth-callback` starts from main `d43b9f184f252b56d4087915565a5c3fedf49d1d`.
-Browser-bound one-time state, Lax cookies, fixed-field step diagnostics, production
-ingress trust and exact redirect configuration checks are implemented. Existing
-15-second PayPal request deadlines are retained and tested; codes are not retried.
-See docs/oauth-diagnostics.md for the cold-start distinction and operator checks.
-
-Local Node 24 build, contrast typecheck and 247 tests in ten files pass. The first
-test run exposed an old no-logging assertion; it now checks the exact safe log
-schema. Beta checks pass (18 combinations, 22 pairs). Full browser/contrast checks
-and exact-head CI/bot review are pending at this checkpoint. Code-reviewer and
-security-best-practices inspections cover the complete auth diff; Playwright's
-existing runner now checks a mocked cross-site OAuth return and session cookie.
-No hosted callback or configuration has been inspected; the original live error
-details are pending. This is not evidence that the deployed site is repaired.
-
-Next: merge OAuth only after its gates, then implement Claude's rank persistence
-and all-account metrics decisions in #9; continue #11/#12, demos and deployment
-preparation under the handoff. No deployment or settings changes are authorized.
+Local Node 24 validation: Prisma generation, build, contrast typecheck and 38 focused game
+and profession tests passed. The full suite reported 88 passed and 152 skipped; the two
+PostgreSQL/Testcontainers suites could not start because this environment has no available
+container runtime. Exact-head GitHub CI is required to validate those database paths and
+is pending. No merge or deployment was performed. Next: M3 Stats tab and feedback support.
 
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 
 PR #6 was merged after Brandon's explicit approval at main commit
-`1620383a81dcd80242989b661fdf3f5d44fabad3`. The exact-head CI run
-[39523317686](https://github.com/BCaris-RN/OneDime/actions/runs/39523317686)
-passed all steps on PR #6 head `214307161bcd544ae02ac1eadf111a6e9b5a3ec8`.
-The approved `beta-allowlist` branch has been rebased onto that main; its current
-head is `69aed8a` and PR #8 must be retargeted to main. CI on the rebased head is
-pending. PR #8 remains unmerged pending that run. No deployment or Render setting
+`1620383a81dcd80242989b661fdf3f5d44fabad3`. PR #8 was rebased onto that main,
+passed exact-head CI, and was merged after Brandon's explicit approval. The M1
+beta deploy candidate is main `756cc93e2f6a8a99db5861ca030bbbdefb7bd197`.
+The Render configuration check is complete on that main: both services use the
+Free plan, PostgreSQL 16 is pinned, `/health` is the web health check, auto-deploy
+is off, and `BETA_ALLOWLIST` is `sync: false`. No deployment or Render setting
 change was made.
-
-The M1 Render configuration check is pending PR #8's approved merge. After it is
-merged, verify on main: both services use the Free plan, PostgreSQL 16,
-`healthCheckPath: /health`, auto-deploy is off, and `BETA_ALLOWLIST` is `sync: false`.
 Only `SESSION_SECRET`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`,
 `PAYPAL_REDIRECT_URI`, `PUBLIC_BASE_URL`, and (if enabling a private beta)
 `BETA_ALLOWLIST` require operator-entered values. PayPal values come from a personal
@@ -52,12 +36,9 @@ this beta (`PAYPAL_WEBHOOK_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
 `TOKEN_ENCRYPTION_KEY`). The database URL is wired by the Blueprint; other fixed
 settings are supplied by `render.yaml`.
 
-The requested `handoffs/long-run-2026-10-21.md` is absent from main and all local
-worktrees; only `handoffs/long-run-2026-10-20.md` is tracked. M2–M8 have not started.
-The Oct 20 handoff does not define those M-parts, so resume after the missing Oct 21
-handoff is restored. The supplied local `reference/pilot.html` and
-`docs/designs/skins-report.md` remain untracked/ignored input files as documented
-below.
+The Oct 21 long-run handoff was supplied on this branch as untracked input and defines
+M2–M8. The pilot is Git-ignored and the skins report is untracked input; both are
+available locally and will be included in their review materials as directed.
 
 R3 checkpoint, October 20, 2026 (Hawaii), branch `beta-allowlist`.
 Stacked parent: `week5-beta` at `214307161bcd544ae02ac1eadf111a6e9b5a3ec8`.
@@ -89,8 +70,9 @@ pointer modality; the fix uses a real Tab before asserting focus-visible and ret
 the assertion. The full final CI rerun passed. PR #8 remains a draft and unmerged,
 stacked on PR #6; see [R3 review package](reviews/beta-allowlist/README.md).
 
-The coordinator run stopped at the end of R3 because the delegated operator reached
-its account usage limit. R4–R8 were not started. The current checkpoint preserves
+Historical Oct 20 coordinator checkpoint: the prior run stopped at the end of R3
+because the delegated operator reached its account usage limit. R4–R8 had not started
+at that time. This checkpoint preserves
 the confirmed F1 interpretation: First Dime keeps its existing XP; rank bonuses apply
 only to Creator, Freelancer, Driver and Seller. The previously missing design sources
 are now present in the canonical working copy as local supplied files, but are not
@@ -100,9 +82,9 @@ tracked by `main`: `reference/pilot.html` is ignored by Git (SHA-256
 `6B01C8E6240FD493227E0B3B4F669CC1CBD38056ACE85D74E48E844E0F99AD63`).
 
 No deployment, provider call, setting/secret/account action, tester invitation or
-further merge is authorized or performed. Only PR #7 was authorized to merge, and it
-merged in R1. Resume with Claude's review of PR #6 and the approved remaining R4–R8
-sequence after this usage-limit stop.
+further merge was authorized or performed during that prior run. Only PR #7 was
+authorized to merge then, and it merged in R1. This historical checkpoint is
+superseded by the M1 checkpoint above.
 
 ## Preserved R2 checkpoint
 
