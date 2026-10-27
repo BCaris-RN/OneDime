@@ -33,6 +33,8 @@ services:
         value: "true"
       - key: PAYPAL_ENVIRONMENT
         value: sandbox
+      - key: BETA_ALLOWLIST
+        sync: false
       - key: SESSION_TTL_DAYS
         value: "14"
       - key: PAYPAL_WEBHOOK_ID

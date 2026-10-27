@@ -19,9 +19,10 @@
     "demo": "npm run build && tsx scripts/demo.ts",
     "db:seed:demo": "tsx scripts/seed-demo.ts",
     "test:browser": "tsx scripts/check-browser-smart.ts",
+    "test:beta": "tsx scripts/check-beta-access.ts --check-only",
     "test:contrast": "npm run test:contrast:regressions && tsx scripts/check-current-contrast.ts --check-only",
     "test:contrast:regressions": "tsx scripts/check-current-contrast-regressions.ts",
-    "typecheck:contrast": "tsc --noEmit --strict --target es2022 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck scripts/check-current-contrast.ts scripts/current-contrast.ts scripts/check-current-contrast-regressions.ts scripts/prove-current-contrast-scope.ts scripts/measure-current-contrast-candidates.ts",
+    "typecheck:contrast": "tsc --noEmit --strict --target es2022 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck scripts/check-current-contrast.ts scripts/current-contrast.ts scripts/check-current-contrast-regressions.ts scripts/prove-current-contrast-scope.ts scripts/measure-current-contrast-candidates.ts scripts/check-beta-access.ts",
     "feedback:export": "tsx scripts/export-feedback.ts"
   },
   "dependencies": {

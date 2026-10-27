@@ -2,6 +2,7 @@ import type { Player, PrismaClient } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type { AppConfig } from "../config.js";
+import { allowsBetaEmail } from "./beta.js";
 
 export const SESSION_COOKIE_NAME = "onedime_session";
 
@@ -17,7 +18,7 @@ export type AuthedRequest = Request & {
 export class SessionStore {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly config: Pick<AppConfig, "sessionSecret" | "sessionTtlDays" | "cookieSecure">
+    private readonly config: Pick<AppConfig, "sessionSecret" | "sessionTtlDays" | "cookieSecure" | "betaAllowlist">
   ) {}
 
   async createSession(playerId: string, response: Response): Promise<string> {
@@ -58,7 +59,8 @@ export class SessionStore {
       return null;
     }
 
-    if (session.expiresAt.getTime() <= Date.now()) {
+    if (session.expiresAt.getTime() <= Date.now() ||
+        !allowsBetaEmail(session.player.email, this.config.betaAllowlist)) {
       await this.prisma.session.deleteMany({ where: { id: hashSessionId(sessionId) } });
       return null;
     }

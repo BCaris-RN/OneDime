@@ -2,6 +2,19 @@ import { describe, expect, it } from "vitest";
 import { loadConfig } from "../src/config.js";
 const fixture = { SESSION_SECRET: "fixture-session-value-at-least-32-characters" };
 describe("configuration boundaries", () => {
+  it.each([undefined, "", " \t\n"])("keeps beta access unchanged for a blank allowlist", value => {
+    expect(loadConfig({ ...fixture, BETA_ALLOWLIST: value }).betaAllowlist).toBeUndefined();
+  });
+  it("normalizes and deduplicates exact beta account addresses", () => {
+    expect(loadConfig({ ...fixture, BETA_ALLOWLIST: "  TESTER@example.test, second@example.test, tester@EXAMPLE.test, , " }).betaAllowlist)
+      .toEqual(new Set(["tester@example.test", "second@example.test"]));
+  });
+  it.each([", ,", "not-an-email", "tester@example.test,private-invalid-value"])(
+    "rejects a malformed nonblank beta allowlist without exposing its contents", value => {
+      expect(() => loadConfig({ ...fixture, BETA_ALLOWLIST: value }))
+        .toThrow(new Error("BETA_ALLOWLIST must contain comma-separated email addresses."));
+    }
+  );
   it("keeps payout network calls disabled by default", () => {
     expect(loadConfig(fixture)).toMatchObject({
       payoutsEnabled: false

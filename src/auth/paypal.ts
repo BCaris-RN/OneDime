@@ -5,8 +5,10 @@
 import type { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import { randomBytes } from "node:crypto";
+import path from "node:path";
 import { PAYPAL_USERINFO_PATH, type AppConfig } from "../config.js";
 import type { SessionStore } from "./session.js";
+import { allowsBetaEmail } from "./beta.js";
 
 export type PayPalTokenResponse = {
   access_token: string;
@@ -130,6 +132,12 @@ export function createPayPalRouter(options: PayPalRouterOptions): Router {
       const paypalUserId = identity.user_id ?? identity.sub;
       if (!paypalUserId) {
         throw new Error("PayPal identity response did not include a user identifier.");
+      }
+
+      if (!allowsBetaEmail(identity.email, options.config.betaAllowlist)) {
+        response.status(403).set("Cache-Control", "no-store")
+          .sendFile(path.join(process.cwd(), "public", "beta.html"));
+        return;
       }
 
       const now = new Date();
