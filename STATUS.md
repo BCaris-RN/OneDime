@@ -117,7 +117,9 @@ skipped); full browser audit (4,288 Tab steps across workspaces/sub-tabs and
 pairs, zero uncovered pairs). The synthetic F4 PostgreSQL smoke test also passed.
 `npm audit` reports two high-severity dependency advisories, in `body-parser` and
 `undici`; dependency remediation is not part of this feature scope and was not attempted.
-F6 exact-head CI is pending.
+Exact-head CI passed on F6 code head `96961e8167d4e6696e8fbeecb6f6a20873f11e5e`,
+run [40460759441](https://github.com/BCaris-RN/OneDime/actions/runs/40460759441): build,
+contrast typing, all tests, beta, full contrast and browser checks succeeded.
 
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 
