@@ -44,13 +44,13 @@ self.addEventListener("fetch", event => {
     return;
   }
   if (isStaticAsset(url.pathname)) {
-    event.respondWith(caches.open(CACHE).then(cache => cache.match(request)).then(cached => cached ?? fetch(request).then(response => {
+    event.respondWith(fetch(request).then(response => {
       if (response.ok) {
         const copy = response.clone();
         event.waitUntil(caches.open(CACHE).then(cache => cache.put(request, copy)));
       }
       return response;
-    })));
+    }).catch(async () => (await caches.open(CACHE).then(cache => cache.match(request))) ?? Response.error()));
     return;
   }
   if (request.mode === "navigate")

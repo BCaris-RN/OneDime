@@ -121,18 +121,22 @@ Exact-head CI passed on F6 code head `96961e8167d4e6696e8fbeecb6f6a20873f11e5e`,
 run [40460759441](https://github.com/BCaris-RN/OneDime/actions/runs/40460759441): build,
 contrast typing, all tests, beta, full contrast and browser checks succeeded.
 
-Codex's ready-for-review audit on `ec62453b9f4e82e5638300df29d7b294a3de34f3`
-found four in-scope issues. The migration backfill now awards profession thresholds
-using the same gross-or-after-fee matched amount as runtime; the Stats verified share
-uses the overview's gross basis; all four manually logged income record types complete
-the zero-XP first-record quest; and negative monthly totals render below zero using
-separately scaled positive and negative stacks. Regression tests cover fee-bearing
-verified Stats totals, all four workspaces' manual first records, and chart geometry.
-Local Node 24 validation after these fixes: build passed; 260 tests across 12 files
-passed; contrast audit reported zero failing and zero uncovered pairs; browser audit
-passed 4,288 focus steps plus offline/smart checks. `npm audit` still reports two
-high-severity advisories in `body-parser` and `undici`; dependency changes remain
-out of scope. These fixes are pushed for exact-head CI and automated re-review.
+Codex's reviews on `ec62453b9f4e82e5638300df29d7b294a3de34f3` and
+`bf44ca29faf511b17a9dedadac571327d3cbd8a5` found six in-scope issues. The migration
+backfill now awards profession thresholds using the same gross-or-after-fee matched
+amount as runtime; the Stats verified share uses the overview's gross basis; all four
+manually logged income record types complete the zero-XP first-record quest; and
+negative monthly totals render below zero using separately scaled positive and
+negative stacks. Static app assets revalidate online and fall back to cache offline,
+and Stats preserves hundredths of a minute when aggregating freelance hours.
+Regression tests cover fee-bearing and fractional-time Stats values, all four
+workspaces' manual first records, positive/negative chart geometry, and the service
+worker's online, offline and API behavior. Local Node 24 validation after these fixes:
+build passed; 263 tests across 13 files passed; contrast audit reported zero failing
+and zero uncovered pairs; browser audit passed 4,288 focus steps plus offline/smart
+checks. `npm audit` still reports two high-severity advisories in `body-parser` and
+`undici`; dependency changes remain out of scope. These fixes are pushed for exact-head
+CI and automated re-review.
 
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 

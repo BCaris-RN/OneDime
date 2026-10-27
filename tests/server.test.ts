@@ -2109,6 +2109,22 @@ describe("Phase 2 game API", () => {
     expect(stats.earnedCents).toBe(overview.earnedCents);
     expect(stats.verifiedCents).toBe(1000);
   });
+  it("preserves hundredths of an hour until the final Stats rate is rounded", async () => {
+    const alice = await login("stats-fractional-hour");
+    const gig = (await write(alice.cookie, "/api/freelance/gigs", {
+      platform: "Upwork", client: "Fictional client", project: "Fractional hour", pricing: "fixed",
+      gross_cents: 1000, fee_cents: 0, hours_x100: 1, started_on: "2026-10-14", stage: "In progress"
+    }).expect(201)).body.row;
+    await write(alice.cookie, "/api/paypal/import", {
+      csv: activityCsv("STATS-FRACTIONAL-HOUR", "Prolific", "USD", "10.00", "-0.00", "10.00")
+    }).expect(200);
+    const payment = (await activity(alice.cookie)).body.rows[0];
+    await write(alice.cookie, `/api/paypal/transactions/${payment.id}/route`, {
+      record_type: "gigs", platform: "Upwork", record_id: gig.id
+    }).expect(200);
+    const stats = (await request(app).get("/api/stats?month=2026-10").set("Cookie", alice.cookie).expect(200)).body;
+    expect(stats.hourly).toEqual([{ platform: "Upwork", centsPerHour: 100000 }]);
+  });
   it("deletes every owned row after exact typed confirmation and ends the session",async()=>{
     const alice=await login("delete-alice"),bob=await login("delete-bob");
     for(const [path,body] of workspaceCases) await write(alice.cookie,`/api${path}`,body).expect(201);
