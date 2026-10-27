@@ -1,5 +1,36 @@
 # OneDime status
 
+## M1 checkpoint, October 26, 2026 (Hawaii)
+
+PR #6 was merged after Brandon's explicit approval at main commit
+`1620383a81dcd80242989b661fdf3f5d44fabad3`. The exact-head CI run
+[39523317686](https://github.com/BCaris-RN/OneDime/actions/runs/39523317686)
+passed all steps on PR #6 head `214307161bcd544ae02ac1eadf111a6e9b5a3ec8`.
+The approved `beta-allowlist` branch has been rebased onto that main; its current
+head is `69aed8a` and PR #8 must be retargeted to main. CI on the rebased head is
+pending. PR #8 remains unmerged pending that run. No deployment or Render setting
+change was made.
+
+The M1 Render configuration check is pending PR #8's approved merge. After it is
+merged, verify on main: both services use the Free plan, PostgreSQL 16,
+`healthCheckPath: /health`, auto-deploy is off, and `BETA_ALLOWLIST` is `sync: false`.
+Only `SESSION_SECRET`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`,
+`PAYPAL_REDIRECT_URI`, `PUBLIC_BASE_URL`, and (if enabling a private beta)
+`BETA_ALLOWLIST` require operator-entered values. PayPal values come from a personal
+sandbox app; the callback and base URL use the Render service origin; the allowlist
+comes from Brandon's approved sandbox testers. `SESSION_SECRET` is a newly generated
+random secret. Other `sync: false` entries are reserved and should remain blank for
+this beta (`PAYPAL_WEBHOOK_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
+`TOKEN_ENCRYPTION_KEY`). The database URL is wired by the Blueprint; other fixed
+settings are supplied by `render.yaml`.
+
+The requested `handoffs/long-run-2026-10-21.md` is absent from main and all local
+worktrees; only `handoffs/long-run-2026-10-20.md` is tracked. M2–M8 have not started.
+The Oct 20 handoff does not define those M-parts, so resume after the missing Oct 21
+handoff is restored. The supplied local `reference/pilot.html` and
+`docs/designs/skins-report.md` remain untracked/ignored input files as documented
+below.
+
 R3 checkpoint, October 20, 2026 (Hawaii), branch `beta-allowlist`.
 Stacked parent: `week5-beta` at `214307161bcd544ae02ac1eadf111a6e9b5a3ec8`.
 Main remains `4be44f57dd18e4ed7dd80eb3666e525f2f9bb955` after the authorized R1
