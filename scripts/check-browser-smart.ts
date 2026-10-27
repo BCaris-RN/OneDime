@@ -171,7 +171,7 @@ try {
   await page.getByRole("button",{name:"Cancel edit",exact:true}).press("Enter");
   assert.equal(await page.getByRole("button",{name:"Cancel edit",exact:true}).count(),0);
   let focusChecks=0;
-  const apps=["First Dime","Spotlight","Freelance","Market","PayPal"];
+  const apps=["First Dime","Spotlight","Freelance","Market","Stats","PayPal"];
   async function checkPanel(label:string) {
     const issues=await page.evaluate(()=>{
       const issues:string[]=[];
@@ -195,6 +195,7 @@ try {
         const style=getComputedStyle(target);
         if(style.outlineStyle==="none"||parseFloat(style.outlineWidth)<1)return `invisible focus: ${target.id||target.tagName}`;
         if(controls.contains(target))return null;
+        if(getComputedStyle(controls).position!=="fixed")return null;
         const rect=target.getBoundingClientRect(),bottom=controls.getBoundingClientRect().top;
         const covered=rect.height>bottom-24
           ?rect.top<0||rect.top>bottom-28:rect.bottom>bottom-4||rect.top<0;
@@ -213,29 +214,35 @@ try {
   for(const name of ["Scroll up","Scroll down","Previous tab","Next tab","B: clock in or out","A: log a session"])
     assert.equal(await page.getByRole("button",{name,exact:true}).count(),1);
   await checkTabKeys("app-nav",apps);
-  for(const width of [320,390]) for(const theme of ["light","dark"]) {
+  for(const width of [320,390,1280]) for(const theme of ["light","dark"]) {
     await page.setViewportSize({width,height:844});
     if(await page.locator("html").getAttribute("data-theme")!==theme) {
       const toggleTheme=page.getByRole("button",{name:theme==="dark"?"Switch to dark mode":"Switch to light mode",exact:true});
       await toggleTheme.focus();await toggleTheme.press("Enter");
     }
     for(const appName of apps) {
+      if(width===1280&&appName!=="Stats")continue;
       const tab=page.getByRole("tab",{name:appName,exact:true});await tab.focus();await tab.press("Enter");
       assert.equal(await tab.getAttribute("aria-selected"),"true");
       if(appName==="First Dime")await checkTabKeys("secNav",["Log","Quests","Leaderboard","Playbook","Help"]);
       if(appName==="Market")await checkTabKeys("balNav",["Delivery and rides","Selling"]);
+      if(appName==="Stats") {
+        await page.locator("#app-stats svg[role=img]").first().waitFor();
+        assert.equal(await page.locator("#app-stats svg[role=img]").count(),3);
+        assert.equal(await page.locator("#app-stats details summary",{hasText:"Show as a table"}).count(),3);
+      }
       await checkPanel(`${appName} ${width} ${theme}`);
       await page.evaluate(()=>window.scrollTo(0,0));
-      await page.screenshot({path:`docs/screenshots/p4-${width}-${theme}-${appName.toLowerCase().replaceAll(" ","-")}.png`,fullPage:true});
+      if(appName==="Stats")await page.screenshot({path:`docs/screenshots/p5-stats-${width}-${theme}.png`,fullPage:true});
     }
-    await page.getByRole("tab",{name:"First Dime",exact:true}).click();
-    for(const name of ["Log","Quests","Leaderboard","Playbook","Help"]) {
+    if(width!==1280)await page.getByRole("tab",{name:"First Dime",exact:true}).click();
+    for(const name of width===1280?[]:["Log","Quests","Leaderboard","Playbook","Help"]) {
       const tab=page.getByRole("tab",{name,exact:true});await tab.focus();await tab.press("Enter");
       assert.equal(await tab.getAttribute("aria-selected"),"true");
       await checkPanel(`${name} ${width} ${theme}`);
     }
-    await page.getByRole("tab",{name:"Market",exact:true}).click();
-    for(const name of ["Delivery and rides","Selling"]) {
+    if(width!==1280)await page.getByRole("tab",{name:"Market",exact:true}).click();
+    for(const name of width===1280?[]:["Delivery and rides","Selling"]) {
       const tab=page.getByRole("tab",{name,exact:true});await tab.focus();await tab.press("Enter");
       assert.equal(await tab.getAttribute("aria-selected"),"true");
       await checkPanel(`${name} ${width} ${theme}`);
@@ -246,7 +253,7 @@ try {
     }
   }
   await page.getByRole("tab",{name:"PayPal",exact:true}).click();
-  console.log(`browser accessibility check passed: ${focusChecks} tab steps, five apps, all sub-tabs, 320/390px, both themes`);
+  console.log(`browser accessibility check passed: ${focusChecks} tab steps, five workspaces plus Stats and PayPal, all sub-tabs, 320/390/1280px, both themes`);
   await mkdir("docs/screenshots", { recursive: true });
   await page.screenshot({ path: "docs/screenshots/p3-phone-overview.png", fullPage: true });
   await page.getByRole("heading",{name:"Settings",exact:true}).locator("..").screenshot({path:"docs/screenshots/p3-phone-settings.png"});

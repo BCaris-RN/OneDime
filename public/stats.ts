@@ -13,7 +13,9 @@ let sequence = 0;
 let last: Stats | null = null;
 const esc = (v: string) => { const d = document.createElement("span"); d.textContent = v; return d.innerHTML; };
 function table(headers: string[], rows: string[][]) {
-  const t = document.createElement("table"), head = t.createTHead().insertRow();
+  const t = document.createElement("table"), caption = t.createCaption(), head = t.createTHead().insertRow();
+  caption.className = "sr-only";
+  caption.textContent = headers[0] === "Month" ? "Earned by month and app" : headers[0] === "Platform" ? "Real hourly rate by platform" : "Verified and pending amounts this month";
   headers.forEach(label => { const th = document.createElement("th"); th.scope = "col"; th.textContent = label; head.append(th); });
   const body = t.createTBody(); rows.forEach(values => { const row = body.insertRow(); values.forEach(value => { const td = row.insertCell(); td.textContent = value; }); });
   return t;
@@ -36,7 +38,7 @@ function render(data: Stats, animate: boolean) {
   el("stats-legend").replaceChildren(); names.forEach(([label, pattern]) => { const li = document.createElement("li"); li.innerHTML = `<span class="stats-swatch pattern-${pattern}" aria-hidden="true"></span>${label}`; el("stats-legend").append(li); });
   const months = data.monthly.map(m => [m.month, money(m.first), money(m.spotlight), money(m.freelance), money(m.market), money(m.first + m.spotlight + m.freelance + m.market)]);
   el("stats-month-table").replaceChildren(table(["Month", ...names.map(n => n[0]), "Total"], months));
-  if (!data.hourly.length) { el("stats-rate-chart").textContent = "No verified timed work yet. Add time to your work entries to see a real hourly rate."; el("stats-rate-table").replaceChildren(); }
+  if (!data.hourly.length) { el("stats-rate-chart").innerHTML = `<p class="stats-note">No verified timed work yet. Add time to your work entries to see a real hourly rate.</p><svg viewBox="0 0 320 28" role="img" aria-label="No real hourly rates yet" shape-rendering="crispEdges"><desc>No verified work with time logged yet.</desc><text x="4" y="18">No timed work yet</text></svg>`; el("stats-rate-table").replaceChildren(); }
   else { const rh = 22, lab = 104, maxRate = Math.max(...data.hourly.map(x => x.centsPerHour), 1); let bars = `<svg viewBox="0 0 320 ${data.hourly.length * rh + 8}" role="img" aria-label="Verified real hourly rate by platform, top eight" shape-rendering="crispEdges"><desc>${data.hourly.map(r => `${r.platform}, ${money(r.centsPerHour)} per hour`).join(", ")}</desc>`; data.hourly.forEach((r, i) => { const y = i * rh + 4, w = Math.max(2, Math.round(r.centsPerHour / maxRate * 160)); bars += `<text x="${lab - 6}" y="${y + 11}" text-anchor="end">${esc(r.platform).slice(0, 14)}</text><rect class="stats-rate ${animate ? "stats-grow-x" : ""}" style="--step:${i}" x="${lab}" y="${y + 2}" width="${w}" height="12"/><text x="${lab + w + 5}" y="${y + 11}">${money(r.centsPerHour)}</text>`; }); el("stats-rate-chart").innerHTML = bars + "</svg>"; el("stats-rate-table").replaceChildren(table(["Platform", "Per hour"], data.hourly.map(r => [r.platform, money(r.centsPerHour)]))); }
   let meter = `<svg viewBox="0 0 320 34" role="img" aria-label="Verified and pending shares this month: ${pct}% verified" shape-rendering="crispEdges"><desc>Verified ${money(data.verifiedCents)}, pending ${money(Math.max(0, data.earnedCents - data.verifiedCents))} this month.</desc>`;
   for (let i = 0; i < 20; i++) { const x = 6 + i * 15.4, kind = i < Math.round(pct / 5) ? "verified" : i < Math.round(pct / 5) + Math.round((100 - pct) / 5) ? "pending" : "empty"; meter += `<rect class="meter-block ${kind} ${animate && kind !== "empty" ? "stats-pop" : ""}" style="--step:${i}" x="${x}" y="7" width="12" height="20"/>`; }

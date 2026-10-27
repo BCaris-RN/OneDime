@@ -32,10 +32,21 @@ support and finite stepped animations. Stats is also accepted by feedback storag
 export through migration 000011.
 
 Local build passed. The endpoint integration test confirms October's 322-cent total
-matches overview and excludes another player's larger entry. The full suite reached
-244 passing tests and one stale feedback-export count expectation; that expectation
-was corrected from seven to eight and its focused test now passes. Full exact-head CI
-is pending. No merge or deployment was performed.
+matches overview and excludes another player's larger entry. The first M3 head,
+`f36c991b023739d9407fb86c9b209b52b29fc86f`, passed CI build, contrast typing, all 245
+tests, beta and contrast; its browser check caught stale navigation expectations. The
+feedback-export count was corrected from seven to eight and its focused test passes.
+The corrected browser audit includes Stats, all three charts and table toggles, and
+Stats screenshots at 320/390/1280px in both themes. The full browser suite passed
+locally with 4,280 focus steps plus the smart checks. Desktop focus coverage now checks
+controller overlap only when the controller is fixed; fixed-controller checks remain
+active on phone layouts. Exact-head CI for the corrected browser check is pending.
+
+Open question for review: the existing PayPal workspace remains a top-level tab, so the
+six tabs render 3+3 on phones; Stats is fifth after Market. The requested 3+2 layout
+assumes five tabs and conflicts with retaining PayPal as a top-level workspace. No
+navigation behavior was removed to resolve that conflict.
+No merge or deployment was performed.
 
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 
