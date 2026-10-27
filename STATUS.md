@@ -70,7 +70,12 @@ Local Node 24 build and strict contrast typing passed. Four focused server tests
 for onboarding privacy/ownership, quest completion, static install files, and one-time
 choices; all 12 migrations applied. The full browser matrix and offline smart check passed
 before the final change to stop retaining selected work types; focused tests and build
-passed after that change. Exact-head CI is pending for this checkpoint. Full suite,
+passed after that change. Exact-head CI run [40449244381](https://github.com/BCaris-RN/OneDime/actions/runs/40449244381)
+passed build, typing, all tests and beta checks but failed the contrast browser because
+its fixture clicked workspace tabs while the new first-run modal was open. The contrast
+runner now measures the welcome modal in both themes/OS schemes, dismisses it, then
+continues its existing audit. Local `npm run test:contrast` passed: 24 regression checks,
+zero failing pairs and zero uncovered pairs. Exact-head CI rerun is pending. Full suite,
 contrast, browser and npm audit are required again at the final F2–F6 checkpoint. No
 merge or deployment was performed.
 

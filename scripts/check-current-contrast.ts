@@ -43,7 +43,7 @@ try {
     env: { ...process.env, DATABASE_URL: container.getConnectionUri() }, stdio: "ignore"
   });
   const player = await seedDemo(prisma, day);
-  const empty = await prisma.player.create({ data: { paypalUserId: "contrast-empty-fictional", displayName: "Empty demo player", timeZone: "Pacific/Honolulu" } });
+  const empty = await prisma.player.create({ data: { paypalUserId: "contrast-empty-fictional", displayName: "Empty demo player", timeZone: "Pacific/Honolulu", welcomeCompletedAt: new Date(`${day}T20:00:00Z`) } });
   const config = loadConfig({ NODE_ENV: "test", PORT: String(port), PUBLIC_BASE_URL: baseUrl,
     SESSION_SECRET: randomBytes(32).toString("hex"), PAYOUTS_ENABLED: "false" });
   const sessions = new SessionStore(prisma, config);
@@ -96,6 +96,8 @@ try {
   };
 
   for (const os of ["light", "dark"] as const) for (const theme of ["light", "dark"] as const) {
+    // Each color-scheme combination gets a fresh first-run state for the welcome dialog.
+    await prisma.player.update({ where: { id: player.id }, data: { welcomeCompletedAt: null } });
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: os, reducedMotion: "reduce", timezoneId: "Pacific/Honolulu" });
     // tsx preserves names inside callbacks serialized into the isolated test browser.
     await context.addInitScript({ content: "globalThis.__name = function (target) { return target; };" });
@@ -111,6 +113,14 @@ try {
     });
     page.on("pageerror", error => errors.push(error.message));
     await page.goto(`${baseUrl}/contrast-login`);
+    const welcome = page.getByRole("dialog", { name: "What kind of work do you do?", exact: true });
+    await welcome.waitFor();
+    const welcomeLabel = `First-run welcome; theme=${theme}; OS=${os}`;
+    await inspect(page, welcomeLabel);
+    await states(page, welcomeLabel);
+    if (screenshotDirectory && os === theme) await screenshot(page, `welcome-${theme}-1280.png`);
+    await welcome.getByRole("button", { name: "Skip for now", exact: true }).click();
+    await welcome.waitFor({ state: "hidden" });
     await page.waitForFunction(() => (document.getElementById("sasuStats")?.children.length ?? 0) > 0);
     await page.waitForFunction(() => document.getElementById("player-name")?.textContent === "Demo player");
     assert.equal(await page.locator("html").getAttribute("data-theme"), theme);
