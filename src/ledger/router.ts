@@ -21,6 +21,7 @@ import {
 import { summary } from "./summary.js";
 import { NotFound } from "../http/errors.js";
 import { syncProfessionRankClaims } from "../game/professions.js";
+import { markStartRecordComplete } from "../game/onboarding.js";
 
 export function createLedgerRouter(prisma: PrismaClient, now: () => Date) {
   const router = Router();
@@ -52,13 +53,16 @@ export function createLedgerRouter(prisma: PrismaClient, now: () => Date) {
           throw new NotFound();
         const row = await prisma.$transaction(async (tx) => {
           await tx.$queryRaw`SELECT id FROM players WHERE id = ${player(req).id}::uuid FOR UPDATE`;
-          return stampPayment(
+          const stamped = await stampPayment(
             tx,
             key,
             player(req).id,
             await insertRow(tx, key, player(req).id, data),
             today(req)
           );
+          if (["income", "gigs", "shifts", "sales"].includes(key))
+            await markStartRecordComplete(tx, player(req).id);
+          return stamped;
         });
         res.status(201).json({ row });
       });

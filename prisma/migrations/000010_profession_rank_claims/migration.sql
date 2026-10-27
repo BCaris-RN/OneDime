@@ -18,7 +18,10 @@ WITH verified_events AS (
         AND p.net_cents = p.gross_cents - p.fee_cents
         AND p.kind ~* '^(payment received|general payment|mass pay payment|express checkout payment|website payment|mobile payment|marketplace payment)$'
     UNION ALL
-    SELECT g.player_id, 'freelancer', g.gross_cents
+    SELECT g.player_id, 'freelancer', CASE
+        WHEN g.gross_cents IN (p.gross_cents, p.net_cents) THEN g.gross_cents
+        ELSE g.gross_cents - g.fee_cents
+    END
     FROM freelance_gigs g
     JOIN paypal_transactions p ON p.player_id = g.player_id
         AND p.routed_record_type = 'gigs' AND p.routed_record_id = g.id
@@ -37,7 +40,10 @@ WITH verified_events AS (
         AND p.net_cents = p.gross_cents - p.fee_cents
         AND p.kind ~* '^(payment received|general payment|mass pay payment|express checkout payment|website payment|mobile payment|marketplace payment)$'
     UNION ALL
-    SELECT s.player_id, 'seller', s.price_cents
+    SELECT s.player_id, 'seller', CASE
+        WHEN s.price_cents IN (p.gross_cents, p.net_cents) THEN s.price_cents
+        ELSE s.price_cents - s.fee_cents
+    END
     FROM sales s
     JOIN paypal_transactions p ON p.player_id = s.player_id
         AND p.routed_record_type = 'sales' AND p.routed_record_id = s.id

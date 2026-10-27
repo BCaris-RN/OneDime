@@ -843,6 +843,19 @@ describe("Phase 2 game API", () => {
     expect(await prisma.questProgress.count({ where: { playerId: imported.player.id, questId: "start-record" } })).toBe(1);
     expect((await request(productionApp).get("/api/me/stats").set("Cookie", imported.cookie)).body.xp).toBe(0);
   });
+  it.each(["/spotlight/income", "/freelance/gigs", "/market/shifts", "/market/sales"])(
+    "completes Start your record after a manual first record at %s",
+    async path => {
+      const current = await login("manual-first-record");
+      const { createApp } = await import("../src/server.js");
+      const productionApp = createApp({ config: testConfig, prisma, paypalClient, now: () => gameNow });
+      const record = workspaceCases.find(([candidate]) => candidate === path)![1];
+      await request(productionApp).post(`/api${path}`).set("Cookie", current.cookie).set("Origin", origin).send(record).expect(201);
+      expect((await request(productionApp).get("/api/quests").set("Cookie", current.cookie)).body.completed).toContain("start-record");
+      expect(await prisma.questProgress.count({ where: { playerId: current.player.id, questId: "start-record" } })).toBe(1);
+      expect((await request(productionApp).get("/api/me/stats").set("Cookie", current.cookie)).body.xp).toBe(0);
+    }
+  );
   it.each([
     [0, 0],
     [45_000, 0],
@@ -2076,6 +2089,25 @@ describe("Phase 2 game API", () => {
     expect(older.rows.at(-1).earnedCents).toBe(0);
     await request(app).get("/api/overview?month=2026-13").set("Cookie",alice.cookie).expect(400);
     await request(app).get("/api/overview").expect(401);
+  });
+  it("uses the same gross-dollar basis for verified Stats share and overview", async () => {
+    const alice = await login("stats-fee-share");
+    const gig = (await write(alice.cookie, "/api/freelance/gigs", {
+      platform: "Upwork", client: "Fictional client", project: "Fee test", pricing: "fixed",
+      gross_cents: 1000, fee_cents: 30, hours_x100: 100, started_on: "2026-10-14", stage: "In progress"
+    }).expect(201)).body.row;
+    await write(alice.cookie, "/api/paypal/import", {
+      csv: activityCsv("STATS-FEE-SHARE", "Prolific", "USD", "10.00", "-0.30", "9.70")
+    }).expect(200);
+    const payment = (await activity(alice.cookie)).body.rows[0];
+    await write(alice.cookie, `/api/paypal/transactions/${payment.id}/route`, {
+      record_type: "gigs", platform: "Upwork", record_id: gig.id
+    }).expect(200);
+    const overview = (await request(app).get("/api/overview?month=2026-10").set("Cookie", alice.cookie).expect(200)).body.rows.at(-1);
+    const stats = (await request(app).get("/api/stats?month=2026-10").set("Cookie", alice.cookie).expect(200)).body;
+    expect(overview.earnedCents).toBe(1000);
+    expect(stats.earnedCents).toBe(overview.earnedCents);
+    expect(stats.verifiedCents).toBe(1000);
   });
   it("deletes every owned row after exact typed confirmation and ends the session",async()=>{
     const alice=await login("delete-alice"),bob=await login("delete-bob");

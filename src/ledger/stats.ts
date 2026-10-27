@@ -47,7 +47,8 @@ export function createStatsRouter(prisma: PrismaClient, now: () => Date) {
         const date = entry.workedOn.toISOString().slice(0, 10); allDates.add(date);
         const payment = payments.find(p => p.routed_record_type === "first" && p.routed_record_id === entry.id);
         const verified = entry.verified && payment && incoming(payment) && fixedSuggestion(payment.payer)?.platform === entry.platform && [payment.gross_cents, payment.net_cents].includes(entry.amountCents);
-        dated.push({ date, cents: entry.amountCents, verifiedCents: verified ? entry.amountCents : 0, minutes: entry.minutes, platform: entry.platform, app: "first" });
+        const cents = verified ? payment.gross_cents : entry.amountCents;
+        dated.push({ date, cents, verifiedCents: verified ? cents : 0, minutes: entry.minutes, platform: entry.platform, app: "first" });
       }
       const descriptors = [
         { rows: data.income, app: "spotlight", date: "earned_on", amount: "amount_cents", minutes: "content_minutes", platform: "platform", type: "income", paid: (r: Record<string, unknown>) => r.status === "paid" },
@@ -62,7 +63,7 @@ export function createStatsRouter(prisma: PrismaClient, now: () => Date) {
         const matchingAmounts = desc.type === "shifts" ? [amount + numeric(row, "tips_cents")] : desc.type === "gigs" || desc.type === "sales" ? [amount, amount - numeric(row, "fee_cents")] : [amount];
         const verified = desc.paid(row) && payment && incoming(payment) && matchingAmounts.some(value => value === payment.gross_cents || value === payment.net_cents);
         const minutes = desc.minutes === "hours_x100" ? Math.round(numeric(row, desc.minutes) * 60 / 100) : desc.minutes ? numeric(row, desc.minutes) : 0;
-        const cents = desc.type === "gigs" || desc.type === "sales" ? amount - numeric(row, "fee_cents") : desc.type === "shifts" ? amount + numeric(row, "tips_cents") : desc.type === "income" ? amount : amount;
+        const cents = desc.type === "shifts" ? amount + numeric(row, "tips_cents") : amount;
         dated.push({ date, cents, verifiedCents: verified ? cents : 0, minutes, platform: String(row[desc.platform] ?? "Other"), app: desc.app });
       }
       const current = dated.filter(x => x.date.startsWith(month));

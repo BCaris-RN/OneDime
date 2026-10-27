@@ -3,12 +3,14 @@
  *  Accessible pixel charts backed by the player's read-only Stats endpoint.
  */
 import { request } from "./workspaces.js";
+import { monthlyStackSegments } from "./stats-chart.js";
 type Month = { month: string; first: number; spotlight: number; freelance: number; market: number };
 type Rate = { platform: string; centsPerHour: number };
 type Stats = { month: string; earnedCents: number; verifiedCents: number; activeDays: number; streak: number; hourly: Rate[]; monthly: Month[] };
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const money = (c: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(c / 100);
 const names = [["First Dime", "solid"], ["Spotlight", "checker"], ["Freelance", "stripes"], ["Market", "dots"]] as const;
+const monthValues = (m: Month) => [m.first, m.spotlight, m.freelance, m.market];
 let sequence = 0;
 let last: Stats | null = null;
 const esc = (v: string) => { const d = document.createElement("span"); d.textContent = v; return d.innerHTML; };
@@ -28,11 +30,12 @@ function render(data: Stats, animate: boolean) {
   tiles.forEach(([label, value, count]) => { const box = document.createElement("div"), dt = document.createElement("dt"), dd = document.createElement("dd"); dt.textContent = label; dd.className = "num"; dd.textContent = value; if (count !== undefined) dd.dataset.count = String(count); box.append(dt, dd); dl.append(box); });
   el("stats-note").textContent = best ? `Best paying per hour: ${best.platform}.` : "Log time with your work to see real hourly rates.";
 
-  const max = Math.max(100, ...data.monthly.map(m => m.first + m.spotlight + m.freelance + m.market));
-  const step = Math.ceil(max / 400) * 100, top = step * 4, W = 320, H = 150, base = 128, left = 34, bw = 28, gap = (W - left - 6 * bw) / 6;
-  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Stacked monthly earnings by app for the last six months" shape-rendering="crispEdges"><defs><pattern id="stats-checker" width="2" height="2" patternUnits="userSpaceOnUse"><rect width="1" height="1" fill="var(--chart-ink)"/><rect x="1" y="1" width="1" height="1" fill="var(--chart-ink)"/></pattern><pattern id="stats-stripes" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="3" height="1" fill="var(--chart-ink)"/></pattern><pattern id="stats-dots" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="1" height="1" fill="var(--chart-ink)"/></pattern></defs><desc>${data.monthly.map(m => `${m.month}: ${money(m.first + m.spotlight + m.freelance + m.market)}`).join(", ")}</desc>`;
-  for (let g = 0; g <= 4; g++) { const y = base - g * (base - 12) / 4; svg += `<line class="stats-gridline" x1="${left}" x2="${W}" y1="${y}" y2="${y}"/><text x="${left - 4}" y="${y + 3}" text-anchor="end">$${g * step / 100}</text>`; }
-  data.monthly.forEach((m, i) => { const x = left + gap / 2 + i * (bw + gap); let y = base; [m.first, m.spotlight, m.freelance, m.market].forEach((c, app) => { if (!c) return; const h = Math.max(2, Math.round(c / top * (base - 12))); y -= h; svg += `<rect class="stats-bar ${animate ? "stats-grow" : ""} pattern-${names[app][1]}" style="--step:${i}" x="${x}" y="${y}" width="${bw}" height="${h}" stroke="var(--chart-ink)"/>`; y -= 1; }); svg += `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${new Date(`${m.month}-01T00:00:00Z`).toLocaleString("en", { month: "short", timeZone: "UTC" })}</text>`; });
+  const W = 320, H = 150, plotTop = 12, plotBottom = 128;
+  const chart = monthlyStackSegments(data.monthly, plotTop, plotBottom), { baseline: base, scale, maxPositive, maxNegative } = chart;
+  const extent = Math.max(100, maxPositive + maxNegative), left = 42, bw = 28, gap = (W - left - 6 * bw) / 6;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Stacked monthly earnings by app for the last six months; losses appear below the zero line" shape-rendering="crispEdges"><defs><pattern id="stats-checker" width="2" height="2" patternUnits="userSpaceOnUse"><rect width="1" height="1" fill="var(--chart-ink)"/><rect x="1" y="1" width="1" height="1" fill="var(--chart-ink)"/></pattern><pattern id="stats-stripes" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="3" height="1" fill="var(--chart-ink)"/></pattern><pattern id="stats-dots" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="1" height="1" fill="var(--chart-ink)"/></pattern></defs><desc>${data.monthly.map(m => `${m.month}: ${names.map((name, app) => `${name[0]} ${money(monthValues(m)[app]!)}`).join(", ")}; positive amounts rise from zero and losses fall below zero`).join(". ")}</desc>`;
+  for (let g = 1; g <= 2; g++) for (const sign of [1, -1]) { const bound = sign > 0 ? maxPositive : maxNegative; if (!bound) continue; const cents = Math.round(sign * bound * g / 2), y = base - cents * scale; svg += `<line class="stats-gridline" x1="${left}" x2="${W}" y1="${y}" y2="${y}"/><text x="${left - 4}" y="${y + 3}" text-anchor="end">${cents < 0 ? "−" : ""}$${Math.abs(cents / 100)}</text>`; }
+  data.monthly.forEach((m, i) => { const x = left + gap / 2 + i * (bw + gap); chart.segments[i]?.forEach(({ app, y, height }) => { svg += `<rect class="stats-bar ${animate ? "stats-grow" : ""} pattern-${names[app]![1]}" style="--step:${i}" x="${x}" y="${y}" width="${bw}" height="${height}" stroke="var(--chart-ink)"/>`; }); svg += `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${new Date(`${m.month}-01T00:00:00Z`).toLocaleString("en", { month: "short", timeZone: "UTC" })}</text>`; });
   svg += `<line x1="${left}" x2="${W}" y1="${base}" y2="${base}" stroke="var(--chart-ink)" stroke-width="2"/></svg>`;
   el("stats-month-chart").innerHTML = svg;
   el("stats-legend").replaceChildren(); names.forEach(([label, pattern]) => { const li = document.createElement("li"); li.innerHTML = `<span class="stats-swatch pattern-${pattern}" aria-hidden="true"></span>${label}`; el("stats-legend").append(li); });
