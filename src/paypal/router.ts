@@ -8,6 +8,7 @@ import { Prisma, type PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import type { AuthedRequest } from "../auth/session.js";
 import { localDay } from "../game/rules.js";
+import { markStartRecordComplete } from "../game/onboarding.js";
 import { ownRow } from "../ledger/store.js";
 import type { LedgerRow, TableKey } from "../ledger/catalog.js";
 import { parseActivity, incoming, fixedSuggestion } from "./activity.js";
@@ -15,7 +16,8 @@ import { routePayment, routeSchema, transactions, paymentAmountMatches } from ".
 export function createActivityRouter(
   prisma: PrismaClient,
   now: () => Date,
-  afterRoute: (playerId: string) => Promise<void>
+  afterRoute: (playerId: string) => Promise<void>,
+  startRecordQuest = true
 ) {
   const router = Router();
   router.get("/paypal/transactions", async (req: AuthedRequest, res) => {
@@ -100,6 +102,7 @@ export function createActivityRouter(
         added =
           await tx.$executeRaw(Prisma.sql`INSERT INTO paypal_transactions(id,player_id,txn_id,occurred_on,payer,gross_cents,fee_cents,net_cents,currency,kind)
         VALUES ${Prisma.join(rows.map((row) => Prisma.sql`(${randomUUID()}::uuid,${playerId}::uuid,${row.txn_id},${row.occurred_on}::date,${row.payer},${row.gross_cents},${row.fee_cents},${row.net_cents},${row.currency},${row.kind})`))} ON CONFLICT(player_id,txn_id) DO NOTHING`);
+      if (added > 0 && startRecordQuest) await markStartRecordComplete(tx, playerId);
     });
     res.json({ added, duplicates: rows.length - added });
   });

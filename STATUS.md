@@ -50,6 +50,34 @@ assumes five tabs and conflicts with retaining PayPal as a top-level workspace. 
 navigation behavior was removed to resolve that conflict.
 No merge or deployment was performed.
 
+## M4 checkpoint, F2–F3, October 26, 2026 (Hawaii)
+
+First-run welcome is backed by `welcome_completed_at`. Migration 000012 marks existing
+players as already welcomed, so only accounts created after rollout see it. The
+multi-select choice is used to open the first selected workspace and is not retained;
+only the completion timestamp is stored. A zero-XP “Start your record” quest completes
+automatically after the first logged entry or newly imported PayPal activity. Repeated
+imports do not create duplicate quest progress.
+
+The install manifest, generated 192/512 pixel coin PNGs, offline page, and service worker
+are in place. Cache rules allow only static shell/CSS/JS/font/runtime/model assets; `/api`
+and all non-static routes bypass Cache Storage. The browser check verifies no API path is
+cached and confirms the offline shell and in-app offline message. Phone navigation now
+uses three columns for the six existing top-level tabs; the F5 3+2 wording still assumes
+five tabs, so this branch keeps PayPal and shows 3+3.
+
+Local Node 24 build and strict contrast typing passed. Four focused server tests passed
+for onboarding privacy/ownership, quest completion, static install files, and one-time
+choices; all 12 migrations applied. The full browser matrix and offline smart check passed
+before the final change to stop retaining selected work types; focused tests and build
+passed after that change. Exact-head CI is pending for this checkpoint. Full suite,
+contrast, browser and npm audit are required again at the final F2–F6 checkpoint. No
+merge or deployment was performed.
+
+Open question: the F4 handoff references a separate “metrics doc,” which is absent from
+the repository. F4 will use only its explicit KPI list and document metrics that cannot
+be measured from existing event history.
+
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 
 PR #6 was merged after Brandon's explicit approval at main commit

@@ -478,8 +478,34 @@ describe("Phase 2 game API", () => {
     "/api/clock",
     "/api/quests",
     "/api/leaderboard",
+    "/api/onboarding",
   ])("requires a session for GET %s", async (route) => {
     await request(app).get(route).expect(401);
+  });
+  it("serves the install manifest, offline shell, and service worker as static files", async () => {
+    const manifest = await request(app).get("/manifest.webmanifest").expect(200);
+    expect(manifest.body).toMatchObject({
+      name: "OneDime", start_url: "/app", display: "standalone",
+      icons: expect.arrayContaining([expect.objectContaining({ src: "/icons/coin-192.png", type: "image/png" })])
+    });
+    await request(app).get("/offline.html").expect(200).expect(/You're offline/);
+    await request(app).get("/sw.js").expect(200).expect(/\/api\//);
+  });
+  it("stores first-run choices once per account and keeps them private", async () => {
+    const alice = await login("welcome-alice"), bob = await login("welcome-bob");
+    expect(alice.player.welcomeCompletedAt).toBeNull();
+    expect((await request(app).get("/api/onboarding").set("Cookie", alice.cookie).expect(200)).body)
+      .toEqual({ complete: false });
+    await write(alice.cookie, "/api/onboarding", { workTypes: ["market", "market"] }).expect(400);
+    await write(alice.cookie, "/api/onboarding", { workTypes: ["market"], playerId: bob.player.id }).expect(400);
+    await request(app).post("/api/onboarding").set("Cookie", alice.cookie).set("Origin", "https://other.example.test")
+      .send({ workTypes: ["market"] }).expect(403);
+    await write(alice.cookie, "/api/onboarding", { workTypes: ["spotlight", "market"] })
+      .expect(200).expect(({ body }) => expect(body).toMatchObject({ complete: true, workTypes: ["spotlight", "market"] }));
+    await write(alice.cookie, "/api/onboarding", { workTypes: ["freelance"] }).expect(200)
+      .expect(({ body }) => expect(body.workTypes).toEqual([]));
+    expect((await request(app).get("/api/onboarding").set("Cookie", bob.cookie).expect(200)).body)
+      .toEqual({ complete: false });
   });
   it.each([
     "/api/entries",
@@ -774,7 +800,7 @@ describe("Phase 2 game API", () => {
         .xp,
     ).toBe(0);
   });
-  it("serves the 19 real quests and rejects unknown quest IDs", async () => {
+  it("serves the real quests including the zero-XP first-run quest and rejects unknown IDs", async () => {
     const current = await login("no-pilot");
     const { createApp } = await import("../src/server.js");
     const productionCatalogApp = createApp({
@@ -787,13 +813,35 @@ describe("Phase 2 game API", () => {
       .set("Cookie", current.cookie)
       .expect(200);
     expect(catalog.body.pilotAvailable).toBe(true);
-    expect(catalog.body.quests).toHaveLength(19);
+    expect(catalog.body.quests).toHaveLength(20);
     await request(productionCatalogApp)
       .post("/api/quests/invented")
       .set("Cookie", current.cookie)
       .set("Origin", origin)
       .send({})
       .expect(404);
+  });
+  it("completes Start your record automatically after the first log or PayPal import without XP", async () => {
+    const current = await login("welcome-record");
+    const { createApp } = await import("../src/server.js");
+    const productionApp = createApp({ config: testConfig, prisma, paypalClient, now: () => gameNow });
+    const logged = await request(productionApp).post("/api/entries").set("Cookie", current.cookie).set("Origin", origin)
+      .send(validEntry).expect(201);
+    expect(logged.body.entry.verified).toBe(false);
+    const progress = await request(productionApp).get("/api/quests").set("Cookie", current.cookie).expect(200);
+    expect(progress.body.completed).toContain("start-record");
+    const quest = progress.body.quests.find((item: { id: string }) => item.id === "start-record");
+    expect(quest).toMatchObject({ title: "Start your record", xp: 0 });
+
+    const imported = await login("welcome-import");
+    await request(productionApp).post("/api/paypal/import").set("Cookie", imported.cookie).set("Origin", origin)
+      .send({ csv: activityCsv() }).expect(200).expect(({ body }) => expect(body.added).toBeGreaterThan(0));
+    await request(productionApp).post("/api/paypal/import").set("Cookie", imported.cookie).set("Origin", origin)
+      .send({ csv: activityCsv() }).expect(200).expect(({ body }) => expect(body.added).toBe(0));
+    expect((await request(productionApp).get("/api/quests").set("Cookie", imported.cookie)).body.completed)
+      .toContain("start-record");
+    expect(await prisma.questProgress.count({ where: { playerId: imported.player.id, questId: "start-record" } })).toBe(1);
+    expect((await request(productionApp).get("/api/me/stats").set("Cookie", imported.cookie)).body.xp).toBe(0);
   });
   it.each([
     [0, 0],

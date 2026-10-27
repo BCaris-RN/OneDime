@@ -23,6 +23,7 @@ model Player {
   timeZone     String?         @map("time_zone")
   clockPlatform String?        @map("clock_platform")
   clockStartedAt DateTime?     @map("clock_started_at") @db.Timestamptz
+  welcomeCompletedAt DateTime? @map("welcome_completed_at") @db.Timestamptz
   logEntries   LogEntry[]
   payouts      Payout[]
   questProgress QuestProgress[]

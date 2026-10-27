@@ -4,7 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>OneDime | Work log</title>
-    <link rel="icon" href="data:," />
+    <meta name="theme-color" content="#C0C0C0" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/coin-192.png" />
+    <link rel="apple-touch-icon" href="/icons/coin-192.png" />
     <link rel="stylesheet" href="/fonts.css" /><link rel="stylesheet" href="/styles.css" />
     <script type="module" src="/app.js"></script>
   </head>
@@ -24,6 +27,25 @@
         <details class="header-menu" id="header-menu"><summary>Menu</summary><div><button type="button" class="ghost-button" data-feedback-open>Send feedback</button></div></details>
       </div>
     </header>
+    <dialog id="welcome-dialog" class="feedback-dialog welcome-dialog" aria-labelledby="welcome-title">
+      <h1 id="welcome-title">What kind of work do you do?</h1>
+      <p>Choose any that fit. You can change what you track later.</p>
+      <form id="welcome-form">
+        <fieldset class="welcome-choices">
+          <legend>Your workspaces</legend>
+          <label><input type="checkbox" name="workType" value="first" /> First Dime</label>
+          <label><input type="checkbox" name="workType" value="spotlight" /> Spotlight</label>
+          <label><input type="checkbox" name="workType" value="freelance" /> Freelance</label>
+          <label><input type="checkbox" name="workType" value="market" /> Market</label>
+        </fieldset>
+        <p id="welcome-error" role="alert" class="message" data-error="true"></p>
+        <div class="welcome-actions"><button type="submit" class="primary-button">Continue</button><button type="button" class="ghost-button" id="welcome-skip">Skip for now</button></div>
+      </form>
+    </dialog>
+    <aside id="welcome-guide" class="welcome-guide" role="status" aria-labelledby="welcome-guide-title" hidden>
+      <div><h2 id="welcome-guide-title">Start your record</h2><p>Log work here or import your activity CSV from PayPal. You can review each payment before linking it.</p></div>
+      <div class="welcome-actions"><button type="button" class="primary-button" id="welcome-import">Open PayPal import</button><button type="button" class="ghost-button" id="welcome-guide-dismiss">Got it</button></div>
+    </aside>
     <dialog id="feedback-dialog" aria-labelledby="feedback-title" class="feedback-dialog">
       <div class="section-heading"><h2 id="feedback-title">Send feedback</h2><button type="button" class="ghost-button" id="feedback-close" aria-label="Close feedback">Close</button></div>
       <form id="feedback-form">
@@ -37,7 +59,7 @@
       </form>
       <p id="feedback-thanks" role="status" tabindex="-1" hidden>Thanks for your feedback. Your note has been sent.</p>
     </dialog>
-    <main class="shell" id="main" tabindex="-1"><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-stats" aria-selected="false" aria-controls="app-stats" tabindex="-1" data-app="stats">Stats</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
+    <main class="shell" id="main" tabindex="-1"><p id="offline-status" class="field-help" role="status" hidden>You're offline. Reconnect to load or save your work.</p><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-stats" aria-selected="false" aria-controls="app-stats" tabindex="-1" data-app="stats">Stats</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
 <div id="app-first" role="tabpanel" aria-labelledby="app-tab-first">
 
 

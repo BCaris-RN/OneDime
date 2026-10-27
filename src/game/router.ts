@@ -11,6 +11,7 @@ import { QUESTS, PILOT_AVAILABLE, TITLES, type QuestDefinition } from "./catalog
 import { gameStats, localDay } from "./rules.js";
 import { claimEligibleRungs } from "./rungs.js";
 import { loadProfessionTotals, professionClass, professionView } from "./professions.js";
+import { markStartRecordComplete } from "./onboarding.js";
 import { emptyBody, entrySchema, idSchema, platformSchema, timeZoneSchema } from "./validation.js";
 
 type Options = {
@@ -68,6 +69,28 @@ export function createGameRouter(options: Options) {
     response.status(204).end();
   });
 
+  const onboardingApps = ["first", "spotlight", "freelance", "market"] as const;
+  const onboardingInput = z.strictObject({
+    workTypes: z.array(z.enum(onboardingApps)).max(onboardingApps.length)
+      .refine((items) => new Set(items).size === items.length)
+  });
+  router.get("/onboarding", (request: AuthedRequest, response) => {
+    const current = player(request);
+    response.json({ complete: current.welcomeCompletedAt !== null });
+  });
+  router.post("/onboarding", async (request: AuthedRequest, response) => {
+    const { workTypes } = onboardingInput.parse(request.body);
+    const playerId = player(request).id;
+    const result = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM players WHERE id = ${playerId}::uuid FOR UPDATE`;
+      return tx.player.updateMany({
+        where: { id: playerId, welcomeCompletedAt: null },
+        data: { welcomeCompletedAt: now() }
+      });
+    });
+    response.json({ complete: true, workTypes: result.count ? workTypes : [] });
+  });
+
   router.get("/entries", async (request: AuthedRequest, response) => {
     const query = z.strictObject({ id: idSchema.optional() }).parse(request.query);
     const entries = await prisma.logEntry.findMany({
@@ -90,6 +113,8 @@ export function createGameRouter(options: Options) {
         ...data, workedOn: new Date(`${data.workedOn}T00:00:00Z`),
         playerId: currentPlayer.id, verified: false
       } });
+      if (quests.some((quest) => quest.id === "start-record"))
+        await markStartRecordComplete(tx, currentPlayer.id);
       await claimEligibleRungs(tx, currentPlayer.id);
       return row;
     });

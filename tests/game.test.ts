@@ -87,10 +87,10 @@ describe("game rules", () => {
     expect(stats.week.amountCents).toBe(300);
     expect(stats.sites[0].centsPerHour).toBeNull();
   });
-  it("ports all 19 quest IDs, titles, descriptions, and XP exactly from the pilot", () => {
+  it("ports the pilot quest catalog and includes the zero-XP first-run quest", () => {
     // Only the public quest catalog is retained; the private HTML stays local.
     const expected = JSON.parse(readFileSync("tests/fixtures/quests.json", "utf8"));
-    expect(expected).toHaveLength(19);
+    expect(expected).toHaveLength(20);
     expect(QUESTS).toEqual(expected);
   });
   it("uses the pilot's level titles, floored XP, and only timed earnings in rates", () => {

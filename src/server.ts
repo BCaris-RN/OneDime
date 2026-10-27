@@ -13,7 +13,7 @@ import { prisma as defaultPrisma } from "./db/client.js";
 import type { PrismaClient } from "@prisma/client";
 import { ZodError } from "zod";
 import { createGameRouter } from "./game/router.js";
-import type { QuestDefinition } from "./game/catalog.js";
+import { QUESTS, type QuestDefinition } from "./game/catalog.js";
 import { createLedgerRouter } from "./ledger/router.js";
 import { HttpError } from "./http/errors.js";
 import { sandboxClient } from "./paypal/client.js";
@@ -101,7 +101,8 @@ export function createApp(options: CreateAppOptions = {}) {
           email: currentSession.player.email,
           paypalVerified: currentSession.player.paypalVerified,
           timeZone: currentSession.player.timeZone,
-          leaderboardOptIn: currentSession.player.leaderboardOptIn
+          leaderboardOptIn: currentSession.player.leaderboardOptIn,
+          welcomeCompletedAt: currentSession.player.welcomeCompletedAt
         }
       });
     } catch (error) {
@@ -113,7 +114,12 @@ export function createApp(options: CreateAppOptions = {}) {
   app.post("/api/paypal/webhook", webhookHandler(prisma, config, payoutClient));
   app.use("/api", gameRouter);
   app.use("/api", createFeedbackRouter(prisma, options.now ?? (() => new Date())));
-  app.use("/api", createActivityRouter(prisma, options.now ?? (() => new Date()), flushPayouts));
+  app.use("/api", createActivityRouter(
+    prisma,
+    options.now ?? (() => new Date()),
+    flushPayouts,
+    (options.quests ?? QUESTS).some((quest) => quest.id === "start-record")
+  ));
   app.locals.flushPayouts = flushPayouts;
   app.use("/api", createSettingsRouter(prisma, sessions));
   app.use("/api", createOverviewRouter(prisma, options.now ?? (() => new Date())));

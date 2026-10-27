@@ -19,6 +19,7 @@
     "demo": "npm run build && tsx scripts/demo.ts",
     "db:seed:demo": "tsx scripts/seed-demo.ts",
     "test:browser": "tsx scripts/check-browser-smart.ts",
+    "icons:generate": "tsx scripts/generate-pwa-icons.ts",
     "test:beta": "tsx scripts/check-beta-access.ts --check-only",
     "test:contrast": "npm run test:contrast:regressions && tsx scripts/check-current-contrast.ts --check-only",
     "test:contrast:regressions": "tsx scripts/check-current-contrast-regressions.ts",

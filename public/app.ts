@@ -3,13 +3,13 @@ import "./exports.js";
 import "./overview.js";
 import "./stats.js";
 import "./accessibility.js";
-import "./workspaces.js";
+import { showApp } from "./workspaces.js";
 import { initializeFeedback } from "./feedback.js";
 import type { GameStats } from "../src/game/rules.js";
 import type { QuestDefinition } from "../src/game/catalog.js";
 import { dollarsToCents } from "../src/game/money.js";
 
-type Player = { displayName: string | null; timeZone: string | null; leaderboardOptIn: boolean };
+type Player = { displayName: string | null; timeZone: string | null; leaderboardOptIn: boolean; welcomeCompletedAt: string | null };
 type Entry = { id: string; platform: string; workedOn: string; minutes: number; amountCents: number; note: string | null; verified: boolean };
 type Clock = { platform: string | null; startedAt: string | null };
 type QuestPayload = { quests: QuestDefinition[]; completed: string[]; pilotAvailable: boolean };
@@ -168,11 +168,15 @@ function renderQuests(payload: QuestPayload) {
     toggle.dataset.questId = quest.id;
     toggle.setAttribute("aria-pressed", String(payload.completed.includes(quest.id)));
     toggle.setAttribute("aria-label", `Toggle quest: ${quest.title}`);
-    toggle.addEventListener("click", () => void perform(async () => {
-      const result = await api<{ completed: boolean }>(`/api/quests/${encodeURIComponent(quest.id)}`, {});
-      await refreshAfterChange(result.completed ? "Quest completed." : "Quest marked incomplete.");
-      [...document.querySelectorAll<HTMLButtonElement>("#quest-list button")].find((button) => button.dataset.questId === quest.id)?.focus();
-    }));
+    if (quest.id === "start-record") {
+      toggle.disabled = true;
+      toggle.textContent = payload.completed.includes(quest.id) ? "Done" : "Log or import one thing";
+      toggle.setAttribute("aria-label", payload.completed.includes(quest.id) ? "Start your record quest is done" : "Start your record quest completes automatically when you log or import work");
+    } else toggle.addEventListener("click", () => void perform(async () => {
+        const result = await api<{ completed: boolean }>(`/api/quests/${encodeURIComponent(quest.id)}`, {});
+        await refreshAfterChange(result.completed ? "Quest completed." : "Quest marked incomplete.");
+        [...document.querySelectorAll<HTMLButtonElement>("#quest-list button")].find((button) => button.dataset.questId === quest.id)?.focus();
+      }));
     row.append(copy, toggle);
     return row;
   }));
@@ -229,6 +233,8 @@ async function initialize() {
     await refresh();
     ready = true;
     message("");
+    if (!player?.welcomeCompletedAt && !element<HTMLDialogElement>("welcome-dialog").open)
+      element<HTMLDialogElement>("welcome-dialog").showModal();
   } catch (error) {
     message(error instanceof Error ? error.message : "Could not load your progress. Please refresh.", true);
   } finally {
@@ -237,6 +243,37 @@ async function initialize() {
     element<HTMLButtonElement>("refresh").disabled = false;
   }
 }
+
+async function finishWelcome(workTypes: string[]) {
+  const saved = await api<{ complete: boolean; workTypes: string[] }>("/api/onboarding", { workTypes });
+  if (player) player.welcomeCompletedAt = new Date().toISOString();
+  element<HTMLDialogElement>("welcome-dialog").close();
+  showApp(saved.workTypes[0] ?? "first", true);
+  element("welcome-guide").hidden = false;
+  element("welcome-guide-title").textContent = "Start your record";
+  message("Your workspace is ready. You can change apps at any time.");
+}
+element<HTMLFormElement>("welcome-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const workTypes = [...element<HTMLFormElement>("welcome-form").querySelectorAll<HTMLInputElement>('input[name="workType"]:checked')].map(input => input.value);
+  const submit = element<HTMLButtonElement>("welcome-form").querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  submit.disabled = true;
+  element("welcome-error").textContent = "";
+  void finishWelcome(workTypes).catch(() => { element("welcome-error").textContent = "We could not save your choices. Please try again."; })
+    .finally(() => { submit.disabled = false; });
+});
+element("welcome-skip").addEventListener("click", () => {
+  const submit = element<HTMLButtonElement>("welcome-form").querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  submit.disabled = true;
+  void finishWelcome([]).catch(() => { element("welcome-error").textContent = "We could not skip right now. Please try again."; })
+    .finally(() => { submit.disabled = false; });
+});
+element("welcome-import").addEventListener("click", () => {
+  element("welcome-guide").hidden = true;
+  showApp("paypal", true);
+  window.setTimeout(() => element<HTMLInputElement>("paypal-csv").focus(), 0);
+});
+element("welcome-guide-dismiss").addEventListener("click", () => { element("welcome-guide").hidden = true; });
 
 const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-tab]")];
 function setTab(id: string, focus = false) {
@@ -317,3 +354,9 @@ setInterval(renderElapsed, 1000);
 void initialize();
 
 document.addEventListener("onedime:payment-routed",()=>void refresh());
+if ("serviceWorker" in navigator) void navigator.serviceWorker.register("/sw.js").catch(() => {});
+const offlineStatus = element("offline-status");
+const updateOfflineStatus = () => { offlineStatus.hidden = navigator.onLine; };
+window.addEventListener("offline", updateOfflineStatus);
+window.addEventListener("online", updateOfflineStatus);
+updateOfflineStatus();
