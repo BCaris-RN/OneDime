@@ -75,9 +75,12 @@ passed build, typing, all tests and beta checks but failed the contrast browser 
 its fixture clicked workspace tabs while the new first-run modal was open. The contrast
 runner now measures the welcome modal in both themes/OS schemes, dismisses it, then
 continues its existing audit. Local `npm run test:contrast` passed: 24 regression checks,
-zero failing pairs and zero uncovered pairs. Exact-head CI rerun is pending. Full suite,
-contrast, browser and npm audit are required again at the final F2–F6 checkpoint. No
-merge or deployment was performed.
+zero failing pairs and zero uncovered pairs. Exact-head CI passed on
+`0a0c6cdbb9c033e86510a1ab2afdaec21f0eadc7`, run
+[40451790082](https://github.com/BCaris-RN/OneDime/actions/runs/40451790082): build,
+contrast typing, unit tests, beta, full contrast audit and browser suite all passed.
+Full suite, contrast, browser and npm audit are required again at the final F2–F6
+checkpoint. No merge or deployment was performed.
 
 Open question: the F4 handoff references a separate “metrics doc,” which is absent from
 the repository. F4 will use only its explicit KPI list and document metrics that cannot
