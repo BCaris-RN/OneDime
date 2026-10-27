@@ -40,7 +40,9 @@ The corrected browser audit includes Stats, all three charts and table toggles, 
 Stats screenshots at 320/390/1280px in both themes. The full browser suite passed
 locally with 4,280 focus steps plus the smart checks. Desktop focus coverage now checks
 controller overlap only when the controller is fixed; fixed-controller checks remain
-active on phone layouts. Exact-head CI for the corrected browser check is pending.
+active on phone layouts. Exact-head CI passed on `8605d61d418e328f1c982823f2ed3d663e783fd0`,
+run [40444881023](https://github.com/BCaris-RN/OneDime/actions/runs/40444881023): build,
+strict contrast typing, 245 tests, beta, contrast and browser checks all succeeded.
 
 Open question for review: the existing PayPal workspace remains a top-level tab, so the
 six tabs render 3+3 on phones; Stats is fifth after Market. The requested 3+2 layout
