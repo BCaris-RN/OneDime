@@ -39,7 +39,9 @@ export async function inspectContrast(page: Page, state: string, selection = tru
       Math.abs(ratio([119, 119, 119, 1], [255, 255, 255, 1]) - 4.478089453577214) > 1e-12 ||
       over([255, 255, 255, 0.5], [0, 0, 0, 1])[0] !== 127.5) throw new Error("WCAG reference vectors failed");
     const name = (el: Element) => `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ""}${[...el.classList].map(value => `.${value}`).join("")}`;
-    const visible = (el: Element) => !el.matches(".skip-link:not(:focus)") && el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) && el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0;
+    // A modal makes the rest of the page inert, even though checkVisibility remains true.
+    const activeModal = document.querySelector("dialog:modal");
+    const visible = (el: Element) => (!activeModal || activeModal.contains(el)) && !el.matches(".skip-link:not(:focus)") && el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) && el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0;
     const disabled = (el: Element) => !!el.closest(":disabled,[aria-disabled='true']");
     const background = (el: Element | null): Color => {
       const ancestors: Element[] = [];
@@ -201,7 +203,8 @@ export async function inspectContrast(page: Page, state: string, selection = tru
 export async function inspectNativeGlyphs(page: Page, state: string) {
   const result: ContrastPair[] = [];
   for (const [selector, role] of [["input[type='date']", "native calendar icon"], ["input[type='month']", "native month-picker icon"], ["select", "native select arrow"], ["input[type='checkbox']", "native checkbox"]]) {
-    const element = page.locator(selector).filter({ visible: true }).first();
+    const activeModal = page.locator("dialog:modal");
+    const element = (await activeModal.count() ? activeModal : page).locator(selector).filter({ visible: true }).first();
     if (!await element.count() || await element.isDisabled()) continue;
     for (const checked of role === "native checkbox" ? [false, true] : [false]) {
       const original = role === "native checkbox" ? await element.isChecked() : false;
@@ -225,7 +228,8 @@ export async function inspectNativeGlyphs(page: Page, state: string) {
             reference.dataset.currentContrastNativeReference = "true";
             reference.style.setProperty("all", "revert", "important");
             for (const [property, value] of Object.entries({ position: "fixed", left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px`, margin: "0", display: "block", "z-index": "2147483647" })) reference.style.setProperty(property, value, "important");
-            document.body.append(reference);
+            // The reference must share the top layer, rather than paint behind its backdrop.
+            (node.closest("dialog:modal") ?? document.body).append(reference);
             const previous = [node.style.getPropertyValue("visibility"), node.style.getPropertyPriority("visibility")];
             node.style.setProperty("visibility", "hidden", "important");
             return previous;

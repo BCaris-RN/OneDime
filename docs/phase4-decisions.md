@@ -101,10 +101,10 @@ owned ledgers, imported payments, receipts, claims, quests, payouts and sessions
 The session cookie is cleared; other players remain untouched. Global anonymous
 webhook event IDs remain for duplicate protection. Policies describe these boundaries.
 
-Privacy/terms are public local pages with required draft code comments. Their copy
-describes current private play-test behavior; it is not a claim of legal compliance.
-Operator contact, jurisdiction and backup-retention review remain Brandon's tasks
-before any public use. ICO transparency guidance informed the topics only.
+Phase 5 replaces the local policy pages and drafts with the Google Sites policies:
+https://sites.google.com/view/onedime-privacy-policy/home and
+https://sites.google.com/view/onedime-user-agreement/home. These are the only copies;
+/privacy and /terms redirect there. The earlier policy text and screenshots are removed.
 
 APP_BASE_URL aliases PUBLIC_BASE_URL, including numeric loopback. Empty aliases are
 ignored; conflicting nonempty aliases fail. Callback registration and browser origin
@@ -143,9 +143,9 @@ now has 179 passing tests.
 No Brandon play-test notes were present in STATUS.md or PR #5 when checked. Screenshots
 use the disposable fictional demo and synthetic payments, with no real identity or
 third-party logos. Physical screen-reader/mobile device testing remains manual; browser
-emulation does not establish device inference speed. Draft policies need operator review.
-The existing prepared Render starter plans are not a zero-cost hosting decision and must
-be revisited before any separately approved deployment. No resources were provisioned.
+emulation does not establish device inference speed. Phase 5 prepares Render Free web
+and Postgres for the beta; deployment still requires Brandon's separate approval.
+No resources were provisioned.
 
 Local final validation: build, 179 unit/integration tests and zero-vulnerability full
 npm audit pass. Real Chromium passes 3,912 Tab steps plus Home/End/arrow activation,

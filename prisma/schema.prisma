@@ -1,6 +1,6 @@
 //  (o) OneDime | prisma/schema.prisma
 //  ----------------------------------------------------------
-//  Identity and game models. Workspace SQL constraints live in migrations.
+//  Identity, game and private feedback models. Workspace SQL constraints live in migrations.
 generator client {
   provider = "prisma-client-js"
 }
@@ -29,8 +29,23 @@ model Player {
   receipts     Receipt[]
   rungClaims   RungClaim[]
   sessions     Session[]
+  feedback     Feedback[]
 
   @@map("players")
+}
+
+model Feedback {
+  id        String   @id @default(uuid()) @db.Uuid
+  playerId  String   @map("player_id") @db.Uuid
+  app       String
+  body      String   @db.VarChar(1000)
+  blocking  Boolean  @default(false)
+  status    String   @default("new")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, createdAt])
+  @@map("feedback")
 }
 
 model Session {

@@ -3,6 +3,7 @@ import "./exports.js";
 import "./overview.js";
 import "./accessibility.js";
 import "./workspaces.js";
+import { initializeFeedback } from "./feedback.js";
 import type { GameStats } from "../src/game/rules.js";
 import type { QuestDefinition } from "../src/game/catalog.js";
 import { dollarsToCents } from "../src/game/money.js";
@@ -37,6 +38,7 @@ function message(text: string, error = false) {
 const errors: Record<string, string> = {
   invalid_input: "Check the fields and try again.", future_date: "Choose today or an earlier date in your time zone.",
   write_rate_limited: "You have made several changes. Please wait a minute and try again.",
+  feedback_rate_limited: "You have sent five notes in the past hour. Please wait before sending another.",
   same_origin_required: "Please reload this page and try again.", already_clocked_in: "A clock is already running. Refresh to see it.",
   not_clocked_in: "No clock is running. Refresh to see the latest state.", entry_not_found: "That entry is no longer available. Please refresh.",
   quest_catalog_unavailable: "Quests are not available yet.",
@@ -295,6 +297,7 @@ element("logout").addEventListener("click", async () => {
   try { await api("/api/logout", {}); window.location.assign("/"); }
   catch (error) { message(error instanceof Error ? error.message : "Could not log out. Please try again.", true); }
 });
+initializeFeedback(feedback => api("/api/feedback", feedback));
 availability();
 setInterval(renderElapsed, 1000);
 void initialize();

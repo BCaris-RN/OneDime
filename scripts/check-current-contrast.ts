@@ -12,6 +12,9 @@ import { SessionStore } from "../src/auth/session.js";
 import { seedDemo } from "../src/demo/seed.js";
 import { inspectContrast, inspectNativeGlyphs, type ContrastPair } from "./current-contrast.js";
 
+const port = Number(process.env.CONTRAST_TEST_PORT ?? 3406);
+assert(Number.isInteger(port) && port > 0 && port <= 65535, "Invalid CONTRAST_TEST_PORT");
+const baseUrl = `http://127.0.0.1:${port}`;
 const args = process.argv.slice(2);
 const option = (name: string) => { const index = args.indexOf(name); return index < 0 ? undefined : args[index + 1]; };
 for (let index = 0; index < args.length; index++) {
@@ -31,7 +34,7 @@ const scannerHash = createHash("sha256").update(await readFile("scripts/current-
 const pairs: ContrastPair[] = [];
 const coverage: string[] = [];
 const day = "2026-10-18";
-const container = await new PostgreSqlContainer("postgres:16").withDatabase("onedime_contrast_test").start();
+const container = await new PostgreSqlContainer("postgres:16").withDatabase(process.env.TEST_DATABASE_NAME ?? "onedime_contrast_test").start();
 const prisma = new PrismaClient({ datasources: { db: { url: container.getConnectionUri() } } });
 let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
 let server: ReturnType<ReturnType<typeof createApp>["listen"]> | undefined;
@@ -41,13 +44,14 @@ try {
   });
   const player = await seedDemo(prisma, day);
   const empty = await prisma.player.create({ data: { paypalUserId: "contrast-empty-fictional", displayName: "Empty demo player", timeZone: "Pacific/Honolulu" } });
-  const config = loadConfig({ NODE_ENV: "test", PORT: "3406", PUBLIC_BASE_URL: "http://127.0.0.1:3406",
+  const config = loadConfig({ NODE_ENV: "test", PORT: String(port), PUBLIC_BASE_URL: baseUrl,
     SESSION_SECRET: randomBytes(32).toString("hex"), PAYOUTS_ENABLED: "false" });
   const sessions = new SessionStore(prisma, config);
   const app = createApp({ config, prisma, now: () => new Date(`${day}T20:00:00Z`) });
   app.get("/contrast-login", async (req, res) => { await sessions.createSession(req.query.empty === "1" ? empty.id : player.id, res); res.redirect("/app"); });
-  server = await new Promise(resolve => { const value = app.listen(3406, "127.0.0.1", () => resolve(value)); });
+  server = await new Promise(resolve => { const value = app.listen(port, "127.0.0.1", () => resolve(value)); });
   browser = await chromium.launch();
+  console.log("contrast local fixture initialized");
   if (screenshotDirectory) await mkdir(resolve(screenshotDirectory), { recursive: true });
 
   const inspect = async (page: Page, label: string, selection = true) => {
@@ -57,7 +61,8 @@ try {
   const states = async (page: Page, label: string) => {
     const selectors = [".primary-button", ".ghost-button", ".text-button", "button.act:not(.ghost)", "button.act.ghost", ".facebtns button:first-child", ".facebtns button:last-child", ".dpad button", "nav.apps button[aria-selected='true']", "nav.apps button[aria-selected='false']", "nav.tabs button[aria-selected='true']", "#balNav button[aria-selected='true']", "input:not([type='checkbox'])", "input#clock-platform", ".slip input:not([type='checkbox'])", "input[type='checkbox']", "select", "textarea", "summary", "a:not(.brand):not(.paypal-button):not(.skip-link)", ".skip-link", ".paypal-button", ".brand"];
     for (const selector of selectors) {
-      const target = page.locator(selector).filter({ visible: true }).first();
+      const modal = page.locator("dialog:modal");
+      const target = (await modal.count() ? modal : page).locator(selector).filter({ visible: true }).first();
       if (!await target.count() || await target.isDisabled()) continue;
       const signature = await target.evaluate((node, selector) => {
         const css = getComputedStyle(node);
@@ -98,8 +103,14 @@ try {
     await context.addInitScript(({ theme }) => localStorage.setItem("onedime-theme", theme), { theme });
     const page = await context.newPage();
     const errors: string[] = [];
+    const external: string[] = [];
+    await context.route(/^https?:\/\//, route => {
+      if (new URL(route.request().url()).origin === baseUrl) return route.fallback();
+      external.push(new URL(route.request().url()).origin);
+      return route.abort("blockedbyclient");
+    });
     page.on("pageerror", error => errors.push(error.message));
-    await page.goto("http://127.0.0.1:3406/contrast-login");
+    await page.goto(`${baseUrl}/contrast-login`);
     await page.waitForFunction(() => (document.getElementById("sasuStats")?.children.length ?? 0) > 0);
     await page.waitForFunction(() => document.getElementById("player-name")?.textContent === "Demo player");
     assert.equal(await page.locator("html").getAttribute("data-theme"), theme);
@@ -122,6 +133,7 @@ try {
         await screenshot(page, `${appName.toLowerCase().replaceAll(" ", "-")}-${theme}-${width}.png`);
       }
       await page.setViewportSize({ width: 1280, height: 900 });
+      console.log(`contrast workspace collected: ${label}`);
     }
     await page.getByRole("tab", { name: "First Dime", exact: true }).click();
     await page.getByRole("tab", { name: "Log", exact: true }).click();
@@ -140,7 +152,63 @@ try {
     await page.locator("#platform").focus();
     await inspect(page, `First Dime; DOM-only invalid focus fixture; theme=${theme}; OS=${os}`, false);
     if (os === theme) await screenshot(page, `error-toast-${theme}-1280.png`);
-    await page.goto("http://127.0.0.1:3406/contrast-login?empty=1");
+
+    const feedbackLabel = `Feedback; theme=${theme}; OS=${os}`;
+    await page.locator("#header-menu summary").click();
+    await inspect(page, `${feedbackLabel}; menu open`);
+    await states(page, `${feedbackLabel}; menu open`);
+    await page.locator("#header-menu [data-feedback-open]").click();
+    const dialog = page.locator("#feedback-dialog");
+    const body = dialog.locator("#feedback-body");
+    const feedbackInspect = async (state: string, formVisible: boolean) => {
+      const label = `${feedbackLabel}; ${state}`;
+      console.log(`contrast feedback starting: ${label}`);
+      const measured = await inspectContrast(page, label);
+      const native = await inspectNativeGlyphs(page, label);
+      pairs.push(...measured, ...native);
+      coverage.push(label);
+      // These assertions prevent a false pass from auditing inert background controls.
+      assert(measured.some(pair => pair.example === (formVisible ? "textarea#feedback-body" : "p#feedback-thanks")), `${label}: modal text sampled`);
+      assert(!measured.some(pair => /input#(platform|clock-platform)|button\.act/.test(pair.example)), `${label}: background excluded`);
+      assert(native.every(pair => ["input#feedback-blocking", "select#feedback-app"].includes(pair.example)), `${label}: only modal native controls`);
+      if (formVisible) assert(native.some(pair => pair.example === "input#feedback-blocking" && pair.role === "native checkbox unchecked" && pair.result === "exempt"), `${label}: neutral native reference painted in modal`);
+      await states(page, label);
+      if (os === theme) await screenshot(page, `feedback-${state}-${theme}-1280.png`);
+      console.log(`contrast feedback collected: ${label}`);
+    };
+    await feedbackInspect("empty", true);
+    await body.fill("   ");
+    await dialog.locator("#feedback-submit").click();
+    assert.equal(await body.getAttribute("aria-invalid"), "true");
+    await feedbackInspect("invalid", true);
+    await body.fill("Fictional feedback contrast fixture: unable to save a note.");
+    await dialog.locator("#feedback-blocking").check();
+    await page.route("**/api/feedback", route => route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ error: "fictional_feedback_failure" }) }));
+    await dialog.locator("#feedback-submit").click();
+    await page.waitForFunction(() => !!document.getElementById("feedback-error")?.textContent);
+    await feedbackInspect("error", true);
+    await page.unroute("**/api/feedback");
+    let release!: () => void;
+    const pending = new Promise<void>(resolve => { release = resolve; });
+    let requests = 0;
+    await page.route("**/api/feedback", async route => {
+      requests++;
+      await pending;
+      await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ ok: true }) });
+    });
+    await dialog.locator("#feedback-submit").click();
+    try {
+      await page.waitForFunction(() => (document.getElementById("feedback-submit") as HTMLButtonElement).disabled);
+      await feedbackInspect("sending", true);
+    } finally { release(); }
+    await dialog.locator("#feedback-thanks").waitFor();
+    assert.equal(requests, 1);
+    await feedbackInspect("sent", false);
+    await page.unroute("**/api/feedback");
+    await dialog.locator("#feedback-close").click();
+    await page.waitForFunction(() => document.activeElement === document.querySelector("#header-menu summary"));
+
+    await page.goto(`${baseUrl}/contrast-login?empty=1`);
     await page.waitForFunction(() => document.getElementById("player-name")?.textContent === "Empty demo player");
     await page.waitForFunction(() => (document.getElementById("sasuStats")?.children.length ?? 0) > 0);
     for (const appName of ["First Dime", "Spotlight", "Freelance", "Market", "PayPal"]) {
@@ -151,13 +219,20 @@ try {
         await inspect(page, `${appName}; empty selling; theme=${theme}; OS=${os}`);
       }
     }
-    for (const path of ["/", "/privacy", "/terms"]) {
-      const response = await page.goto(`http://127.0.0.1:3406${path}`);
+    for (const path of ["/"]) {
+      const response = await page.goto(`${baseUrl}${path}`);
       assert.equal(response?.status(), 200);
       await page.evaluate(theme => { document.documentElement.dataset.theme = theme; }, theme);
       await inspect(page, `${path}; theme=${theme}; OS=${os}`);
       await states(page, `${path}; theme=${theme}; OS=${os}`);
     }
+    for (const [path, location] of [["/privacy", "https://sites.google.com/view/onedime-privacy-policy/home"], ["/terms", "https://sites.google.com/view/onedime-user-agreement/home"]]) {
+      const response = await page.request.get(`${baseUrl}${path}`, { maxRedirects: 0 });
+      assert.equal(response.status(), 302);
+      assert.equal(response.headers().location, location);
+      coverage.push(`${path}; local redirect verified without fetching third-party policy`);
+    }
+    assert.deepEqual(external, [], "Audit must remain on the owned local UI");
     assert.deepEqual(errors, [], "Browser application exceptions");
     await context.close();
     console.log(`contrast coverage collected: theme=${theme}, OS=${os}`);
@@ -185,7 +260,7 @@ try {
   lines.push("", "## Pair coverage and exemptions", "");
   for (const { pair, states, examples } of ordered) lines.push(`- **${escape(pair.role)}**, ${pair.foreground} / ${pair.background}: ${pair.reason || "Authored identifying control color."} Seen in ${states.size} state(s): ${escape([...states].slice(0, 4).join("; "))}${states.size > 4 ? "; additional equivalent states deduplicated" : ""}. Elements: ${escape([...examples].join(", "))}.`);
   lines.push("", "## Route and state coverage", "", ...[...new Set(coverage)].map(value => `- ${value}`), "",
-    "## Scope", "", "The audit covers actual DOM text and placeholders, selected text, authored control boundaries, D-pad icons, disclosure markers, keyboard focus, selected tabs, progress fills, hover and pressed button combinations. Error, invalid and toast cases use clearly marked test-only DOM fixtures. Empty and populated views use separate fictional players. No production API credentials, data or financial/game/auth calculations are changed.", "",
+    "## Scope", "", "The audit covers actual DOM text and placeholders, selected text, authored control boundaries, D-pad icons, disclosure markers, keyboard focus, selected tabs, progress fills, hover and pressed button combinations. Error, invalid and toast cases use clearly marked test-only DOM fixtures. Feedback uses the real local UI with intercepted fictional error and delayed-success responses, including empty, invalid, error, sending and sent states. Open modal scans exclude inert background controls; neutral native checkbox references are inserted inside the modal top layer. Empty and populated views use separate fictional players. Policy redirects are checked without fetching third-party destinations. No production API credentials, data or financial/game/auth calculations are changed.", "",
     "Dormant legacy `.goal`, `.coin`, `.ladder`, `.quest` and `.money` selectors are not represented as rendered UI. Decorative container/table separators and aria-hidden goal/controller ornaments are measured and listed as exemptions. Native calendar/month/select/checkbox glyph colors are sampled from actual Chromium element screenshots. Chromium's visited-color privacy protection is handled by requiring unconditional authored link colors and rejecting visited-specific overrides; otherwise coverage is explicitly uncovered. No unsupported authored background is silently accepted.", "");
   if (!checkOnly) {
     await mkdir(dirname(reportPath), { recursive: true });

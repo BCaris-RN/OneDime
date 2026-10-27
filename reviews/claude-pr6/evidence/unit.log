@@ -1,0 +1,54 @@
+
+> onedime@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.4 G:/one_dime_worktrees/long-run-beta
+
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "test", schema "public" at "localhost:32821"
+
+9 migrations found in prisma/migrations
+
+Applying migration `000001_init`
+Applying migration `000002_game`
+Applying migration `000003_workspaces`
+Applying migration `000004_paypal`
+Applying migration `000005_ai`
+Applying migration `000006_payout_batch_status`
+Applying migration `000007_device_suggestions`
+Applying migration `000008_service_platforms`
+Applying migration `000009_feedback`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 000001_init/
+    └─ migration.sql
+  └─ 000002_game/
+    └─ migration.sql
+  └─ 000003_workspaces/
+    └─ migration.sql
+  └─ 000004_paypal/
+    └─ migration.sql
+  └─ 000005_ai/
+    └─ migration.sql
+  └─ 000006_payout_batch_status/
+    └─ migration.sql
+  └─ 000007_device_suggestions/
+    └─ migration.sql
+  └─ 000008_service_platforms/
+    └─ migration.sql
+  └─ 000009_feedback/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+
+ Test Files  9 passed (9)
+      Tests  208 passed (208)
+   Start at  14:08:25
+   Duration  470.48s (tests 95%, import 5%)
+
+    Isolate  9 workers spawned · ~2.06s startup each (spawn + environment, per file)
+             at least ~16.52s faster with isolate: false — reuses workers across files instead of one per file
+

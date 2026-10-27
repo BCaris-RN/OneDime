@@ -21,8 +21,22 @@
         <span id="player-name">Loading…</span>
         <button type="button" class="ghost-button" id="theme-toggle" aria-label="Switch to dark mode">Dark mode</button>
         <button type="button" class="text-button" id="logout">Log out</button>
+        <details class="header-menu" id="header-menu"><summary>Menu</summary><div><button type="button" class="ghost-button" data-feedback-open>Send feedback</button></div></details>
       </div>
     </header>
+    <dialog id="feedback-dialog" aria-labelledby="feedback-title" class="feedback-dialog">
+      <div class="section-heading"><h2 id="feedback-title">Send feedback</h2><button type="button" class="ghost-button" id="feedback-close" aria-label="Close feedback">Close</button></div>
+      <form id="feedback-form">
+        <label>Which app<select id="feedback-app" name="app" required><option value="first">First Dime</option><option value="spotlight">Spotlight</option><option value="freelance">Freelance</option><option value="market">Market</option><option value="paypal">PayPal</option></select></label>
+        <label>What happened<textarea id="feedback-body" name="body" rows="5" maxlength="1000" required aria-describedby="feedback-help feedback-count"></textarea></label>
+        <p id="feedback-help" class="field-help">Up to 1,000 characters. Leave out passwords, account details and private work.</p>
+        <p id="feedback-count" class="field-help">0 / 1,000 characters</p>
+        <label class="feedback-blocking"><input type="checkbox" id="feedback-blocking" name="blocking" />This blocked me</label>
+        <p id="feedback-error" role="alert" class="message" data-error="true"></p>
+        <button type="submit" class="primary-button" id="feedback-submit">Send feedback</button>
+      </form>
+      <p id="feedback-thanks" role="status" tabindex="-1" hidden>Thanks for your feedback. Your note has been sent.</p>
+    </dialog>
     <main class="shell" id="main" tabindex="-1"><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
 <div id="app-first" role="tabpanel" aria-labelledby="app-tab-first">
 
@@ -79,8 +93,9 @@
 <section><h2>Match and export</h2><p>A First Dime entry verifies when payer/platform matches and its logged amount equals the payment's gross or net. Its PayPal badge shows gross, fee and net. Smart suggestions are optional and run on your device; you confirm each route. Use Export or Export everything, then Google Sheets File &gt; Import to open CSV or Excel files in a new sheet.</p></section>
 </div></section>
 <section id="panel-help" role="tabpanel" aria-labelledby="tab-help" tabindex="0" hidden><div class="reading-column workspace-section playbook-copy">
+      <section><h2>Tell us what happened</h2><p>Found a problem or have a suggestion? Send a short note. Leave out passwords, account details and private work.</p><button type="button" class="ghost-button" data-feedback-open>Send feedback</button></section>
     <section>
-      <h2>Five places for your work</h2><p>First Dime holds starter gigs. Spotlight holds audience income and brand deals. Freelance holds client work. Market holds delivery, services and sales. PayPal reviews payments and shows the monthly overview; it does not add another copy of earnings.</p><p>Smart suggestions are off by default: opt in on PayPal to download the free local model. No payment data is sent for AI. Low confidence or an unsupported device keeps the fixed payer map. You confirm every route; the server validates it.</p><p><a href="/privacy">Privacy</a> and <a href="/terms">Terms</a> explain this adults-only private play-test. Export your records before using Delete my data in PayPal settings; type DELETE MY DATA to remove the account and owned active records.</p><h2>What OneDime is</h2>
+      <h2>Five places for your work</h2><p>First Dime holds starter gigs. Spotlight holds audience income and brand deals. Freelance holds client work. Market holds delivery, services and sales. PayPal reviews payments and shows the monthly overview; it does not add another copy of earnings.</p><p>Smart suggestions are off by default: opt in on PayPal to download the free local model. No payment data is sent for AI. Low confidence or an unsupported device keeps the fixed payer map. You confirm every route; the server validates it.</p><p><a href="https://sites.google.com/view/onedime-privacy-policy/home">Privacy</a> and <a href="https://sites.google.com/view/onedime-user-agreement/home">Terms</a> explain this adults-only private play-test. Export your records before using Delete my data in PayPal settings; type DELETE MY DATA to remove the account and owned active records.</p><h2>What OneDime is</h2>
       <p>OneDime is a quest game and scoreboard for remote gig work. You log what you earn and how long it took on sites like Prolific, Rev, TranscribeMe, SideShift and Microworkers. It turns that into goals, streaks, levels and an honest per-hour ranking of every site you use.</p>
       <p>The idea is simple: the hardest dollar is the first one. The first goal is a single dime, so you get a win early. Then the ladder keeps you climbing, and the numbers show you where your time is actually worth the most.</p>
     </section>
@@ -324,6 +339,6 @@
     </section>
   </section>
 <section id="app-paypal" role="tabpanel" aria-labelledby="app-tab-paypal" hidden><div class="slip row"><h2>PayPal</h2><p id="paypal-connection">Your PayPal sandbox identity is connected.</p><p>Activity import and routing arrive in the PayPal milestone.</p></div></section>
-    </main><footer class="shell"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>Adults 18+ | Private play-test</span></footer><div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </main><footer class="shell"><a href="https://sites.google.com/view/onedime-privacy-policy/home">Privacy</a><a href="https://sites.google.com/view/onedime-user-agreement/home">Terms</a><span>Adults 18+ | Private play-test</span></footer><div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
 </html>

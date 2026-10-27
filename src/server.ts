@@ -23,6 +23,7 @@ import { createSettingsRouter } from "./settings/router.js";
 import { createActivityRouter } from "./paypal/router.js";
 import { createExportRouter } from "./exports/router.js";
 import { createOverviewRouter } from "./ledger/overview.js";
+import { createFeedbackRouter } from "./feedback/router.js";
 
 type CreateAppOptions = {
   config?: AppConfig;
@@ -108,6 +109,7 @@ export function createApp(options: CreateAppOptions = {}) {
   const gameRouter = createGameRouter({ prisma, config, sessions, now: options.now, quests: options.quests, writeLimit: options.writeLimit });
   app.post("/api/paypal/webhook", webhookHandler(prisma, config, payoutClient));
   app.use("/api", gameRouter);
+  app.use("/api", createFeedbackRouter(prisma, options.now ?? (() => new Date())));
   app.use("/api", createActivityRouter(prisma, options.now ?? (() => new Date()), flushPayouts));
   app.locals.flushPayouts = flushPayouts;
   app.use("/api", createSettingsRouter(prisma, sessions));
@@ -119,7 +121,10 @@ export function createApp(options: CreateAppOptions = {}) {
   app.get("/app", sessions.requirePlayer(), (_request, response) => {
     response.sendFile(path.join(publicDir, "app.html"));
   });
-  for (const policy of ["privacy","terms"]) app.get(`/${policy}`, (_req,res) => res.sendFile(path.join(publicDir, `${policy}.html`)));
+  app.get("/privacy", (_req, res) =>
+    res.redirect(302, "https://sites.google.com/view/onedime-privacy-policy/home"));
+  app.get("/terms", (_req, res) =>
+    res.redirect(302, "https://sites.google.com/view/onedime-user-agreement/home"));
 
   app.use(express.static(publicDir));
 
