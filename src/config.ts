@@ -22,6 +22,7 @@ export type AppConfig = {
   payoutsEnabled?: boolean;
   paypalWebhookId?: string;
   betaAllowlist?: ReadonlySet<string>;
+  demoVideo: boolean;
 };
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -62,10 +63,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   }
 
   if (nodeEnv === "production" && env.PAYOUTS_ENABLED === "true") throw new Error("Payouts may only be enabled locally.");
+  if (env.DEMO_VIDEO === "true" && nodeEnv !== "test") throw new Error("DEMO_VIDEO is available only in the isolated demo environment.");
 
   if (env.GOOGLE_SHEETS_ENABLED === "true") throw new Error("Google Sheets integration is not enabled; use file exports.");
   return {
     betaAllowlist: parseBetaAllowlist(env.BETA_ALLOWLIST),
+    demoVideo: nodeEnv === "test" && env.DEMO_VIDEO === "true",
     payoutsEnabled: env.PAYOUTS_ENABLED === "true",
     paypalWebhookId: blankToUndefined(env.PAYPAL_WEBHOOK_ID),
     nodeEnv,

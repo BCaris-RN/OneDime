@@ -11,6 +11,7 @@ reference/
 /reviews/claude-pr6/*.zip
 /reviews/claude-pr6/ci-final.json
 /reviews/claude-pr6/bot-comments.json
+/video/
 
 public/fonts/
 public/fonts.css

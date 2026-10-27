@@ -19,6 +19,7 @@ try {
   prisma = new PrismaClient({ datasources: { db: { url: databaseUrl } } });
   const config = loadConfig({
     NODE_ENV: "test",
+    DEMO_VIDEO: "true",
     PORT: "3403",
     PUBLIC_BASE_URL: "http://127.0.0.1:3403",
     SESSION_SECRET: randomBytes(32).toString("hex"),

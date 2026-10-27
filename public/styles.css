@@ -233,3 +233,5 @@ caption{text-align:left;font-weight:700;padding:8px 0;color:var(--head)}
 :root[data-theme="light"] button.act.ghost:active{background-color:var(--ghost-active)}
 @media(prefers-color-scheme:dark){input::-webkit-calendar-picker-indicator{background-color:var(--native-icon-surface)}}
 .rank-summary{margin:0;padding:8px 0;color:var(--text);font:700 .9rem var(--code)}
+.demo-mode-badge { align-self: center; border: 1px dashed var(--border); color: var(--muted); font: 600 .7rem/1.2 var(--font-mono); padding: .25rem .4rem; }
+.demo-video-mode .controls { display: none; }

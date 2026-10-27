@@ -1,3 +1,4 @@
+import "./demo-video-labels.js";
 import "./paypal.js";
 import "./exports.js";
 import "./overview.js";

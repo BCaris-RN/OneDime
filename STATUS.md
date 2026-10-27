@@ -305,6 +305,31 @@ PR as pending. Exact-head CI passed on
 `33686563421209022884856773f44253fdc8ef48`; PR #10 remains a draft and unmerged. The
 script still needs M6 demo recordings before it can be followed end to end.
 
+## M6 checkpoint, October 26, 2026 (Hawaii)
+
+Branch `demo-video` is stacked on `week5-features` at `fc6f5bcce37da815c57ca0dbe52649c3da857bad`.
+`DEMO_VIDEO=true` is rejected outside `NODE_ENV=test`; the demo server exposes a local-only
+mode flag. The browser presentation maps canonical platform labels to fictional labels and
+maps form values back to the existing canonical server values before API writes. The
+recording regression confirms the server still stores `Prolific` when the UI uses
+`SurveyNest`. PayPal keeps its name; the header labels this as a local fictional demo, and
+the fixed gamepad is hidden only in demo-video presentation.
+
+`npm run record:demo` builds, starts an isolated PostgreSQL 16 demo, seeds fictional data,
+imports fictional payments, routes them to demo work, shows profession ranks and Stats, and
+writes recordings/screenshots under gitignored `video/`. The 1280x720 and 390x844 walkthroughs
+each completed in 143 seconds (under the 160-second guard); visible platform names were
+checked against the full catalog and the API data remained canonical. The final phone Stats
+capture keeps the charts unobscured.
+
+Local Node 24 validation: build and contrast typecheck passed; 265 tests across 13 files
+passed; beta check passed with 18 combinations, zero failures and zero uncovered pairs;
+Current contrast had 24 regressions, zero failing pairs and zero uncovered pairs; browser
+accessibility passed 4,288 focus steps across all workspaces, Stats, PayPal and sub-tabs at
+320/390/1280px in both themes; smart/offline checks passed. CI is pending for this branch.
+No videos were published, and no provider was contacted. Dependency audit continues to
+report the same two high findings in `body-parser` and `undici`.
+
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 
 PR #6 was merged after Brandon's explicit approval at main commit
