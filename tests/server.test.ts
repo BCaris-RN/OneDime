@@ -1390,6 +1390,11 @@ describe("Phase 2 game API", () => {
     expect(payoutCsv).toContain("2026-10-14");
     expect(payoutCsv).not.toContain("2026-09-14");
     const text = Object.values(files).map(strFromU8).join("\n");
+    const taxCsv = strFromU8(files["Tax summary.csv"]);
+    expect(taxCsv).toContain("# For your records. Not tax advice.");
+    expect(taxCsv).toContain('"2026","2026-10","First Dime","1.23","0.00","0.00","0"');
+    expect(taxCsv).toContain('"2026","2026-10","Spotlight","1.99","0.00","0.00","0"');
+    expect(taxCsv).toContain('"2026","2026-10","Market delivery","0.00","0.00","0.00","0"');
     expect(text).not.toContain("BOB PRIVATE");
     expect(text).not.toContain(bob.player.id);
     const total = (

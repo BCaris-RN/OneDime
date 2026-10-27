@@ -12,6 +12,7 @@ import { allRows } from "../ledger/router.js";
 import { tables, type TableKey } from "../ledger/catalog.js";
 import { summary } from "../ledger/summary.js";
 import { firstDimeTotals } from "../ledger/first-totals.js";
+import { taxSummarySheet as makeTaxSummarySheet } from "./tax-summary.js";
 import { BadRequest } from "../http/errors.js";
 import {
   combine,
@@ -218,6 +219,9 @@ export function createExportRouter(prisma: PrismaClient, now: () => Date) {
           ],
           rows: totals,
         };
+        const taxSummary = makeTaxSummarySheet(totals, (month) =>
+          summary("market_delivery", data, month, inRange).milesX10,
+        );
         first.rows = first.rows.filter((row) => inRange(String(row.worked_on)));
         if (query.tab === "all") {
           const columns = [
@@ -244,6 +248,7 @@ export function createExportRouter(prisma: PrismaClient, now: () => Date) {
           });
           return [
             summarySheet,
+            taxSummary,
             ...all,
             {
               name: "paypal_transactions",

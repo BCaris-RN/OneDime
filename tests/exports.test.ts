@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { unzipSync, strFromU8 } from "fflate";
 import { safeText, csv, xlsx, zip, type ExportSheet } from "../src/exports/files.js";
+import { taxSummarySheet } from "../src/exports/tax-summary.js";
 describe("file exports", () => {
   it.each(["=SUM(A1)", "+cmd", "-cmd", "@cmd", "\tcmd", "\rcmd", "\ncmd"])(
     "neutralizes spreadsheet text %j",
@@ -38,5 +39,31 @@ describe("file exports", () => {
     const book = unzipSync(await xlsx([sheet]));
     expect(strFromU8(book["xl/worksheets/sheet1.xml"])).not.toContain('r="A2"');
     expect(strFromU8(unzipSync(zip([sheet]))["Empty.csv"])).toBe(csv(sheet));
+  });
+  it("places a sheet note above headers in CSV and XLSX exports", async () => {
+    const sheet: ExportSheet = {
+      name: "Tax summary",
+      headerNote: "For your records. Not tax advice.",
+      columns: ["year", "income_cents"],
+      rows: [{ year: "2026", income_cents: 1234 }],
+    };
+    expect(csv(sheet)).toMatch(/^# For your records\. Not tax advice\.\r\n"year","income_usd"/);
+    const workbook = unzipSync(await xlsx([sheet]));
+    const shared = strFromU8(workbook["xl/sharedStrings.xml"]);
+    expect(shared).toContain("For your records. Not tax advice.");
+    expect(strFromU8(workbook["xl/worksheets/sheet1.xml"])).toContain('ySplit="2"');
+  });
+  it("maps monthly income, fees, expenses and delivery miles without currency floats", () => {
+    const sheet = taxSummarySheet([
+      { app: "spotlight", month: "2026-10", earned_cents: 199, fees_cents: 25, expenses_cents: 100 },
+      { app: "market_delivery", month: "2026-10", earned_cents: 1199, fees_cents: 0, expenses_cents: 100 },
+    ], month => month === "2026-10" ? 123 : 0);
+    expect(sheet.name).toBe("Tax summary");
+    expect(sheet.headerNote).toBe("For your records. Not tax advice.");
+    expect(sheet.rows).toEqual([
+      { year: "2026", month: "2026-10", app: "Spotlight", income_cents: 199, fees_cents: 25, expenses_cents: 100, delivery_miles_x10: 0 },
+      { year: "2026", month: "2026-10", app: "Market delivery", income_cents: 1199, fees_cents: 0, expenses_cents: 100, delivery_miles_x10: 123 },
+    ]);
+    expect(sheet.rows.some(row => typeof row.income_cents === "number" && !Number.isInteger(row.income_cents))).toBe(false);
   });
 });

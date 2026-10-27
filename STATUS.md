@@ -106,6 +106,19 @@ acceptance remain unmeasurable because their event histories are not stored. “
 month” is represented by transaction-row counts because file-level import events are not
 stored.
 
+F6 adds a Tax summary sheet to “Export everything” (XLSX and ZIP/CSV), with year, month,
+app, existing recorded-income totals, platform fees, expenses and delivery miles in
+tenths. It includes the required “For your records. Not tax advice.” note. This is derived
+from the export's existing monthly summary rows; no financial calculation changed.
+Validation passed locally on Node 24: build; full suite (253 tests / 11 files); tax-sheet
+unit tests (12); focused authenticated export integration (1 passed, 151 intentionally
+skipped); full browser audit (4,288 Tab steps across workspaces/sub-tabs and
+320/390/1280px in both themes); and `npm run test:contrast` (24 regressions, zero failing
+pairs, zero uncovered pairs). The synthetic F4 PostgreSQL smoke test also passed.
+`npm audit` reports two high-severity dependency advisories, in `body-parser` and
+`undici`; dependency remediation is not part of this feature scope and was not attempted.
+F6 exact-head CI is pending.
+
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 
 PR #6 was merged after Brandon's explicit approval at main commit
