@@ -276,3 +276,26 @@ settings change, account/secret handling, provider call, tester invitation or pa
 enablement occurred. PayPal remains sandbox-only; payouts, Sheets and demo flags
 remain off. Policy wording, tester access, free-tier limits, private feedback retention,
 physical devices, screen readers and real sandbox connectivity remain operator gates.
+
+## M8 coordinator checkpoint, October 26, 2026 (Hawaii)
+
+| Branch / PR | Head SHA | Exact-head CI | Contents |
+| --- | --- | --- | --- |
+| `week5-features` / [#9](https://github.com/BCaris-RN/OneDime/pull/9) | `fc6f5bcce37da815c57ca0dbe52649c3da857bad` | Run `40466913789` failed only at the browser assertion on PayPal selection; failed-job retry is running. Local `test:browser` passes at this code head. | M2–M4: ranks, Stats, first run/install, metrics report, tax export, review fixes. |
+| `ship-drafts` / [#10](https://github.com/BCaris-RN/OneDime/pull/10) | `33686563421209022884856773f44253fdc8ef48` | Passed, run `40463830282`. | Four `docs/ship/` drafts: build story, video script, Devpost draft, judge guide. |
+| `demo-video` / [#11](https://github.com/BCaris-RN/OneDime/pull/11) | `6b0b51da5d105565e5b23f07d61841a91bcf31b0` | Passed, run `40470836379`. | Demo recording tooling and draft video assets; recordings remain local and ignored. |
+| `week5-skins` / [#12](https://github.com/BCaris-RN/OneDime/pull/12) | `f77a5e63dfb66c74a65c06de271e8d780597e449` | Passed, run `40475677029`. | Current/Paper/Slate appearance choice, tokenized theme styling, contrast audit/report, browser coverage. |
+
+Claude review is still outstanding for PRs #9–#12. The available automated review
+comments on #9 cover earlier commits only, not its latest code head. Wait for Claude's
+review of the current heads before Brandon considers a merge. Brandon's merge order
+after review is `week5-features` first, then rebase `demo-video` and `week5-skins`
+onto the updated main before considering them; `ship-drafts` can be reviewed and
+merged at any time. No PR from this table is merged or authorized to merge in this run.
+
+The beta deployment candidate remains main `756cc93e2f6a8a99db5861ca030bbbdefb7bd197`.
+No deployment or Render setting change was made. The Current/Paper/Slate browser and
+contrast CI on #12 passed. Known review risks remain: `npm audit` reports two high
+advisories (`body-parser`, `undici`) outside this feature scope; the existing six-tab
+navigation keeps PayPal and therefore renders 3+3 on phones, while F5 says 3+2; and
+the CI browser failure on #9 must be cleared on the final pushed head before merge.
