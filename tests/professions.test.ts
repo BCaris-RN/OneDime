@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { professionClass, professionRank, verifiedProfessionTotals } from "../src/game/professions.js";
 import type { LedgerRow } from "../src/ledger/catalog.js";
+import { paymentAmountMatches } from "../src/paypal/routing.js";
 
 const row = (fields: Record<string, string | number | null>): LedgerRow => ({ id: "record", player_id: "owner", ...fields });
 const data = {
@@ -12,6 +13,21 @@ const payment = (recordType: string, recordId: string, gross = 1_000, fee = 30) 
 });
 
 describe("verified profession totals", () => {
+  it.each([
+    ["first", { amountCents: 1_000 }],
+    ["income", { amount_cents: 1_000 }],
+    ["gigs", { gross_cents: 1_000, fee_cents: 30 }],
+    ["shifts", { pay_cents: 900, tips_cents: 100 }],
+    ["sales", { price_cents: 1_000, fee_cents: 30 }]
+  ])("matches gross or net amounts for %s records", (type, fields) => {
+    const row = { id: "record", player_id: "owner", ...fields } as LedgerRow;
+    const grossPayment = { gross_cents: 1_000, fee_cents: 30, net_cents: 970 } as Parameters<typeof paymentAmountMatches>[2];
+    const netPayment = { gross_cents: 1_030, fee_cents: 30, net_cents: 1_000 } as Parameters<typeof paymentAmountMatches>[2];
+    const mismatch = { gross_cents: 1_015, fee_cents: 30, net_cents: 985 } as Parameters<typeof paymentAmountMatches>[2];
+    expect(paymentAmountMatches(type, row, grossPayment)).toBe(true);
+    expect(paymentAmountMatches(type, row, netPayment)).toBe(true);
+    expect(paymentAmountMatches(type, row, mismatch)).toBe(false);
+  });
   it("counts only a paid record with its own matching incoming USD payment", () => {
     const rows = {
       ...data,

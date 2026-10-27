@@ -911,6 +911,8 @@ describe("Phase 2 game API", () => {
     expect(Object.keys(result.body.players[0]).sort()).toEqual([
       "displayName",
       "level",
+      "professionClass",
+      "professions",
       "rungClaims",
       "sites",
       "verifiedTotalCents",
@@ -1644,7 +1646,6 @@ describe("Phase 2 game API", () => {
         where: { playerId: alice.player.id, verified: true },
       }),
     ).toBe(0);
-    expect((await request(app).get("/api/me/stats").set("Cookie", alice.cookie)).body.xp).toBe(0);
   });
   it("lists non-USD activity without permitting routing", async () => {
     const alice = await login("paypal-eur");

@@ -11,11 +11,11 @@ rested XP and rung behavior remain unchanged. Verified ranks are backed by perma
 player-scoped claims; migration 000010 backfills eligible claims from existing routed
 payments. The feedback/rank UI shows each title, current verified total and next threshold.
 
-Local Node 24 validation: Prisma generation, build, contrast typecheck and 38 focused game
-and profession tests passed. The full suite reported 88 passed and 152 skipped; the two
-PostgreSQL/Testcontainers suites could not start because this environment has no available
-container runtime. Exact-head GitHub CI is required to validate those database paths and
-is pending. No merge or deployment was performed. Next: M3 Stats tab and feedback support.
+Local Node 24 validation: Prisma generation, build, contrast typecheck, and the full
+PostgreSQL-backed test suite passed (245 tests across 10 files) with Docker available.
+The suite applied migration 000010 successfully. `git diff --check` passed. Exact-head
+GitHub CI is now required for this checkpoint. No merge or deployment was performed.
+Next: M3 Stats tab and feedback support.
 
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 

@@ -36,22 +36,18 @@ export async function transactions(prisma: Pick<PrismaClient, "$queryRaw">, play
   >`SELECT * FROM paypal_transactions WHERE player_id=${playerId}::uuid ORDER BY occurred_on DESC, created_at DESC`;
   return rows.map((row) => view(row) as unknown as Transaction);
 }
-function recordNet(type: string, row: LedgerRow) {
+function recordAmounts(type: string, row: LedgerRow) {
   const n = (key: string) => Number(row[key] ?? 0);
-  return type === "first"
-    ? n("amountCents")
-    : type === "income"
-      ? n("amount_cents")
-      : type === "gigs"
-        ? n("gross_cents") - n("fee_cents")
-        : type === "shifts"
-          ? n("pay_cents") + n("tips_cents")
-          : n("price_cents") - n("fee_cents");
+  if (type === "first") return [n("amountCents")];
+  if (type === "income") return [n("amount_cents")];
+  if (type === "gigs") return [n("gross_cents"), n("gross_cents") - n("fee_cents")];
+  if (type === "shifts") return [n("pay_cents") + n("tips_cents")];
+  if (type === "sales") return [n("price_cents"), n("price_cents") - n("fee_cents")];
+  return [];
 }
 export function paymentAmountMatches(type: string, row: LedgerRow, payment: Activity) {
-  const amountCents = recordNet(type, row);
-  return amountCents === payment.net_cents ||
-    (type === "first" && amountCents === payment.gross_cents);
+  return recordAmounts(type, row).some(amount =>
+    amount === payment.gross_cents || amount === payment.net_cents);
 }
 function newRecord(type: Route["record_type"], p: Transaction, platform: string) {
   if (type === "income")

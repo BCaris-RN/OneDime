@@ -22,7 +22,8 @@ WITH verified_events AS (
     FROM freelance_gigs g
     JOIN paypal_transactions p ON p.player_id = g.player_id
         AND p.routed_record_type = 'gigs' AND p.routed_record_id = g.id
-    WHERE g.stage = 'Paid' AND (g.gross_cents = p.gross_cents OR g.gross_cents - g.fee_cents = p.net_cents)
+    WHERE g.stage = 'Paid' AND (g.gross_cents IN (p.gross_cents, p.net_cents)
+        OR g.gross_cents - g.fee_cents IN (p.gross_cents, p.net_cents))
         AND p.currency = 'USD' AND p.gross_cents > 0 AND p.net_cents >= 0
         AND p.net_cents = p.gross_cents - p.fee_cents
         AND p.kind ~* '^(payment received|general payment|mass pay payment|express checkout payment|website payment|mobile payment|marketplace payment)$'
@@ -40,7 +41,8 @@ WITH verified_events AS (
     FROM sales s
     JOIN paypal_transactions p ON p.player_id = s.player_id
         AND p.routed_record_type = 'sales' AND p.routed_record_id = s.id
-    WHERE s.status = 'paid' AND (s.price_cents = p.gross_cents OR s.price_cents - s.fee_cents = p.net_cents)
+    WHERE s.status = 'paid' AND (s.price_cents IN (p.gross_cents, p.net_cents)
+        OR s.price_cents - s.fee_cents IN (p.gross_cents, p.net_cents))
         AND p.currency = 'USD' AND p.gross_cents > 0 AND p.net_cents >= 0
         AND p.net_cents = p.gross_cents - p.fee_cents
         AND p.kind ~* '^(payment received|general payment|mass pay payment|express checkout payment|website payment|mobile payment|marketplace payment)$'
