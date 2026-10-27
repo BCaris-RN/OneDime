@@ -26,6 +26,7 @@ import type { AppConfig } from "../src/config.js";
 import type { PayPalIdentityClient } from "../src/auth/paypal.js";
 import { claimEligibleRungs } from "../src/game/rungs.js";
 import { parseBetaAllowlist } from "../src/auth/beta.js";
+import { aggregateSql, verifiedSql } from "../scripts/metrics-report.js";
 
 const testConfig: AppConfig = {
   nodeEnv: "test",
@@ -2108,6 +2109,32 @@ describe("Phase 2 game API", () => {
     expect(overview.earnedCents).toBe(1000);
     expect(stats.earnedCents).toBe(overview.earnedCents);
     expect(stats.verifiedCents).toBe(1000);
+  });
+  it("reports fee-matched gig and sale earnings at the matched net amount", async () => {
+    const alice = await login("metrics-fee-match");
+    const gig = (await write(alice.cookie, "/api/freelance/gigs", {
+      platform: "Upwork", client: "Fictional client", project: "Metrics fee test", pricing: "fixed",
+      gross_cents: 1100, fee_cents: 200, hours_x100: 100, started_on: "2026-10-14", stage: "In progress"
+    }).expect(201)).body.row;
+    const sale = (await write(alice.cookie, "/api/market/sales", {
+      store: "Printify Shop", item: "Metrics fee test", sold_on: "2026-10-14",
+      price_cents: 1100, fee_cents: 200, cost_cents: 0, ship_cents: 0, made_by: "Printify", status: "pending"
+    }).expect(201)).body.row;
+    await write(alice.cookie, "/api/paypal/import", { csv: activityCsv("METRICS-GIG", "Prolific", "USD", "9.00", "-0.00", "9.00") }).expect(200);
+    const gigPayment = (await activity(alice.cookie)).body.rows[0];
+    await write(alice.cookie, `/api/paypal/transactions/${gigPayment.id}/route`, { record_type: "gigs", platform: "Upwork", record_id: gig.id }).expect(200);
+    await write(alice.cookie, "/api/paypal/import", { csv: activityCsv("METRICS-SALE", "Prolific", "USD", "9.00", "-0.00", "9.00") }).expect(200);
+    const salePayment = (await activity(alice.cookie)).body.rows.find((row: { id: string }) => row.id !== gigPayment.id);
+    const saleRoute = await write(alice.cookie, `/api/paypal/transactions/${salePayment.id}/route`, { record_type: "sales", platform: "Printify Shop", record_id: sale.id });
+    expect(saleRoute.status, JSON.stringify(saleRoute.body)).toBe(200);
+
+    const monthly = await prisma.$queryRawUnsafe<Record<string, unknown>[]>(verifiedSql);
+    const aggregate = (await prisma.$queryRawUnsafe<Record<string, unknown>[]>(aggregateSql))[0];
+    const october = monthly.find(row => row.month_key === "2026-10")!;
+    expect(Number(october.verified_cents)).toBe(1800);
+    expect(Number(october.logged_cents)).toBe(2200);
+    expect(Number(aggregate.verified_cents)).toBe(1800);
+    expect(Number(aggregate.logged_cents)).toBe(2200);
   });
   it("preserves hundredths of an hour until the final Stats rate is rounded", async () => {
     const alice = await login("stats-fractional-hour");

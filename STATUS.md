@@ -131,12 +131,27 @@ negative stacks. Static app assets revalidate online and fall back to cache offl
 and Stats preserves hundredths of a minute when aggregating freelance hours.
 Regression tests cover fee-bearing and fractional-time Stats values, all four
 workspaces' manual first records, positive/negative chart geometry, and the service
-worker's online, offline and API behavior. Local Node 24 validation after these fixes:
-build passed; 263 tests across 13 files passed; contrast audit reported zero failing
-and zero uncovered pairs; browser audit passed 4,288 focus steps plus offline/smart
-checks. `npm audit` still reports two high-severity advisories in `body-parser` and
-`undici`; dependency changes remain out of scope. These fixes are pushed for exact-head
-CI and automated re-review.
+worker's online, offline and API behavior. The next re-review found that F4 counted
+gross instead of the matched after-fee amount for fee-matched gigs and sales. F4 now
+reports exact matched cents in both monthly and aggregate verified totals while
+retaining gross logged totals. A PostgreSQL regression routes $9 payments against $11
+gross / $2 fee gigs and sales and checks $18 verified / $22 logged in both query
+outputs. The executable report is guarded for safe query imports. Local Node 24
+validation at this correction: build passed; 264 tests across 13 files passed; Current
+contrast reported zero failing and zero uncovered pairs; browser audit passed 4,288
+focus steps across five workspaces plus Stats and PayPal, all sub-tabs, 320/390/1280px
+in both themes, and offline/smart checks. `npm audit` reports two high-severity
+advisories in `body-parser` and `undici`; no dependency changes were made. Exact-head CI
+and automated re-review are pending.
+
+## M5 checkpoint, October 26, 2026 (Hawaii)
+
+Ship drafts are on branch `ship-drafts`, PR #10, based on main. Its four files are
+limited to `docs/ship/`: the build story, under-2:50 video script, Devpost draft and
+judge try-it guide. They describe only implemented features and label the open Phase 5
+PR as pending. Exact-head CI passed on
+`33686563421209022884856773f44253fdc8ef48`; PR #10 remains a draft and unmerged. The
+script still needs M6 demo recordings before it can be followed end to end.
 
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 

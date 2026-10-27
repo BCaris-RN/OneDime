@@ -1,15 +1,10 @@
 import "dotenv/config";
 import { mkdir, writeFile } from "node:fs/promises";
 import { PrismaClient } from "@prisma/client";
+import { pathToFileURL } from "node:url";
 import { formatMetricsReport, type AggregateMetrics, type MonthlyMetrics } from "../src/metrics/report.js";
 
-if (!process.env.DATABASE_URL) {
-  console.error("Metrics report unavailable: DATABASE_URL is not configured.");
-  process.exitCode = 1;
-} else {
-  const prisma = new PrismaClient();
-  const num = (value: unknown) => Number(value ?? 0);
-  const verifiedSql = `
+export const verifiedSql = `
     WITH verified AS (
       SELECT l.player_id, 'first'::text record_type, l.id record_id, l.worked_on AS work_date, l.amount_cents AS cents, l.minutes AS minutes
       FROM log_entries l JOIN paypal_transactions p
@@ -30,7 +25,9 @@ if (!process.env.DATABASE_URL) {
         AND lower(trim(p.kind)) ~ '^(payment received|general payment|mass pay payment|express checkout payment|website payment|mobile payment|marketplace payment)$'
         AND i.amount_cents IN (p.gross_cents,p.net_cents)
       UNION ALL
-      SELECT g.player_id,'gigs',g.id,g.started_on,g.gross_cents,g.hours_x100
+      SELECT g.player_id,'gigs',g.id,g.started_on,
+        CASE WHEN g.gross_cents IN (p.gross_cents,p.net_cents) THEN g.gross_cents ELSE g.gross_cents-g.fee_cents END,
+        g.hours_x100
       FROM freelance_gigs g JOIN paypal_transactions p ON p.player_id=g.player_id AND p.routed_record_type='gigs' AND p.routed_record_id=g.id
       WHERE g.stage='Paid' AND p.currency='USD' AND p.gross_cents>0 AND p.net_cents>=0 AND p.net_cents=p.gross_cents-p.fee_cents
         AND lower(trim(p.kind)) ~ '^(payment received|general payment|mass pay payment|express checkout payment|website payment|mobile payment|marketplace payment)$'
@@ -42,7 +39,9 @@ if (!process.env.DATABASE_URL) {
         AND lower(trim(p.kind)) ~ '^(payment received|general payment|mass pay payment|express checkout payment|website payment|mobile payment|marketplace payment)$'
         AND s.pay_cents+s.tips_cents IN (p.gross_cents,p.net_cents)
       UNION ALL
-      SELECT s.player_id,'sales',s.id,s.sold_on,s.price_cents,0::integer
+      SELECT s.player_id,'sales',s.id,s.sold_on,
+        CASE WHEN s.price_cents IN (p.gross_cents,p.net_cents) THEN s.price_cents ELSE s.price_cents-s.fee_cents END,
+        0::integer
       FROM sales s JOIN paypal_transactions p ON p.player_id=s.player_id AND p.routed_record_type='sales' AND p.routed_record_id=s.id
       WHERE s.status='paid' AND p.currency='USD' AND p.gross_cents>0 AND p.net_cents>=0 AND p.net_cents=p.gross_cents-p.fee_cents
         AND lower(trim(p.kind)) ~ '^(payment received|general payment|mass pay payment|express checkout payment|website payment|mobile payment|marketplace payment)$'
@@ -58,9 +57,9 @@ if (!process.env.DATABASE_URL) {
     months AS (
       SELECT to_char(date_trunc('month', work_date), 'YYYY-MM') AS month_key,
         count(DISTINCT player_id) FILTER (WHERE verified) AS verified_earners,
-        coalesce(sum(cents) FILTER (WHERE verified),0) AS verified_cents,
+        coalesce(sum(verified_cents) FILTER (WHERE verified),0) AS verified_cents,
         coalesce(sum(cents),0) AS logged_cents
-      FROM (SELECT l.player_id,l.work_date,l.cents,(v.player_id IS NOT NULL) AS verified
+      FROM (SELECT l.player_id,l.work_date,l.cents,v.cents AS verified_cents,(v.record_id IS NOT NULL) AS verified
             FROM logged l LEFT JOIN verified v ON v.player_id=l.player_id AND v.record_type=l.record_type AND v.record_id=l.record_id) x
       GROUP BY date_trunc('month',work_date)
     ),
@@ -69,7 +68,7 @@ if (!process.env.DATABASE_URL) {
       coalesce(m.verified_cents,0) verified_cents,coalesce(m.logged_cents,0) logged_cents,coalesce(i.imports,0) imports
     FROM months m FULL OUTER JOIN imports i USING(month_key) ORDER BY month_key`;
 
-  const aggregateSql = `
+export const aggregateSql = `
     WITH verified_first AS (
       SELECT l.player_id,l.id,l.created_at,l.amount_cents
       FROM log_entries l JOIN paypal_transactions p ON p.player_id=l.player_id AND p.routed_record_type='first' AND p.routed_record_id=l.id
@@ -81,7 +80,10 @@ if (!process.env.DATABASE_URL) {
     ),
     verified_pairs AS (
       SELECT p.player_id,p.routed_record_type,p.routed_record_id,
-        CASE p.routed_record_type WHEN 'first' THEN l.amount_cents WHEN 'income' THEN i.amount_cents WHEN 'gigs' THEN g.gross_cents WHEN 'shifts' THEN s.pay_cents+s.tips_cents WHEN 'sales' THEN a.price_cents END cents,
+        CASE p.routed_record_type WHEN 'first' THEN l.amount_cents WHEN 'income' THEN i.amount_cents
+          WHEN 'gigs' THEN CASE WHEN g.gross_cents IN (p.gross_cents,p.net_cents) THEN g.gross_cents ELSE g.gross_cents-g.fee_cents END
+          WHEN 'shifts' THEN s.pay_cents+s.tips_cents
+          WHEN 'sales' THEN CASE WHEN a.price_cents IN (p.gross_cents,p.net_cents) THEN a.price_cents ELSE a.price_cents-a.fee_cents END END cents,
         CASE p.routed_record_type WHEN 'first' THEN l.minutes WHEN 'income' THEN i.content_minutes WHEN 'gigs' THEN g.hours_x100 WHEN 'shifts' THEN s.minutes_online ELSE 0 END time_units,
         CASE p.routed_record_type WHEN 'gigs' THEN 100 ELSE 60 END units_per_hour
       FROM paypal_transactions p
@@ -139,6 +141,12 @@ if (!process.env.DATABASE_URL) {
       (SELECT verified_cents FROM totals) verified_cents,(SELECT logged_cents FROM totals) logged_cents,
       (SELECT count(*) FROM feedback) feedback_count`;
 
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href && !process.env.DATABASE_URL) {
+  console.error("Metrics report unavailable: DATABASE_URL is not configured.");
+  process.exitCode = 1;
+} else if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+  const prisma = new PrismaClient();
+  const num = (value: unknown) => Number(value ?? 0);
   try {
     const reportDate = new Date();
     const { monthly, metrics } = await prisma.$transaction(async tx => {
