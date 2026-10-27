@@ -50,7 +50,7 @@ assumes five tabs and conflicts with retaining PayPal as a top-level workspace. 
 navigation behavior was removed to resolve that conflict.
 No merge or deployment was performed.
 
-## M4 checkpoint, F2–F3, October 26, 2026 (Hawaii)
+## M4 checkpoint, F2–F4, October 26, 2026 (Hawaii)
 
 First-run welcome is backed by `welcome_completed_at`. Migration 000012 marks existing
 players as already welcomed, so only accounts created after rollout see it. The
@@ -82,9 +82,26 @@ contrast typing, unit tests, beta, full contrast audit and browser suite all pas
 Full suite, contrast, browser and npm audit are required again at the final F2–F6
 checkpoint. No merge or deployment was performed.
 
+F4 adds `npm run metrics:report`. It runs in a read-only repeatable snapshot and writes
+`metrics/metrics-<UTC date>.md` under the root gitignored output directory. The SQL
+returns only counts, cents and rates; no player identifiers, names, emails, notes,
+transaction IDs or other free text enter the report. It uses F1 matching rules for
+verified totals, counts imported PayPal transaction rows by creation month, and includes
+first-entry/first-dime rates, time to first verified entry, active days, apps per account,
+retention proxies, verified share, mismatch, hourly rate and feedback totals. A fresh
+PostgreSQL 16 database applied all 12 migrations; a synthetic verified record plus a
+same-day unverified duplicate produced $10 verified / $20 logged and one import. Sentinel
+account and free-text values were absent from the report. Formatter tests: 2 passed;
+build and focused strict TypeScript check passed. Exact-head CI is pending.
+
 Open question: the F4 handoff references a separate “metrics doc,” which is absent from
-the repository. F4 will use only its explicit KPI list and document metrics that cannot
-be measured from existing event history.
+the repository. F4 uses its explicit KPI list. “First-entry rate” means accounts with
+any First Dime entry divided by all accounts; “first-dime rate” means accounts with a
+verified First Dime entry divided by all accounts. Week-1/week-4 retention use current
+last-seen timestamps as a cohort proxy. Return after a seven-day gap and suggestion
+acceptance remain unmeasurable because their event histories are not stored. “Imports per
+month” is represented by transaction-row counts because file-level import events are not
+stored.
 
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 
