@@ -3,6 +3,7 @@
 ## M2 checkpoint, October 26, 2026 (Hawaii)
 
 Branch `week5-features`, based on M1 main `756cc93e2f6a8a99db5861ca030bbbdefb7bd197`.
+F1 implementation commit: `ab7f3010724b9956aa47d0c67d0eb935afa364ec`.
 F1 adds verified Creator, Freelancer, Driver, Seller and Starter ranks across the
 workspaces; only the four non-Starter ranks grant one-time 100 XP bonuses. Spotlight,
 Freelance and Market award 10 XP per verified dollar. First Dime's existing XP, streak,
