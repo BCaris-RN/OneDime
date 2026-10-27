@@ -25,13 +25,14 @@ describe("operator feedback export", () => {
       feedback({ id: "blocker", blocking: true, createdAt: new Date("2026-10-31T03:00:00Z") }),
       feedback({ id: "spotlight", app: "spotlight" }),
       feedback({ id: "paypal", app: "paypal" }),
+      feedback({ id: "stats", app: "stats" }),
       feedback({ id: "freelance", app: "freelance" }),
     ], exportedAt);
     const positions = ["## First Dime", "### blocker", "### early", "### later", "## Spotlight",
-      "## Freelance", "## Market", "## PayPal"].map((text) => report.indexOf(text));
+      "## Freelance", "## Market", "## PayPal", "## Stats"].map((text) => report.indexOf(text));
     expect(positions.every((position) => position >= 0)).toBe(true);
     expect(positions).toEqual([...positions].sort((left, right) => left - right));
-    expect(report).toContain("7 feedback items. Times are UTC.");
+    expect(report).toContain("8 feedback items. Times are UTC.");
   });
 
   it("uses row IDs to keep equal-date exports deterministic without mutating the input", () => {

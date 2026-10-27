@@ -9,7 +9,7 @@ import type { AuthedRequest } from "../auth/session.js";
 import { HttpError } from "../http/errors.js";
 
 const feedbackSchema = z.strictObject({
-  app: z.enum(["first", "spotlight", "freelance", "market", "paypal"]),
+  app: z.enum(["first", "spotlight", "freelance", "market", "paypal", "stats"]),
   body: z.string().trim().min(1).max(1000).refine(value => !value.includes("\0")),
   blocking: z.boolean().default(false),
 });

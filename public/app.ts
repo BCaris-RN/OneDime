@@ -1,6 +1,7 @@
 import "./paypal.js";
 import "./exports.js";
 import "./overview.js";
+import "./stats.js";
 import "./accessibility.js";
 import "./workspaces.js";
 import { initializeFeedback } from "./feedback.js";

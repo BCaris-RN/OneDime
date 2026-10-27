@@ -23,6 +23,7 @@ import { createSettingsRouter } from "./settings/router.js";
 import { createActivityRouter } from "./paypal/router.js";
 import { createExportRouter } from "./exports/router.js";
 import { createOverviewRouter } from "./ledger/overview.js";
+import { createStatsRouter } from "./ledger/stats.js";
 import { createFeedbackRouter } from "./feedback/router.js";
 
 type CreateAppOptions = {
@@ -116,6 +117,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.locals.flushPayouts = flushPayouts;
   app.use("/api", createSettingsRouter(prisma, sessions));
   app.use("/api", createOverviewRouter(prisma, options.now ?? (() => new Date())));
+  app.use("/api", createStatsRouter(prisma, options.now ?? (() => new Date())));
   app.use("/api", createLedgerRouter(prisma, options.now ?? (() => new Date())));
   app.use("/api", createExportRouter(prisma, options.now ?? (() => new Date())));
   app.post("/logout", gameRouter);

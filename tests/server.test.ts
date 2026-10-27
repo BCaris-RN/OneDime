@@ -1979,6 +1979,7 @@ describe("Phase 2 game API", () => {
     const alice = await login("feedback-private"), bob = await login("feedback-viewer");
     const body = "Fictional private feedback";
     await write(alice.cookie, "/api/feedback", { app: "market", body }).expect(201);
+    await write(alice.cookie, "/api/feedback", { app: "stats", body: "Fictional Stats feedback" }).expect(201);
     const row = await prisma.feedback.findFirstOrThrow();
     for (const route of ["/api/feedback", `/api/feedback/${row.id}`, `/api/feedback?playerId=${alice.player.id}`]) {
       const response = await request(app).get(route).set("Cookie", bob.cookie).expect(404);
@@ -2011,6 +2012,13 @@ describe("Phase 2 game API", () => {
     await write(alice.cookie,"/api/paypal/import",{csv:activityCsv()}).expect(200);
     const result=(await request(app).get("/api/overview?month=2026-10").set("Cookie",alice.cookie).expect(200)).body;
     expect(result.rows.at(-1)).toMatchObject({app:"total",earnedCents:322,pendingCents:322,paidCents:0,netCents:322});
+    const stats=(await request(app).get("/api/stats?month=2026-10").set("Cookie",alice.cookie).expect(200)).body;
+    expect(stats.earnedCents).toBe(result.rows.at(-1).earnedCents);
+    expect(stats.verifiedCents).toBe(0);
+    expect(stats.monthly.at(-1)).toMatchObject({month:"2026-10",first:123,spotlight:199});
+    expect(stats.monthly.some((row:Record<string,unknown>)=>Object.values(row).includes(999999))).toBe(false);
+    await request(app).get("/api/stats?month=2026-13").set("Cookie",alice.cookie).expect(400);
+    await request(app).get("/api/stats").expect(401);
     const older=(await request(app).get("/api/overview?month=2026-09").set("Cookie",alice.cookie).expect(200)).body;
     expect(older.rows.at(-1).earnedCents).toBe(0);
     await request(app).get("/api/overview?month=2026-13").set("Cookie",alice.cookie).expect(400);

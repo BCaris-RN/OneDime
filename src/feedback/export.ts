@@ -20,6 +20,7 @@ const apps = [
   ["freelance", "Freelance"],
   ["market", "Market"],
   ["paypal", "PayPal"],
+  ["stats", "Stats"],
 ] as const;
 
 function playerTag(playerId: string): string {

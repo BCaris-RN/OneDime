@@ -15,7 +15,27 @@ Local Node 24 validation: Prisma generation, build, contrast typecheck, and the 
 PostgreSQL-backed test suite passed (245 tests across 10 files) with Docker available.
 The suite applied migration 000010 successfully. `git diff --check` passed. Exact-head
 GitHub CI is now required for this checkpoint. No merge or deployment was performed.
-Next: M3 Stats tab and feedback support.
+M2 exact-head GitHub CI passed on `40260f5660d1be37d2f1df4477201500f85b21cf`, run
+[40434950807](https://github.com/BCaris-RN/OneDime/actions/runs/40434950807). Build,
+contrast typing, 245 tests, beta, contrast and browser checks all passed. Continue on
+the same branch for M3.
+
+## M3 checkpoint, October 26, 2026 (Hawaii)
+
+F5 Stats is implemented on `week5-features`: `/api/stats?month=YYYY-MM` is an
+authenticated read-only, player-scoped snapshot with six monthly net totals, verified
+share inputs, timed verified rates, activity days/streak, and F1 profession ranks.
+Its all-app earned total reuses the same owned ledgers and month summaries as
+`/api/overview`; imported PayPal transactions are not added a second time. The UI
+adds the Stats tab and pixel charts/tables, token-driven chart ink, reduced-motion
+support and finite stepped animations. Stats is also accepted by feedback storage and
+export through migration 000011.
+
+Local build passed. The endpoint integration test confirms October's 322-cent total
+matches overview and excludes another player's larger entry. The full suite reached
+244 passing tests and one stale feedback-export count expectation; that expectation
+was corrected from seven to eight and its focused test now passes. Full exact-head CI
+is pending. No merge or deployment was performed.
 
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 

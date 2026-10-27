@@ -27,7 +27,7 @@
     <dialog id="feedback-dialog" aria-labelledby="feedback-title" class="feedback-dialog">
       <div class="section-heading"><h2 id="feedback-title">Send feedback</h2><button type="button" class="ghost-button" id="feedback-close" aria-label="Close feedback">Close</button></div>
       <form id="feedback-form">
-        <label>Which app<select id="feedback-app" name="app" required><option value="first">First Dime</option><option value="spotlight">Spotlight</option><option value="freelance">Freelance</option><option value="market">Market</option><option value="paypal">PayPal</option></select></label>
+        <label>Which app<select id="feedback-app" name="app" required><option value="first">First Dime</option><option value="spotlight">Spotlight</option><option value="freelance">Freelance</option><option value="market">Market</option><option value="paypal">PayPal</option><option value="stats">Stats</option></select></label>
         <label>What happened<textarea id="feedback-body" name="body" rows="5" maxlength="1000" required aria-describedby="feedback-help feedback-count"></textarea></label>
         <p id="feedback-help" class="field-help">Up to 1,000 characters. Leave out passwords, account details and private work.</p>
         <p id="feedback-count" class="field-help">0 / 1,000 characters</p>
@@ -37,7 +37,7 @@
       </form>
       <p id="feedback-thanks" role="status" tabindex="-1" hidden>Thanks for your feedback. Your note has been sent.</p>
     </dialog>
-    <main class="shell" id="main" tabindex="-1"><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
+    <main class="shell" id="main" tabindex="-1"><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-stats" aria-selected="false" aria-controls="app-stats" tabindex="-1" data-app="stats">Stats</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
 <div id="app-first" role="tabpanel" aria-labelledby="app-tab-first">
 
 
@@ -345,6 +345,12 @@
       <p class="muted" style="margin-top:8px;font-size:.85rem">Creator income is usually self-employment income. Set part of every payout aside for taxes, and share your totals with a tax preparer.</p>
     </section>
   </section>
+<section id="app-stats" role="tabpanel" aria-labelledby="app-tab-stats" hidden class="stats-screen">
+  <section class="stats-lcd"><div class="stats-heading"><svg class="stats-coin" viewBox="0 0 16 16" aria-hidden="true"><g><path class="coin-ink" d="M5 1h6v1h2v2h1v2h1v4h-1v2h-1v2h-2v1H5v-1H3v-2H2v-2H1V6h1V4h1V2h2z"/><path fill="var(--lcd-2)" d="M5 3h6v1h1v1h1v6h-1v1h-1v1H5v-1H4v-1H3V5h1V4h1z"/></g></svg><div><h2><span class="stats-cursor" aria-hidden="true">▶</span> Your stats</h2><p id="stats-note">Your work, across every app.</p></div></div><dl id="stats-kpis" class="stats"></dl></section>
+  <section class="stats-lcd"><h2>Earned by month</h2><p class="stats-note">After platform fees, last 6 months, by app.</p><div id="stats-month-chart"></div><ul id="stats-legend" class="stats-legend"></ul><details><summary>Show as a table</summary><div id="stats-month-table" class="table-scroll"></div></details></section>
+  <section class="stats-lcd"><h2>Real hourly rate</h2><p class="stats-note">Verified work with time logged.</p><div id="stats-rate-chart"></div><details><summary>Show as a table</summary><div id="stats-rate-table" class="table-scroll"></div></details></section>
+  <section class="stats-lcd"><h2>Verified vs pending</h2><p id="stats-meter-note" class="stats-note">This month, across all apps.</p><div id="stats-meter"></div><details><summary>Show as a table</summary><div id="stats-meter-table" class="table-scroll"></div></details></section>
+</section>
 <section id="app-paypal" role="tabpanel" aria-labelledby="app-tab-paypal" hidden><div class="slip row"><h2>PayPal</h2><p id="paypal-connection">Your PayPal sandbox identity is connected.</p><p>Activity import and routing arrive in the PayPal milestone.</p></div></section>
     </main><footer class="shell"><a href="https://sites.google.com/view/onedime-privacy-policy/home">Privacy</a><a href="https://sites.google.com/view/onedime-user-agreement/home">Terms</a><span>Adults 18+ | Private play-test</span></footer><div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
