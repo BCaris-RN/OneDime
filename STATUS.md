@@ -22,6 +22,10 @@ ranks, top-rank progress, a ten-account/one-active-account denominator, and empt
 data. Local Node 24 build, contrast typecheck and all 284 application tests in 14
 files pass. Local testing excludes only the untracked reviews/** source archives.
 Exact-head CI, bot review and the full browser run are pending at this checkpoint.
+The integrated browser run exposed an existing test race: the Freelance tab was
+already present before the asynchronous onboarding save finished. It now waits
+for the welcome dialog to close before asserting selection; the assertion and
+application behavior are unchanged.
 
 The code-reviewer and security-best-practices skills are applied before review;
 the handoff's Playwright runners remain the browser gate. #11/#12 and recordings

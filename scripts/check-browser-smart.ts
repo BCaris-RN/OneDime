@@ -85,6 +85,7 @@ try {
   await welcome.getByRole("checkbox",{name:"Freelance",exact:true}).check();
   await welcome.getByRole("checkbox",{name:"Market",exact:true}).check();
   await welcome.getByRole("button",{name:"Continue",exact:true}).click();
+  await welcome.waitFor({ state: "hidden" });
   await page.getByRole("tab",{name:"Freelance",exact:true}).waitFor();
   assert.equal(await page.getByRole("tab",{name:"Freelance",exact:true}).getAttribute("aria-selected"),"true");
   const welcomeGuide=page.getByRole("status",{name:"Start your record",exact:true});
