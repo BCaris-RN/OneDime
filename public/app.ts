@@ -352,6 +352,22 @@ element("logout").addEventListener("click", async () => {
 initializeFeedback(feedback => api("/api/feedback", feedback));
 availability();
 setInterval(renderElapsed, 1000);
+function showPostLoginBoot() {
+  const overlay = element<HTMLElement>("post-login-boot");
+  let seen = false;
+  try { seen = sessionStorage.getItem("onedime-post-login-boot") === "shown"; sessionStorage.setItem("onedime-post-login-boot", "shown"); } catch { /* The overlay still works without session storage. */ }
+  if (seen) return;
+  const list = element<HTMLUListElement>("post-login-boot-log");
+  const lines = ["Session established ...", "Loading your ledger ...", "5 apps online ...", "Ranks and stats synced ...", "Welcome back, player"];
+  overlay.hidden = false;
+  let index = 0;
+  let timer = 0;
+  const close = () => { window.clearInterval(timer); overlay.hidden = true; overlay.removeEventListener("click", close); window.removeEventListener("keydown", close); };
+  const append = () => { if (index >= lines.length) { close(); return; } const item = document.createElement("li"); item.textContent = lines[index++]; list.append(item); };
+  append(); timer = window.setInterval(append, 420); window.setTimeout(close, 2500);
+  overlay.addEventListener("click", close); window.addEventListener("keydown", close, { once: true });
+}
+showPostLoginBoot();
 void initialize();
 
 document.addEventListener("onedime:payment-routed",()=>void refresh());

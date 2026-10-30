@@ -1,5 +1,13 @@
 # OneDime status
 
+## Landing console checkpoint, October 30, 2026 (Hawaii)
+
+Branch `landing-console` is cut from main `004165d`. The landing page now ports
+the supplied `reference/landing-console.html` console, CSS-only multiverse,
+keyboard/click controls, sandbox login handoff, plain-link fallback, and the
+session-scoped post-login boot overlay. Playwright captures at 390px and 1440px
+are saved under `docs/screenshots/landing-console-*.png`; no deploy or merge.
+
 ## S5/S7 checkpoint, October 30, 2026 (Hawaii)
 
 PR #11 merged into `main` as `a9c244ed906f4079c35f272fe7e0622cef0fa01b` after
