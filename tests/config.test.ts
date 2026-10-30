@@ -2,6 +2,19 @@ import { describe, expect, it } from "vitest";
 import { loadConfig } from "../src/config.js";
 const fixture = { SESSION_SECRET: "fixture-session-value-at-least-32-characters" };
 describe("configuration boundaries", () => {
+  it("normalizes a trailing origin slash without changing the callback path", () => {
+    expect(loadConfig({ ...fixture, PUBLIC_BASE_URL: "https://app.example/" }).paypalRedirectUri)
+      .toBe("https://app.example/auth/paypal/callback");
+  });
+  it.each(["https://other.example/auth/paypal/callback", "https://app.example/auth/paypal/callback/", "https://app.example/auth/paypal/callback?private=fixture"])(
+    "rejects a callback that differs from the configured app origin and route", value => {
+      expect(() => loadConfig({ ...fixture, PUBLIC_BASE_URL: "https://app.example", PAYPAL_REDIRECT_URI: value }))
+        .toThrow("PAYPAL_REDIRECT_URI must exactly match the app origin plus /auth/paypal/callback.");
+    }
+  );
+  it("rejects insecure production origins without echoing configuration", () => {
+    expect(() => loadConfig({ ...fixture, NODE_ENV: "production", PUBLIC_BASE_URL: "http://app.example" })).toThrow("HTTPS in production");
+  });
   it.each([undefined, "", " \t\n"])("keeps beta access unchanged for a blank allowlist", value => {
     expect(loadConfig({ ...fixture, BETA_ALLOWLIST: value }).betaAllowlist).toBeUndefined();
   });

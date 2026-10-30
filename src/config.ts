@@ -31,6 +31,19 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if (appBase && publicBase && appBase !== publicBase)
     throw new Error("APP_BASE_URL and PUBLIC_BASE_URL must agree.");
   const publicBaseUrl = appBase ?? publicBase ?? `http://localhost:${port}`;
+  let origin: URL;
+  try { origin = new URL(publicBaseUrl); }
+  catch { throw new Error("App base URL must be an absolute HTTP(S) origin."); }
+  if (!["http:", "https:"].includes(origin.protocol) || origin.username || origin.password ||
+      origin.search || origin.hash || origin.pathname !== "/" ||
+      (nodeEnv === "production" && origin.protocol !== "https:")) {
+    throw new Error("App base URL must be an HTTP(S) origin, with HTTPS in production.");
+  }
+  const canonicalBaseUrl = origin.origin;
+  const paypalRedirectUri = blankToUndefined(env.PAYPAL_REDIRECT_URI) ?? `${canonicalBaseUrl}/auth/paypal/callback`;
+  if (paypalRedirectUri !== `${canonicalBaseUrl}/auth/paypal/callback`) {
+    throw new Error("PAYPAL_REDIRECT_URI must exactly match the app origin plus /auth/paypal/callback.");
+  }
   const paypalEnvironment = env.PAYPAL_ENVIRONMENT ?? "sandbox";
   const paypalAuthUrl = env.PAYPAL_AUTH_URL ?? PAYPAL_AUTH_URL;
   const paypalApiBaseUrl = env.PAYPAL_API_BASE_URL ?? PAYPAL_API_BASE_URL;
@@ -61,11 +74,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     sessionSecret,
     sessionTtlDays: parseInteger(env.SESSION_TTL_DAYS, 14),
     cookieSecure: parseBoolean(env.COOKIE_SECURE, nodeEnv === "production"),
-    publicBaseUrl,
+    publicBaseUrl: canonicalBaseUrl,
     paypalClientId: blankToUndefined(env.PAYPAL_CLIENT_ID),
     paypalClientSecret: blankToUndefined(env.PAYPAL_CLIENT_SECRET),
-    paypalRedirectUri:
-      blankToUndefined(env.PAYPAL_REDIRECT_URI) ?? `${publicBaseUrl}/auth/paypal/callback`,
+    paypalRedirectUri,
     paypalAuthUrl,
     paypalApiBaseUrl,
     paypalScope: env.PAYPAL_SCOPE ?? PAYPAL_SCOPE

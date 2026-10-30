@@ -29,12 +29,36 @@ try {
   await prisma.$executeRaw`INSERT INTO paypal_transactions(player_id,txn_id,occurred_on,payer,gross_cents,fee_cents,net_cents,currency,kind)
     VALUES(${player.id}::uuid,'FAKE-SMART','2026-10-18'::date,${canary},1000,0,1000,'USD','General Payment')`;
   const config = loadConfig({ NODE_ENV: "test", PORT: String(port), PUBLIC_BASE_URL: baseUrl,
+    PAYPAL_CLIENT_ID: "browser-fixture-id", PAYPAL_CLIENT_SECRET: "browser-fixture-secret",
     SESSION_SECRET: randomBytes(32).toString("hex"), PAYOUTS_ENABLED: "false" });
   const sessions = new SessionStore(prisma, config);
-  const app = createApp({ config, prisma });
+  const app = createApp({ config, prisma, paypalClient: {
+    exchangeCodeForToken: async () => ({ access_token: "browser-fixture-token" }),
+    fetchUserInfo: async () => ({ user_id: "BROWSER-OAUTH-FIXTURE", name: "Login fixture" })
+  } });
   app.get("/browser-login", async (_req, res) => { await sessions.createSession(player.id, res); res.redirect("/app"); });
   server = await new Promise(resolve => { const value = app.listen(port, "127.0.0.1", () => resolve(value)); });
   browser = await chromium.launch();
+  const loginContext = await browser.newContext();
+  try {
+    await loginContext.route("https://www.sandbox.paypal.com/**", async route => {
+      const authorization = new URL(route.request().url());
+      const callback = new URL(authorization.searchParams.get("redirect_uri")!);
+      callback.searchParams.set("state", authorization.searchParams.get("state")!);
+      callback.searchParams.set("code", "browser-fixture-code");
+      await route.fulfill({ status: 200, contentType: "text/html",
+        body: `<a href="${callback.toString().replaceAll("&", "&amp;")}">Return to OneDime</a>` });
+    });
+    const loginPage = await loginContext.newPage();
+    await loginPage.goto(`${baseUrl}/auth/paypal`);
+    await loginPage.getByRole("link", { name: "Return to OneDime" }).click();
+    await loginPage.waitForURL(`${baseUrl}/app`);
+    const cookies = await loginContext.cookies(baseUrl);
+    assert(cookies.some(cookie => cookie.name === "onedime_session" && cookie.httpOnly && cookie.sameSite === "Lax"));
+    assert(!cookies.some(cookie => cookie.name === "onedime_oauth_state"));
+    assert.equal((await loginContext.request.get(`${baseUrl}/api/me`)).status(), 200);
+    console.log("OAuth cross-site return and session cookie passed (mocked provider)");
+  } finally { await loginContext.close(); }
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
   const errors: string[] = [], requests: { url: string; body: string }[] = [];

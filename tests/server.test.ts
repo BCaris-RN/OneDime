@@ -113,6 +113,46 @@ afterAll(async () => {
 });
 
 describe("server", () => {
+  it("binds login state to a Lax browser cookie and rejects a different browser", async () => {
+    const start = await request(app).get("/auth/paypal").expect(302);
+    const state = new URL(start.headers.location).searchParams.get("state");
+    expect(start.headers["set-cookie"][0]).toContain("SameSite=Lax");
+    expect(start.headers["set-cookie"][0]).toContain("HttpOnly");
+    expect(start.headers["cache-control"]).toBe("no-store");
+    await request(app).get(`/auth/paypal/callback?code=fixture&state=${state}`).expect(400);
+    expect(paypalClient.exchangeCodeForToken).not.toHaveBeenCalled();
+    await request(app).get(`/auth/paypal/callback?code=fixture&state=${state}`)
+      .set("Cookie", start.headers["set-cookie"][0].split(";")[0]).expect(302);
+  });
+
+  it("logs fixed OAuth steps without private provider error data", async () => {
+    const log = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      const state = await beginPayPalLogin();
+      vi.mocked(paypalClient.exchangeCodeForToken).mockRejectedValueOnce(new Error("private-token private@example.test"));
+      await request(app).get(`/auth/paypal/callback?code=private-code&state=${state}`)
+        .set("Cookie", `onedime_oauth_state=${state}`).expect(500);
+      expect(log).toHaveBeenCalledWith("oauth step", { step: "token_exchange", outcome: "failed", elapsedMs: expect.any(Number) });
+      const output = JSON.stringify(log.mock.calls);
+      for (const privateValue of [state, "private-code", "private-token", "private@example.test"])
+        expect(output).not.toContain(privateValue);
+      expect(paypalClient.fetchUserInfo).not.toHaveBeenCalled();
+    } finally { log.mockRestore(); }
+  });
+
+  it("keeps production session and state cookies secure behind the ingress proxy", async () => {
+    const { createApp } = await import("../src/server.js");
+    const target = createApp({ config: { ...testConfig, nodeEnv: "production", cookieSecure: true }, prisma, paypalClient });
+    expect(target.get("trust proxy")).toBe(1);
+    expect(app.get("trust proxy")).toBe(false);
+    const start = await request(target).get("/auth/paypal").set("X-Forwarded-Proto", "https").expect(302);
+    expect(start.headers["set-cookie"][0]).toContain("Secure");
+    const state = new URL(start.headers.location).searchParams.get("state");
+    const done = await request(target).get(`/auth/paypal/callback?code=fixture&state=${state}`)
+      .set("Cookie", start.headers["set-cookie"][0].split(";")[0]).set("X-Forwarded-Proto", "https").expect(302);
+    expect(done.headers["set-cookie"][0]).toContain("Secure");
+    expect(done.headers["set-cookie"][0]).toContain("SameSite=Lax");
+  });
   it("returns 200 for GET /health", async () => {
     await request(app).get("/health").expect(200, { ok: true });
   });
@@ -133,7 +173,7 @@ describe("server", () => {
     const state = await beginPayPalLogin();
 
     const response = await request(app)
-      .get(`/auth/paypal/callback?code=auth-code&state=${state}`)
+      .get(`/auth/paypal/callback?code=auth-code&state=${state}`).set("Cookie", `onedime_oauth_state=${state}`)
       .expect(302);
 
     expect(response.headers.location).toBe("/app");
@@ -154,8 +194,8 @@ describe("server", () => {
     const state = await beginPayPalLogin();
 
     const responses = await Promise.all([
-      request(app).get(`/auth/paypal/callback?code=first&state=${state}`),
-      request(app).get(`/auth/paypal/callback?code=second&state=${state}`),
+      request(app).get(`/auth/paypal/callback?code=first&state=${state}`).set("Cookie", `onedime_oauth_state=${state}`),
+      request(app).get(`/auth/paypal/callback?code=second&state=${state}`).set("Cookie", `onedime_oauth_state=${state}`),
     ]);
 
     expect(responses.map((response) => response.status).sort()).toEqual([
@@ -169,7 +209,7 @@ describe("server", () => {
   it("stores a hash of the session ID instead of the raw cookie value", async () => {
     const state = await beginPayPalLogin();
     const response = await request(app)
-      .get(`/auth/paypal/callback?code=auth-code&state=${state}`)
+      .get(`/auth/paypal/callback?code=auth-code&state=${state}`).set("Cookie", `onedime_oauth_state=${state}`)
       .expect(302);
     const rawSessionId = readRawSessionId(response.headers["set-cookie"]?.[0]);
     const sessions = await prisma.session.findMany();
@@ -183,7 +223,7 @@ describe("server", () => {
   it("updates an existing player on a second login with the same PayPal user", async () => {
     const firstState = await beginPayPalLogin();
     await request(app)
-      .get(`/auth/paypal/callback?code=first&state=${firstState}`)
+      .get(`/auth/paypal/callback?code=first&state=${firstState}`).set("Cookie", `onedime_oauth_state=${firstState}`)
       .expect(302);
 
     vi.mocked(paypalClient.fetchUserInfo).mockResolvedValueOnce({
@@ -194,7 +234,7 @@ describe("server", () => {
 
     const secondState = await beginPayPalLogin();
     await request(app)
-      .get(`/auth/paypal/callback?code=second&state=${secondState}`)
+      .get(`/auth/paypal/callback?code=second&state=${secondState}`).set("Cookie", `onedime_oauth_state=${secondState}`)
       .expect(302);
 
     const players = await prisma.player.findMany();
@@ -233,7 +273,7 @@ describe("server", () => {
   it("clears the session on logout", async () => {
     const state = await beginPayPalLogin();
     const loginResponse = await request(app)
-      .get(`/auth/paypal/callback?code=auth-code&state=${state}`)
+      .get(`/auth/paypal/callback?code=auth-code&state=${state}`).set("Cookie", `onedime_oauth_state=${state}`)
       .expect(302);
     const cookie = loginResponse.headers["set-cookie"]?.[0];
 
@@ -261,7 +301,7 @@ describe("beta allowlist", () => {
   async function attemptLogin(target: typeof app) {
     const start = await request(target).get("/auth/paypal").expect(302);
     const state = new URL(start.headers.location).searchParams.get("state");
-    return request(target).get(`/auth/paypal/callback?code=fixture&state=${state}`);
+    return request(target).get(`/auth/paypal/callback?code=fixture&state=${state}`).set("Cookie", `onedime_oauth_state=${state}`);
   }
 
   it("admits a listed account using normalized exact email matching", async () => {
@@ -288,7 +328,14 @@ describe("beta allowlist", () => {
       expect(response.headers["set-cookie"]).toBeUndefined();
       await expect(prisma.player.count()).resolves.toBe(0);
       await expect(prisma.session.count()).resolves.toBe(0);
-      for (const log of logs) expect(log).not.toHaveBeenCalled();
+      for (const log of logs) {
+        for (const call of log.mock.calls) {
+          expect(call).toEqual(["oauth step", {
+            step: expect.stringMatching(/^(state_create|state_check|code_check|token_exchange|userinfo|beta_access)$/),
+            outcome: expect.stringMatching(/^(start|ok|rejected)$/), elapsedMs: expect.any(Number)
+          }]);
+        }
+      }
     } finally { for (const log of logs) log.mockRestore(); }
   });
 
@@ -333,8 +380,8 @@ describe("beta allowlist", () => {
     const start = await request(target).get("/auth/paypal").expect(302);
     const state = new URL(start.headers.location).searchParams.get("state");
     const callback = `/auth/paypal/callback?code=fixture&state=${state}`;
-    await request(target).get(callback).expect(403);
-    await request(target).get(callback).expect(400);
+    await request(target).get(callback).set("Cookie", `onedime_oauth_state=${state}`).expect(403);
+    await request(target).get(callback).set("Cookie", `onedime_oauth_state=${state}`).expect(400);
     expect(paypalClient.exchangeCodeForToken).toHaveBeenCalledTimes(1);
     await expect(prisma.oauthState.count()).resolves.toBe(0);
   });
@@ -409,7 +456,7 @@ describe("Phase 2 game API", () => {
     });
     const state = await beginPayPalLogin();
     const result = await request(app)
-      .get(`/auth/paypal/callback?code=fixture&state=${state}`)
+      .get(`/auth/paypal/callback?code=fixture&state=${state}`).set("Cookie", `onedime_oauth_state=${state}`)
       .expect(302);
     const player = await prisma.player.findUniqueOrThrow({
       where: { paypalUserId: `game-${suffix}` },
@@ -2032,7 +2079,7 @@ describe("Phase 2 game API", () => {
     });
     const state = await beginPayPalLogin();
     const response = await request(app)
-      .get(`/auth/paypal/callback?code=fixture&state=${state}`)
+      .get(`/auth/paypal/callback?code=fixture&state=${state}`).set("Cookie", `onedime_oauth_state=${state}`)
       .expect(302);
     const cookie = response.headers["set-cookie"]![0];
     const player = await prisma.player.findUniqueOrThrow({

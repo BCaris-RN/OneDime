@@ -1,5 +1,26 @@
 # OneDime status
 
+## OAuth-first run, October 29, 2026 (Hawaii)
+
+`fix-oauth-callback` starts from main `d43b9f184f252b56d4087915565a5c3fedf49d1d`.
+Browser-bound one-time state, Lax cookies, fixed-field step diagnostics, production
+ingress trust and exact redirect configuration checks are implemented. Existing
+15-second PayPal request deadlines are retained and tested; codes are not retried.
+See docs/oauth-diagnostics.md for the cold-start distinction and operator checks.
+
+Local Node 24 build, contrast typecheck and 247 tests in ten files pass. The first
+test run exposed an old no-logging assertion; it now checks the exact safe log
+schema. Beta checks pass (18 combinations, 22 pairs). Full browser/contrast checks
+and exact-head CI/bot review are pending at this checkpoint. Code-reviewer and
+security-best-practices inspections cover the complete auth diff; Playwright's
+existing runner now checks a mocked cross-site OAuth return and session cookie.
+No hosted callback or configuration has been inspected; the original live error
+details are pending. This is not evidence that the deployed site is repaired.
+
+Next: merge OAuth only after its gates, then implement Claude's rank persistence
+and all-account metrics decisions in #9; continue #11/#12, demos and deployment
+preparation under the handoff. No deployment or settings changes are authorized.
+
 ## M1 checkpoint, October 26, 2026 (Hawaii)
 
 PR #6 was merged after Brandon's explicit approval at main commit

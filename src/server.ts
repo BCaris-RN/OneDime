@@ -45,6 +45,8 @@ export function createApp(options: CreateAppOptions = {}) {
   const flushPayouts = createPayoutService(prisma, config, payoutClient, options.now ?? (() => new Date()));
   const app = express();
 
+  // Render terminates TLS at the single ingress immediately ahead of Node.
+  app.set("trust proxy", config.nodeEnv === "production" ? 1 : false);
   app.disable("x-powered-by");
   app.use((_req, res, next) => {
     res.set("Content-Security-Policy", "default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
