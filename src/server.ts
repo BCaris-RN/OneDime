@@ -62,6 +62,10 @@ export function createApp(options: CreateAppOptions = {}) {
     response.status(200).json({ ok: true });
   });
 
+  app.get("/demo-video-mode.js", (_request, response) => {
+    response.type("application/javascript").send(`window.__ONEDIME_DEMO_VIDEO__=${config.demoVideo ? "true" : "false"};`);
+  });
+
   app.get("/", async (request, response, next) => {
     try {
       const currentSession = await sessions.getCurrentSession(request);

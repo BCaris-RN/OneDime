@@ -51,4 +51,9 @@ describe("configuration boundaries", () => {
     ).toThrow();
     expect(() => loadConfig({ ...fixture, GOOGLE_SHEETS_ENABLED: "true" })).toThrow();
   });
+  it("enables fictional platform labels only in the isolated demo environment", () => {
+    expect(loadConfig({ ...fixture, NODE_ENV: "test", DEMO_VIDEO: "true" }).demoVideo).toBe(true);
+    expect(loadConfig({ ...fixture, DEMO_VIDEO: "false" }).demoVideo).toBe(false);
+    expect(() => loadConfig({ ...fixture, NODE_ENV: "production", DEMO_VIDEO: "true" })).toThrow();
+  });
 });

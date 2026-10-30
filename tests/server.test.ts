@@ -43,6 +43,7 @@ const testConfig: AppConfig = {
   paypalApiBaseUrl: "https://api-m.sandbox.paypal.com",
   paypalScope:
     "openid profile email https://uri.paypal.com/services/paypalattributes",
+  demoVideo: false,
 };
 
 let container: StartedPostgreSqlContainer | undefined;
