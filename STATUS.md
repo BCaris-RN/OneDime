@@ -7,6 +7,10 @@ the supplied `reference/landing-console.html` console, CSS-only multiverse,
 keyboard/click controls, sandbox login handoff, plain-link fallback, and the
 session-scoped post-login boot overlay. Playwright captures at 390px and 1440px
 are saved under `docs/screenshots/landing-console-*.png`; no deploy or merge.
+Local validation is green: build, 285 tests, strict contrast typecheck, beta
+18 combinations/22 pairs, contrast 24 regressions with zero failing/uncovered,
+and Playwright landing checks at 390/1440 including keyboard navigation,
+reduced motion, plain links, and `/auth/paypal/start` handoff.
 
 ## S5/S7 checkpoint, October 30, 2026 (Hawaii)
 
