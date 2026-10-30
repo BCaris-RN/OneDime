@@ -155,5 +155,28 @@ and try the affected behavior with fictional data. If a build fails, read that d
 log before retrying. Keep both automatic controls off; do not create a deploy hook.
 See [Render's manual-deploy guide](https://render.com/docs/deploys).
 
+## Smoke-test the beta
+
+After each deploy, and before sharing the URL, run the smoke check from your own
+computer against the exact origin with no trailing slash:
+
+```powershell
+npx playwright install chromium   # once per machine
+$env:BETA_URL = "<RENDER_ORIGIN>"; npm run smoke:beta
+```
+
+It waits up to 60 seconds for `/health` so a sleeping free service can wake, then checks
+that `/privacy` and `/terms` redirect to the Google Sites policies without fetching them.
+The home page must load with no console errors and no horizontal scrolling at 320, 390
+and 1280 pixels. Last, it clicks **Log in with PayPal** and stops at PayPal's door: the
+request must go to `www.sandbox.paypal.com` with a `redirect_uri` of
+`<RENDER_ORIGIN>/auth/paypal/callback`. That request is aborted, so nothing signs in.
+Each run leaves one unused login state in the database that expires after 10 minutes.
+
+Each passing step prints one `smoke:` line. A failure prints the step and exits nonzero.
+A `redirect_uri` failure means `PAYPAL_REDIRECT_URI` or `PUBLIC_BASE_URL` doesn't match
+the origin you passed. The check needs no credentials and prints none. It is not part
+of CI, because CI has no hosted service to reach.
+
 Writing this guide does not authorize paid hosting, enabling payouts, live PayPal,
 changing repository visibility or any later deployment.
