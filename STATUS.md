@@ -8,6 +8,7 @@ fictional demo mode and recorder. No Claude Code branch was touched. Local build
 application tests, contrast, beta and Playwright checks are being rerun before
 the branch is pushed for exact-head CI and bot review. Recordings stay in the
 ignored `video/` directory.
+The pull request base is now `main`; the rebased head remains `8b3717384c05c6d45effede2d07ec151980b0af6`.
 
 ## OAuth and Claude-decision checkpoint, October 30, 2026 (Hawaii)
 
