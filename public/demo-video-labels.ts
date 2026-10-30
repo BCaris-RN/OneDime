@@ -70,7 +70,7 @@ if (window.__ONEDIME_DEMO_VIDEO__ === true) {
       }
     });
     root.querySelectorAll<HTMLOptionElement>("select[id*='plat' i] option, select[name='platform'] option, select[id*='sup' i] option, select[name='made_by'] option, datalist#platform-options option").forEach(option => {
-      const canonical = option.dataset.demoCanonical ?? option.value || option.textContent ?? "";
+      const canonical = option.dataset.demoCanonical ?? (option.value || option.textContent || "");
       if (!option.dataset.demoCanonical) option.dataset.demoCanonical = canonical;
       option.value = canonical;
       const before = option.textContent ?? canonical, translated = display(before || canonical);
