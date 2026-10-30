@@ -1,5 +1,22 @@
 # OneDime status
 
+## S5/S7 checkpoint, October 30, 2026 (Hawaii)
+
+PR #11 merged into `main` as `a9c244ed906f4079c35f272fe7e0622cef0fa01b` after
+exact-head CI run `41101067790` passed and the bot reported no major issues on
+`e57933eaaeb34f5e9aa10cc37e6c0db21c3ef850`. From that merged main checkout,
+Playwright recorded both fictional-label demos: `video/walkthrough-1280x720.webm`
+(143s) and `video/walkthrough-390x844.webm` (144s), with stats still exported as
+`video/stats-1280x720.png` and `video/stats-390x844.png`. Video outputs are ignored;
+no deploy was performed.
+
+S7 ownership/status: PR #9 is merged as `4bbdca2899ba6c37b96c47741aaf440a3ec343ca`;
+PR #11 is merged as above; PR #12 (`week5-skins`) remains Claude Code-owned and
+untouched. Claude Code also owns the existing `beta-smoke`, `ship-license`, and
+`public-export` branches; `agents-public` was not present in the repository branch
+search and was not touched. Main SHA to deploy, when separately authorized, is
+`a9c244ed906f4079c35f272fe7e0622cef0fa01b`.
+
 ## PR #11 rebase checkpoint, October 30, 2026 (Hawaii)
 
 PR #11 was rebased onto merged main `4bbdca2899ba6c37b96c47741aaf440a3ec343ca`.
