@@ -1,18 +1,21 @@
 import "./paypal.js";
 import "./exports.js";
 import "./overview.js";
+import "./stats.js";
 import "./accessibility.js";
-import "./workspaces.js";
+import { showApp } from "./workspaces.js";
 import { initializeFeedback } from "./feedback.js";
 import type { GameStats } from "../src/game/rules.js";
 import type { QuestDefinition } from "../src/game/catalog.js";
 import { dollarsToCents } from "../src/game/money.js";
 
-type Player = { displayName: string | null; timeZone: string | null; leaderboardOptIn: boolean };
+type Player = { displayName: string | null; timeZone: string | null; leaderboardOptIn: boolean; welcomeCompletedAt: string | null };
 type Entry = { id: string; platform: string; workedOn: string; minutes: number; amountCents: number; note: string | null; verified: boolean };
 type Clock = { platform: string | null; startedAt: string | null };
 type QuestPayload = { quests: QuestDefinition[]; completed: string[]; pilotAvailable: boolean };
-type Leader = { displayName: string; verifiedTotalCents: number; xp: number; level: number; sites: { platform: string; verifiedCents: number }[]; rungClaims: { rungCents: number; claimedAt: string }[] };
+type ProfessionRank = { profession: "creator" | "freelancer" | "driver" | "seller" | "starter"; rank: number; verifiedCents: number; nextRankCents: number | null };
+type GameStatsWithProfessions = GameStats & { professions: ProfessionRank[]; professionClass: ProfessionRank | null; verifiedOtherCents: number };
+type Leader = { displayName: string; verifiedTotalCents: number; xp: number; level: number; sites: { platform: string; verifiedCents: number }[]; rungClaims: { rungCents: number; claimedAt: string }[]; professionClass: ProfessionRank | null; professions: ProfessionRank[] };
 const element = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const input = (id: string) => element<HTMLInputElement>(id);
 const money = (cents: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
@@ -77,14 +80,24 @@ async function perform(task: () => Promise<void>) {
   finally { busy = false; availability(); }
 }
 
-function renderStats(stats: GameStats) {
+function rankText(rank: ProfessionRank) {
+  const title = rank.profession[0].toUpperCase() + rank.profession.slice(1);
+  const progress = rank.nextRankCents === null ? "Top rank reached" : `${money(rank.nextRankCents - rank.verifiedCents)} to rank ${rank.rank + 1}`;
+  return `${title} · ${rank.rank ? `rank ${rank.rank}` : "working toward rank 1"} · ${money(rank.verifiedCents)} matched · ${progress}`;
+}
+function renderStats(stats: GameStatsWithProfessions) {
   element("total-amount").textContent = money(stats.totals.amountCents);
   element("verified-amount").textContent = money(stats.totals.verifiedCents);
   element("week-amount").textContent = money(stats.week.amountCents);
   element("total-minutes").textContent = number(stats.totals.minutes);
   element("streak").textContent = number(stats.streak);
   element("rested-pool").textContent = `${stats.restedPool} XP`;
-  element("level-summary").textContent = `Level ${stats.level} · ${stats.title} · ${number(stats.xp)} XP`;
+  element("level-summary").textContent = `Level ${stats.level} · ${stats.title}${stats.professionClass ? ` · ${stats.professionClass.profession[0].toUpperCase() + stats.professionClass.profession.slice(1)} class` : ""} · ${number(stats.xp)} XP`;
+  for (const [id, profession] of [["rank-first", "starter"], ["rank-spotlight", "creator"], ["rank-freelance", "freelancer"]] as const) {
+    const rank = stats.professions.find(item => item.profession === profession)!;
+    element(id).textContent = rankText(rank);
+  }
+  element("rank-market").textContent = ["driver", "seller"].map(profession => rankText(stats.professions.find(item => item.profession === profession)!)).join(" · ");
   element("quest-level").textContent = `Level ${stats.level} · ${stats.title}`;
   element("quest-xp").textContent = `${stats.xp} XP · next level at ${stats.nextLevelXp}`;
   element("xp-progress").setAttribute("aria-valuenow", String(stats.levelProgress));
@@ -95,7 +108,7 @@ function renderStats(stats: GameStats) {
   element("goal-ring").setAttribute("stroke-dashoffset", (326.7 * (1 - Math.min(1, stats.totals.amountCents / stats.goalCents))).toFixed(1));
   input("worked-on").max = stats.today;
   if (!input("worked-on").value) input("worked-on").value = stats.today;
-  element("next-rung").textContent = stats.nextRungCents === null ? "Your verified total has reached the top rung." : `Your next target: ${money(stats.nextRungCents)} verified.`;
+  element("next-rung").textContent = stats.nextRungCents === null ? "Your matched total has reached the top rung." : `Your next target: ${money(stats.nextRungCents)} matched.`;
   element("rung-list").replaceChildren(...rungCents.map((cents) => {
     const reached = stats.totals.verifiedCents >= cents;
     return node("li", `${money(cents)}${reached ? " · reached" : ""}`, reached ? "reached" : "");
@@ -127,7 +140,7 @@ function renderEntries(entries: Entry[]) {
       });
     });
     action.append(remove);
-    row.append(detail, node("td", `${entry.minutes} min`), node("td", money(entry.amountCents)), node("td", entry.verified ? "Verified" : "Awaiting verification"), action);
+    row.append(detail, node("td", `${entry.minutes} min`), node("td", money(entry.amountCents)), node("td", entry.verified ? "Matched" : "Awaiting matching"), action);
     return row;
   }));
   document.dispatchEvent(new Event("onedime:rendered"));
@@ -155,11 +168,15 @@ function renderQuests(payload: QuestPayload) {
     toggle.dataset.questId = quest.id;
     toggle.setAttribute("aria-pressed", String(payload.completed.includes(quest.id)));
     toggle.setAttribute("aria-label", `Toggle quest: ${quest.title}`);
-    toggle.addEventListener("click", () => void perform(async () => {
-      const result = await api<{ completed: boolean }>(`/api/quests/${encodeURIComponent(quest.id)}`, {});
-      await refreshAfterChange(result.completed ? "Quest completed." : "Quest marked incomplete.");
-      [...document.querySelectorAll<HTMLButtonElement>("#quest-list button")].find((button) => button.dataset.questId === quest.id)?.focus();
-    }));
+    if (quest.id === "start-record") {
+      toggle.disabled = true;
+      toggle.textContent = payload.completed.includes(quest.id) ? "Done" : "Log or import one thing";
+      toggle.setAttribute("aria-label", payload.completed.includes(quest.id) ? "Start your record quest is done" : "Start your record quest completes automatically when you log or import work");
+    } else toggle.addEventListener("click", () => void perform(async () => {
+        const result = await api<{ completed: boolean }>(`/api/quests/${encodeURIComponent(quest.id)}`, {});
+        await refreshAfterChange(result.completed ? "Quest completed." : "Quest marked incomplete.");
+        [...document.querySelectorAll<HTMLButtonElement>("#quest-list button")].find((button) => button.dataset.questId === quest.id)?.focus();
+      }));
     row.append(copy, toggle);
     return row;
   }));
@@ -181,10 +198,11 @@ function renderLeaders(leaders: Leader[]) {
   }
   element("site-leaders").replaceChildren(...(siteLeaders.size ? [...siteLeaders].map(([platform, leader]) => {
     const row = node("li"); row.append(node("span", platform), node("span", `${leader.name} · ${money(leader.cents)}`)); return row;
-  }) : [node("li", "No verified site leaders yet.", "muted")]));
+  }) : [node("li", "No matched site leaders yet.", "muted")]));
   element("leaderboard-list").replaceChildren(...leaders.map((leader, index) => {
     const row = node("li");
-    row.append(node("h3", `${index + 1}. ${leader.displayName}`), node("p", `${money(leader.verifiedTotalCents)} verified · ${number(leader.xp)} XP · Level ${leader.level}`));
+    row.append(node("h3", `${index + 1}. ${leader.displayName}`), node("p", `${money(leader.verifiedTotalCents)} matched · ${number(leader.xp)} XP · Level ${leader.level}${leader.professionClass ? ` · ${leader.professionClass.profession[0].toUpperCase() + leader.professionClass.profession.slice(1)} class` : ""}`));
+    if (leader.professions.length) row.append(node("p", leader.professions.map(rank => `${rank.profession[0].toUpperCase() + rank.profession.slice(1)} rank ${rank.rank}`).join(" · ")));
     if (leader.sites.length) row.append(node("p", leader.sites.map((site) => `${site.platform}: ${money(site.verifiedCents)}`).join(" · ")));
     for (const claim of leader.rungClaims) row.append(node("p", `Claimed ${money(claim.rungCents)} · ${new Date(claim.claimedAt).toLocaleString([], { timeZone: player?.timeZone ?? "UTC" })}`));
     if (!leader.rungClaims.length) row.append(node("small", "No rung claims yet."));
@@ -193,7 +211,7 @@ function renderLeaders(leaders: Leader[]) {
 }
 async function refresh() {
   const [me, stats, entries, value, quests, leaders] = await Promise.all([
-    api<{ player: Player }>("/api/me"), api<GameStats>("/api/me/stats"), api<{ entries: Entry[] }>("/api/entries"),
+    api<{ player: Player }>("/api/me"), api<GameStatsWithProfessions>("/api/me/stats"), api<{ entries: Entry[] }>("/api/entries"),
     api<Clock>("/api/clock"), api<QuestPayload>("/api/quests"), api<{ players: Leader[] }>("/api/leaderboard")
   ]);
   player = me.player;
@@ -215,6 +233,8 @@ async function initialize() {
     await refresh();
     ready = true;
     message("");
+    if (!player?.welcomeCompletedAt && !element<HTMLDialogElement>("welcome-dialog").open)
+      element<HTMLDialogElement>("welcome-dialog").showModal();
   } catch (error) {
     message(error instanceof Error ? error.message : "Could not load your progress. Please refresh.", true);
   } finally {
@@ -223,6 +243,37 @@ async function initialize() {
     element<HTMLButtonElement>("refresh").disabled = false;
   }
 }
+
+async function finishWelcome(workTypes: string[]) {
+  const saved = await api<{ complete: boolean; workTypes: string[] }>("/api/onboarding", { workTypes });
+  if (player) player.welcomeCompletedAt = new Date().toISOString();
+  element<HTMLDialogElement>("welcome-dialog").close();
+  showApp(saved.workTypes[0] ?? "first", true);
+  element("welcome-guide").hidden = false;
+  element("welcome-guide-title").textContent = "Start your record";
+  message("Your workspace is ready. You can change apps at any time.");
+}
+element<HTMLFormElement>("welcome-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const workTypes = [...element<HTMLFormElement>("welcome-form").querySelectorAll<HTMLInputElement>('input[name="workType"]:checked')].map(input => input.value);
+  const submit = element<HTMLButtonElement>("welcome-form").querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  submit.disabled = true;
+  element("welcome-error").textContent = "";
+  void finishWelcome(workTypes).catch(() => { element("welcome-error").textContent = "We could not save your choices. Please try again."; })
+    .finally(() => { submit.disabled = false; });
+});
+element("welcome-skip").addEventListener("click", () => {
+  const submit = element<HTMLButtonElement>("welcome-form").querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  submit.disabled = true;
+  void finishWelcome([]).catch(() => { element("welcome-error").textContent = "We could not skip right now. Please try again."; })
+    .finally(() => { submit.disabled = false; });
+});
+element("welcome-import").addEventListener("click", () => {
+  element("welcome-guide").hidden = true;
+  showApp("paypal", true);
+  window.setTimeout(() => element<HTMLInputElement>("paypal-csv").focus(), 0);
+});
+element("welcome-guide-dismiss").addEventListener("click", () => { element("welcome-guide").hidden = true; });
 
 const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-tab]")];
 function setTab(id: string, focus = false) {
@@ -303,3 +354,9 @@ setInterval(renderElapsed, 1000);
 void initialize();
 
 document.addEventListener("onedime:payment-routed",()=>void refresh());
+if ("serviceWorker" in navigator) void navigator.serviceWorker.register("/sw.js").catch(() => {});
+const offlineStatus = element("offline-status");
+const updateOfflineStatus = () => { offlineStatus.hidden = navigator.onLine; };
+window.addEventListener("offline", updateOfflineStatus);
+window.addEventListener("online", updateOfflineStatus);
+updateOfflineStatus();

@@ -71,7 +71,14 @@ export function levelForXp(xp: number): number {
 
 export function gameStats(
   history: readonly HistoryEntry[],
-  options: { now: Date; timeZone: string; questXp?: number; claimedRungs?: number }
+  options: {
+    now: Date;
+    timeZone: string;
+    questXp?: number;
+    claimedRungs?: number;
+    verifiedOtherCents?: number;
+    claimedProfessionRanks?: number;
+  }
 ) {
   const today = localDay(options.now, options.timeZone);
   const entries = history.filter((entry) => entryDay(entry.workedOn) <= today);
@@ -84,8 +91,9 @@ export function gameStats(
   const all = totals(entries);
   const rested = restedXp(entries, today);
   const dollarXp = Math.floor(all.amountCents / 10);
-  const xp = all.minutes + dollarXp + (options.questXp ?? 0) +
-    (options.claimedRungs ?? 0) * 100 + rested.bonus;
+  const xp = all.minutes + dollarXp + Math.floor((options.verifiedOtherCents ?? 0) / 10) +
+    (options.questXp ?? 0) + (options.claimedRungs ?? 0) * 100 + rested.bonus +
+    (options.claimedProfessionRanks ?? 0) * 100;
   const level = levelForXp(xp);
   const sites = [...new Set(entries.map((entry) => entry.platform))].sort().map((platform) => {
     const site = totals(entries.filter((entry) => entry.platform === platform));

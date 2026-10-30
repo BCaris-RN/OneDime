@@ -1,5 +1,11 @@
 [
   {
+    "id": "start-record",
+    "xp": 0,
+    "title": "Start your record",
+    "description": "Log work or import a PayPal activity CSV. This first-run quest completes automatically."
+  },
+  {
     "id": "paypal",
     "xp": 30,
     "title": "Quest 1: Set up your PayPal payout account",

@@ -67,16 +67,33 @@ try {
   const page = await context.newPage();
   const errors: string[] = [], requests: { url: string; body: string }[] = [];
   let expectedFeedback429 = false;
+  let expectedOfflineDisconnect = false;
   let feedback429ConsoleErrors = 0;
   context.on("request", req => requests.push({ url: req.url(), body: req.postData() ?? "" }));
   page.on("pageerror", error => errors.push(error.message));
   page.on("console", message => {
     if (message.type() !== "error") return;
+    if (expectedOfflineDisconnect && message.text().includes("net::ERR_INTERNET_DISCONNECTED")) return;
     if (expectedFeedback429 && message.location().url === `${baseUrl}/api/feedback`
       && /^Failed to load resource:.*\b429\b/.test(message.text()) && feedback429ConsoleErrors++ === 0) return;
     errors.push(message.text());
   });
   await page.goto(`${baseUrl}/browser-login`);
+  const welcome=page.getByRole("dialog",{name:"What kind of work do you do?",exact:true});
+  await welcome.waitFor();
+  assert.equal(await welcome.getByRole("checkbox").count(),4);
+  await welcome.getByRole("checkbox",{name:"Freelance",exact:true}).check();
+  await welcome.getByRole("checkbox",{name:"Market",exact:true}).check();
+  await welcome.getByRole("button",{name:"Continue",exact:true}).click();
+  await welcome.waitFor({ state: "hidden" });
+  await page.getByRole("tab",{name:"Freelance",exact:true}).waitFor();
+  assert.equal(await page.getByRole("tab",{name:"Freelance",exact:true}).getAttribute("aria-selected"),"true");
+  const welcomeGuide=page.getByRole("status",{name:"Start your record",exact:true});
+  await welcomeGuide.getByRole("button",{name:"Open PayPal import",exact:true}).click();
+  assert.equal(await page.getByRole("tab",{name:"PayPal",exact:true}).getAttribute("aria-selected"),"true");
+  assert.equal(await page.locator("#paypal-csv").evaluate(node=>document.activeElement===node),true);
+  const welcomeData=await (await page.request.get(`${baseUrl}/api/onboarding`)).json();
+  assert.deepEqual(welcomeData,{complete:true});
   await page.getByRole("tab", { name: "Market", exact: true }).click();
   const menu = page.locator("#header-menu summary");
   await menu.focus();
@@ -171,7 +188,7 @@ try {
   await page.getByRole("button",{name:"Cancel edit",exact:true}).press("Enter");
   assert.equal(await page.getByRole("button",{name:"Cancel edit",exact:true}).count(),0);
   let focusChecks=0;
-  const apps=["First Dime","Spotlight","Freelance","Market","PayPal"];
+  const apps=["First Dime","Spotlight","Freelance","Market","Stats","PayPal"];
   async function checkPanel(label:string) {
     const issues=await page.evaluate(()=>{
       const issues:string[]=[];
@@ -195,6 +212,7 @@ try {
         const style=getComputedStyle(target);
         if(style.outlineStyle==="none"||parseFloat(style.outlineWidth)<1)return `invisible focus: ${target.id||target.tagName}`;
         if(controls.contains(target))return null;
+        if(getComputedStyle(controls).position!=="fixed")return null;
         const rect=target.getBoundingClientRect(),bottom=controls.getBoundingClientRect().top;
         const covered=rect.height>bottom-24
           ?rect.top<0||rect.top>bottom-28:rect.bottom>bottom-4||rect.top<0;
@@ -213,29 +231,35 @@ try {
   for(const name of ["Scroll up","Scroll down","Previous tab","Next tab","B: clock in or out","A: log a session"])
     assert.equal(await page.getByRole("button",{name,exact:true}).count(),1);
   await checkTabKeys("app-nav",apps);
-  for(const width of [320,390]) for(const theme of ["light","dark"]) {
+  for(const width of [320,390,1280]) for(const theme of ["light","dark"]) {
     await page.setViewportSize({width,height:844});
     if(await page.locator("html").getAttribute("data-theme")!==theme) {
       const toggleTheme=page.getByRole("button",{name:theme==="dark"?"Switch to dark mode":"Switch to light mode",exact:true});
       await toggleTheme.focus();await toggleTheme.press("Enter");
     }
     for(const appName of apps) {
+      if(width===1280&&appName!=="Stats")continue;
       const tab=page.getByRole("tab",{name:appName,exact:true});await tab.focus();await tab.press("Enter");
       assert.equal(await tab.getAttribute("aria-selected"),"true");
       if(appName==="First Dime")await checkTabKeys("secNav",["Log","Quests","Leaderboard","Playbook","Help"]);
       if(appName==="Market")await checkTabKeys("balNav",["Delivery and rides","Selling"]);
+      if(appName==="Stats") {
+        await page.locator("#app-stats svg[role=img]").first().waitFor();
+        assert.equal(await page.locator("#app-stats svg[role=img]").count(),3);
+        assert.equal(await page.locator("#app-stats details summary",{hasText:"Show as a table"}).count(),3);
+      }
       await checkPanel(`${appName} ${width} ${theme}`);
       await page.evaluate(()=>window.scrollTo(0,0));
-      await page.screenshot({path:`docs/screenshots/p4-${width}-${theme}-${appName.toLowerCase().replaceAll(" ","-")}.png`,fullPage:true});
+      if(appName==="Stats")await page.screenshot({path:`docs/screenshots/p5-stats-${width}-${theme}.png`,fullPage:true});
     }
-    await page.getByRole("tab",{name:"First Dime",exact:true}).click();
-    for(const name of ["Log","Quests","Leaderboard","Playbook","Help"]) {
+    if(width!==1280)await page.getByRole("tab",{name:"First Dime",exact:true}).click();
+    for(const name of width===1280?[]:["Log","Quests","Leaderboard","Playbook","Help"]) {
       const tab=page.getByRole("tab",{name,exact:true});await tab.focus();await tab.press("Enter");
       assert.equal(await tab.getAttribute("aria-selected"),"true");
       await checkPanel(`${name} ${width} ${theme}`);
     }
-    await page.getByRole("tab",{name:"Market",exact:true}).click();
-    for(const name of ["Delivery and rides","Selling"]) {
+    if(width!==1280)await page.getByRole("tab",{name:"Market",exact:true}).click();
+    for(const name of width===1280?[]:["Delivery and rides","Selling"]) {
       const tab=page.getByRole("tab",{name,exact:true});await tab.focus();await tab.press("Enter");
       assert.equal(await tab.getAttribute("aria-selected"),"true");
       await checkPanel(`${name} ${width} ${theme}`);
@@ -246,11 +270,26 @@ try {
     }
   }
   await page.getByRole("tab",{name:"PayPal",exact:true}).click();
-  console.log(`browser accessibility check passed: ${focusChecks} tab steps, five apps, all sub-tabs, 320/390px, both themes`);
+  console.log(`browser accessibility check passed: ${focusChecks} tab steps, five workspaces plus Stats and PayPal, all sub-tabs, 320/390/1280px, both themes`);
   await mkdir("docs/screenshots", { recursive: true });
-  await page.screenshot({ path: "docs/screenshots/p3-phone-overview.png", fullPage: true });
-  await page.getByRole("heading",{name:"Settings",exact:true}).locator("..").screenshot({path:"docs/screenshots/p3-phone-settings.png"});
   await page.reload();
+  await page.evaluate(async()=>{await navigator.serviceWorker.ready;});
+  await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
+  const cachedPaths=await page.evaluate(async()=>{
+    const names=await caches.keys();
+    const requests=(await Promise.all(names.map(async name=>(await caches.open(name)).keys()))).flat();
+    return requests.map(request=>new URL(request.url).pathname);
+  });
+  assert.equal(cachedPaths.some(path=>path==="/api"||path.startsWith("/api/")),false,"no API data may be cached");
+  assert(cachedPaths.includes("/styles.css"));
+  expectedOfflineDisconnect = true;
+  await context.setOffline(true);
+  await page.goto(`${baseUrl}/app`);
+  await page.getByText("You're offline. Reconnect to load or save your work.",{exact:true}).waitFor();
+  await context.setOffline(false);
+  await page.reload();
+  await page.getByRole("tab",{name:"PayPal",exact:true}).waitFor();
+  expectedOfflineDisconnect = false;
   await page.getByRole("tab", { name: "PayPal", exact: true }).click();
   await page.waitForFunction(() => [...document.querySelectorAll("button")].some(b => b.textContent === "Download and suggest" && !b.disabled));
   assert.equal(await toggle.isChecked(), true);

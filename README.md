@@ -15,9 +15,11 @@ make the next step visible. It is a private TypeScript/Express app with PostgreS
 PayPal sandbox login and a plain HTML/CSS/TypeScript interface based on my handheld pilot.
 
 I keep money in integer cents so amounts survive validation, storage and calculations
-without decimal drift. Hours, minutes and miles use explicit scaled integers. Only
-First Dime entries earn XP, streaks, quests or rung claims. Verified totals decide
-rung eligibility and earnings rankings; general progression XP breaks leaderboard ties.
+without decimal drift. Hours, minutes and miles use explicit scaled integers. First Dime
+keeps its existing XP, streak, quest and rung rules. Matched earnings in Spotlight,
+Freelance and Market also add XP and advance a permanent profession rank; these ranks
+never create money or change rung claims. Matched totals decide earnings rankings, and
+general progression XP breaks leaderboard ties.
 
 ## Run locally
 
@@ -118,9 +120,12 @@ column so dates remain readable.
   add a second copy of earnings to the financial summaries.
 
 A payment belongs in exactly one workspace. Printify and Ninja Transfers are suppliers
-(item cost); Printify Shop is a store (where the buyer paid). First Dime alone feeds the game.
-Clock-out rounds down to whole minutes, including zero under one minute. Rested XP starts
-at zero and accrues from complete idle days after the first logged day.
+(item cost); Printify Shop is a store (where the buyer paid). First Dime controls streaks,
+quests and rung claims. Other-workspace XP uses only payments matched to your PayPal activity
+and grants 10 XP per matched dollar. Creator, Freelancer, Driver, Seller and Starter ranks use matched
+totals at $1, $10, $50, $100, $250, $500 and $1,000; the four non-Starter professions earn
+100 XP once per rank. Clock-out rounds down to whole minutes, including zero under one minute.
+Rested XP starts at zero and accrues from complete idle days after the first logged day.
 
 ## Export and import files
 
@@ -134,7 +139,7 @@ sheets, Delivery and Selling, each including its corresponding expenses.
 one sheet per financial/activity/game table, or a ZIP of CSV files. Sessions, OAuth state,
 credentials and payout recipient emails are never exported. PayPal rows
 are reconciliation metadata and are not counted again in Summary. First Dime treats
-verified earnings as paid because it has no separate payout status.
+matched earnings as paid because it has no separate payout status.
 
 Summary uses work/sale dates for earnings and fees, payment dates when available for paid
 amounts, spend dates for expenses, and earned month for pending amounts. That last value
@@ -317,7 +322,7 @@ use fictional data.
 
 I still require review and explicit approval for each merge, deploy and visibility change.
 The app does not scrape, automate or log into gig platforms, implement receipt-image
-verification, award XP outside First Dime or use live PayPal.
+verification or use live PayPal.
 
 ## Built with
 

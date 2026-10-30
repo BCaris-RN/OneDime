@@ -3,6 +3,12 @@ export type QuestDefinition = { id: string; title: string; xp: number; descripti
 // Exact IDs, titles, descriptions, and rewards from reference/pilot.html.
 export const QUESTS: readonly QuestDefinition[] = [
   {
+    id: "start-record",
+    title: "Start your record",
+    xp: 0,
+    description: "Log work or import a PayPal activity CSV. This first-run quest completes automatically."
+  },
+  {
     "id": "paypal",
     "title": "Quest 1: Set up your PayPal payout account",
     "xp": 30,

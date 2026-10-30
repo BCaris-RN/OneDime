@@ -4,7 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>OneDime | Work log</title>
-    <link rel="icon" href="data:," />
+    <meta name="theme-color" content="#C0C0C0" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/coin-192.png" />
+    <link rel="apple-touch-icon" href="/icons/coin-192.png" />
     <link rel="stylesheet" href="/fonts.css" /><link rel="stylesheet" href="/styles.css" />
     <script type="module" src="/app.js"></script>
   </head>
@@ -24,10 +27,29 @@
         <details class="header-menu" id="header-menu"><summary>Menu</summary><div><button type="button" class="ghost-button" data-feedback-open>Send feedback</button></div></details>
       </div>
     </header>
+    <dialog id="welcome-dialog" class="feedback-dialog welcome-dialog" aria-labelledby="welcome-title">
+      <h1 id="welcome-title">What kind of work do you do?</h1>
+      <p>Choose any that fit. You can change what you track later.</p>
+      <form id="welcome-form">
+        <fieldset class="welcome-choices">
+          <legend>Your workspaces</legend>
+          <label><input type="checkbox" name="workType" value="first" /> First Dime</label>
+          <label><input type="checkbox" name="workType" value="spotlight" /> Spotlight</label>
+          <label><input type="checkbox" name="workType" value="freelance" /> Freelance</label>
+          <label><input type="checkbox" name="workType" value="market" /> Market</label>
+        </fieldset>
+        <p id="welcome-error" role="alert" class="message" data-error="true"></p>
+        <div class="welcome-actions"><button type="submit" class="primary-button">Continue</button><button type="button" class="ghost-button" id="welcome-skip">Skip for now</button></div>
+      </form>
+    </dialog>
+    <aside id="welcome-guide" class="welcome-guide" role="status" aria-labelledby="welcome-guide-title" hidden>
+      <div><h2 id="welcome-guide-title">Start your record</h2><p>Log work here or import your activity CSV from PayPal. You can review each payment before linking it.</p></div>
+      <div class="welcome-actions"><button type="button" class="primary-button" id="welcome-import">Open PayPal import</button><button type="button" class="ghost-button" id="welcome-guide-dismiss">Got it</button></div>
+    </aside>
     <dialog id="feedback-dialog" aria-labelledby="feedback-title" class="feedback-dialog">
       <div class="section-heading"><h2 id="feedback-title">Send feedback</h2><button type="button" class="ghost-button" id="feedback-close" aria-label="Close feedback">Close</button></div>
       <form id="feedback-form">
-        <label>Which app<select id="feedback-app" name="app" required><option value="first">First Dime</option><option value="spotlight">Spotlight</option><option value="freelance">Freelance</option><option value="market">Market</option><option value="paypal">PayPal</option></select></label>
+        <label>Which app<select id="feedback-app" name="app" required><option value="first">First Dime</option><option value="spotlight">Spotlight</option><option value="freelance">Freelance</option><option value="market">Market</option><option value="paypal">PayPal</option><option value="stats">Stats</option></select></label>
         <label>What happened<textarea id="feedback-body" name="body" rows="5" maxlength="1000" required aria-describedby="feedback-help feedback-count"></textarea></label>
         <p id="feedback-help" class="field-help">Up to 1,000 characters. Leave out passwords, account details and private work.</p>
         <p id="feedback-count" class="field-help">0 / 1,000 characters</p>
@@ -37,7 +59,7 @@
       </form>
       <p id="feedback-thanks" role="status" tabindex="-1" hidden>Thanks for your feedback. Your note has been sent.</p>
     </dialog>
-    <main class="shell" id="main" tabindex="-1"><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
+    <main class="shell" id="main" tabindex="-1"><p id="offline-status" class="field-help" role="status" hidden>You're offline. Reconnect to load or save your work.</p><nav class="apps" id="app-nav" role="tablist" aria-label="Apps"><button type="button" role="tab" id="app-tab-first" aria-selected="true" aria-controls="app-first" tabindex="0" data-app="first">First Dime</button><button type="button" role="tab" id="app-tab-spotlight" aria-selected="false" aria-controls="app-spotlight" tabindex="-1" data-app="spotlight">Spotlight</button><button type="button" role="tab" id="app-tab-freelance" aria-selected="false" aria-controls="app-freelance" tabindex="-1" data-app="freelance">Freelance</button><button type="button" role="tab" id="app-tab-market" aria-selected="false" aria-controls="app-market" tabindex="-1" data-app="market">Market</button><button type="button" role="tab" id="app-tab-stats" aria-selected="false" aria-controls="app-stats" tabindex="-1" data-app="stats">Stats</button><button type="button" role="tab" id="app-tab-paypal" aria-selected="false" aria-controls="app-paypal" tabindex="-1" data-app="paypal">PayPal</button></nav>
 <div id="app-first" role="tabpanel" aria-labelledby="app-tab-first">
 
 
@@ -50,9 +72,11 @@
       </nav>
       <p id="message" role="status" aria-live="polite" class="message"></p>
       <section id="panel-log" role="tabpanel" aria-labelledby="tab-log" tabindex="0">
-        <section class="goal-hero" aria-labelledby="goal-title"><div class="goal-coin" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="goal-ring" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg><div class="coin-face"><b id="goal-percent">0%</b><span>of goal</span></div></div><div><p class="eyebrow">Current goal</p><h2 id="goal-title">Earn your first dime</h2><p id="goal-sub" class="muted"></p><p class="field-help">Your personal goal uses logged earnings. The rung race requires verified earnings.</p><p id="level-summary" class="level-summary">Loading your progress…</p></div></section>      <dl class="stats" aria-label="Player statistics">
+        <section class="goal-hero" aria-labelledby="goal-title"><div class="goal-coin" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="goal-ring" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg><div class="coin-face"><b id="goal-percent">0%</b><span>of goal</span></div></div><div><p class="eyebrow">Current goal</p><h2 id="goal-title">Earn your first dime</h2><p id="goal-sub" class="muted"></p><p class="field-help">Your personal goal uses logged earnings. The rung race requires matched earnings.</p><p id="level-summary" class="level-summary">Loading your progress…</p></div></section>
+      <p id="rank-first" class="rank-summary" aria-live="polite">Starter rank loads with your progress.</p><p class="field-help">Matched to your PayPal activity: match a First Dime entry to an incoming PayPal payment from its mapped payer; the logged amount must equal gross or net.</p>
+      <dl class="stats" aria-label="Player statistics">
         <div><dt>Logged</dt><dd id="total-amount">—</dd></div>
-        <div><dt>Verified</dt><dd id="verified-amount">—</dd></div>
+        <div><dt>Matched</dt><dd id="verified-amount">—</dd></div>
         <div><dt>This week</dt><dd id="week-amount">—</dd></div>
         <div><dt>Minutes</dt><dd id="total-minutes">—</dd></div>
         <div><dt>Day streak</dt><dd id="streak">—</dd></div>
@@ -70,21 +94,21 @@
               <label>Date<input id="worked-on" name="workedOn" type="date" required /></label>
               <label>Minutes<input id="minutes" name="minutes" type="number" min="0" max="2147483647" step="1" value="0" required inputmode="numeric" /></label>
               <label class="full-width">Earned (USD)<input id="amount" name="amount" type="text" inputmode="decimal" pattern="[0-9]+([.][0-9]{1,2})?" value="0.00" required aria-describedby="amount-help" /></label>
-              <p id="amount-help" class="field-help full-width">Up to $10,000 per entry. Logged earnings await verification before they count toward rungs.</p>
+              <p id="amount-help" class="field-help full-width">Up to $10,000 per entry. Logged earnings await matching before they count toward rungs.</p>
               <label class="full-width">Private note <span class="optional">(optional)</span><textarea id="note" name="note" rows="2" maxlength="2000"></textarea></label>
               <div class="button-row full-width"><button class="primary-button" type="submit">Log it</button><button class="ghost-button" id="log-time-only" type="button">Log time only, $0</button></div>
             </form>
           </section>
           <div class="log-context">
 
-            <section class="rung-workspace" aria-labelledby="rung-heading"><p class="eyebrow">The rung race</p><h2 id="rung-heading">First verified total wins.</h2><p class="muted" id="next-rung">Loading next rung…</p><ol id="rung-list" class="rung-list"></ol><p class="field-help">Each rung has one winner. Matched PayPal CSV payments can verify entries. Sandbox milestone bonuses are off by default.</p></section>
+            <section class="rung-workspace" aria-labelledby="rung-heading"><p class="eyebrow">The rung race</p><h2 id="rung-heading">First matched total wins.</h2><p class="muted" id="next-rung">Loading next rung…</p><ol id="rung-list" class="rung-list"></ol><p class="field-help">Each rung has one winner. Matched PayPal CSV payments can match entries. Sandbox milestone bonuses are off by default.</p></section>
           </div>
         </div>
         <section class="workspace-section" aria-labelledby="history-heading"><div class="section-heading"><h2 id="history-heading">Your entries</h2><button type="button" class="text-button" id="refresh">Refresh</button></div><p id="entries-empty" class="muted">No entries yet. Add your first work session above.</p><div class="table-scroll"><table id="entries-table" hidden><caption class="sr-only">Your work entries</caption><thead><tr><th scope="col">Date / site</th><th scope="col">Time</th><th scope="col">Earned</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead><tbody id="entries-body"></tbody></table></div></section>
-        <section class="workspace-section" aria-labelledby="sites-heading"><h2 id="sites-heading">Your site rates</h2><p class="field-help">Effective hourly rate counts only sessions where you logged minutes, including earnings awaiting verification.</p><ul id="site-rates" class="plain-list"></ul></section>
+        <section class="workspace-section" aria-labelledby="sites-heading"><h2 id="sites-heading">Your site rates</h2><p class="field-help">Effective hourly rate counts only sessions where you logged minutes, including earnings awaiting matching.</p><ul id="site-rates" class="plain-list"></ul></section>
       </section>
       <section id="panel-quests" role="tabpanel" aria-labelledby="tab-quests" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Quests</p><h2 id="quest-level">Level 1 · Rookie</h2><p id="quest-xp" class="muted">0 XP</p><div id="xp-progress" class="xp-progress" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="xp-fill"></i></div><p id="quests-status" class="muted">Loading quests…</p><ul id="quest-list" class="plain-list"></ul></div></section>
-      <section id="panel-leaderboard" role="tabpanel" aria-labelledby="tab-leaderboard" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Leaderboard</p><h2>The verified standings.</h2><p class="muted">Joining shares your display name, verified earnings by site, XP, level, and rung wins with other players. Your notes stay private.</p><button type="button" class="primary-button" id="leaderboard-toggle" disabled>Loading…</button><p id="leaderboard-empty" class="muted"></p><h3 class="board-heading">First to each rung</h3><div class="table-scroll"><table><thead><tr><th scope="col">Bonus quest</th><th scope="col">Claimed by</th><th scope="col">When</th></tr></thead><tbody id="race-body"></tbody></table></div><p class="field-help">Only opted-in winners appear here. Private winners retain their claims.</p><h3 class="board-heading">Top earners</h3><ol id="leaderboard-list" class="leaderboard-list"></ol><h3 class="board-heading">Top earner on each site</h3><ul id="site-leaders" class="plain-list"></ul></div></section>
+      <section id="panel-leaderboard" role="tabpanel" aria-labelledby="tab-leaderboard" tabindex="0" hidden><div class="workspace-section"><p class="eyebrow">Leaderboard</p><h2>The matched standings.</h2><p class="muted">Joining shares your display name, matched earnings by site, XP, level, and rung wins with other players. Your notes stay private.</p><button type="button" class="primary-button" id="leaderboard-toggle" disabled>Loading…</button><p id="leaderboard-empty" class="muted"></p><h3 class="board-heading">First to each rung</h3><div class="table-scroll"><table><thead><tr><th scope="col">Bonus quest</th><th scope="col">Claimed by</th><th scope="col">When</th></tr></thead><tbody id="race-body"></tbody></table></div><p class="field-help">Only opted-in winners appear here. Private winners retain their claims.</p><h3 class="board-heading">Top earners</h3><ol id="leaderboard-list" class="leaderboard-list"></ol><h3 class="board-heading">Top earner on each site</h3><ul id="site-leaders" class="plain-list"></ul></div></section>
       <section id="panel-playbook" role="tabpanel" aria-labelledby="tab-playbook" tabindex="0" hidden><div class="playbook-copy workspace-section">
 <section><h2>Never automate the work</h2><p>Do the work yourself. OneDime keeps your records and suggests where payments belong; it never scrapes, logs into gig platforms or does their tasks.</p></section>
 <section><h2>A daily loop for every app</h2><ul><li>First Dime: clock a starter task, log the time and earnings, then check quests.</li><li>Spotlight: record audience income, brand-deal stages and content costs.</li><li>Freelance: track client work, hours, platform fees and payment stages.</li><li>Market: log delivery or service shifts, or sales with fees, item cost and shipping.</li><li>PayPal: review imported payments, confirm one workspace each, and compare the monthly overview.</li></ul></section>
@@ -114,7 +138,7 @@
       <ul>
         <li><b>The coin</b> shows progress toward your current goal. Goals go $0.10, $1, $10, $50, $100, $250, $500, $1,000, and the next one unlocks as soon as you pass the last.</li>
         <li><b>Streak</b> counts days in a row with at least one entry. Days where you worked but earned nothing count too, using <b>Log time only, $0</b>. Approvals and tests take time before money shows up, and that effort still counts.</li>
-        <li><b>Level and XP:</b> 1 XP per minute worked, 10 XP per dollar earned, plus each quest's reward, 100 XP per rung claimed, and any rested bonus. Total XP is rounded down to a whole number. Each level takes a little more XP than the last.</li>
+        <li><b>Level and XP:</b> First Dime keeps its existing XP for minutes and logged dollars. Matched dollars in Spotlight, Freelance and Market add 10 XP per dollar; each new Creator, Freelancer, Driver or Seller rank adds 100 XP once. Quests, rung claims and rested time keep their existing rewards. Each level takes a little more XP than the last.</li>
         <li><b>Which site pays you best</b> divides what you earned by the time you logged on each site. Only sessions with minutes count, so time your sessions for honest numbers.</li>
         <li><b>Rested XP:</b> your pool starts at zero. After your first logged day, each full day without an entry adds 25, capped at 100. Minutes earn double while the pool lasts, using one pool XP per bonus XP.</li>
         <li><b>History</b> shows your recent entries. Use <b>Delete</b> to fix a mistake, then log it again.</li>
@@ -123,10 +147,10 @@
     <section>
       <h2>The leaderboard</h2>
       <ul>
-        <li><b>Joining is optional.</b> When you join, other players see your display name, verified total, XP, level and verified earnings by site. Your rung claims are also visible. Your email, log entries and notes stay private.</li>
-        <li><b>Bonus quests:</b> each rung of the goal ladder ($0.10, $1, $10 and up) can be claimed once, by the first player whose verified total reaches it. Claiming one is worth +100 XP.</li>
+        <li><b>Joining is optional.</b> When you join, other players see your display name, matched total, XP, level and matched earnings by site. Your rung claims are also visible. Your email, log entries and notes stay private.</li>
+        <li><b>Bonus quests:</b> each rung of the goal ladder ($0.10, $1, $10 and up) can be claimed once, by the first player whose matched total reaches it. Claiming one is worth +100 XP.</li>
         <li><b>Rankings</b> show the top earners overall and the top earner on each site.</li>
-        <li><b>Verified earnings only:</b> logged entries await verification before they count toward rungs or public earnings. A rung claim stays with its winner, including after deleting an entry or leaving the leaderboard. Logged earnings still earn progression XP; only verified earnings count toward rung eligibility and leaderboard earnings totals. Use PayPal activity import to match a payment by payer/platform and a logged amount equal to that payment's gross or net. CSV matching records source paypal_csv; it does not authenticate the uploaded file with PayPal.</li>
+        <li><b>Matched earnings only:</b> logged entries await matching before they count toward rungs or public earnings. A rung claim stays with its winner, including after deleting an entry or leaving the leaderboard. First Dime keeps its existing progression XP; unmatched Spotlight, Freelance and Market amounts give no XP. Use PayPal activity import to match a payment by payer/platform and a logged amount equal to that payment's gross or net. CSV matching records source paypal_csv; it does not authenticate the uploaded file with PayPal. Many delivery apps and stores pay to a bank, so those earnings cannot be matched through PayPal yet.</li>
       </ul>
     </section>
     <section>
@@ -144,6 +168,8 @@
     <div class="slip row">
       <h2>Freelance: your client work</h2>
       <p class="muted">Projects you sell to clients on freelance marketplaces. Track what the client paid, what the platform kept, and when the money clears.</p>
+      <p id="rank-freelance" class="rank-summary" aria-live="polite">Freelancer rank loads with your progress.</p>
+      <p class="field-help">Matched to your PayPal activity: route an incoming PayPal payment to a paid gig. The logged client-paid or take-home amount must equal its gross or net.</p>
     </div>
     <dl class="stats" id="fiveStats" aria-label="Freelance selected month"></dl>
 
@@ -186,6 +212,7 @@
 
   <!-- BALITZU -->
   <div id="app-market" role="tabpanel" aria-labelledby="app-tab-market" hidden style="display:grid;gap:18px">
+  <section class="slip row"><p id="rank-market" class="rank-summary" aria-live="polite">Driver and Seller ranks load with your progress.</p><p class="field-help">Matched to your PayPal activity: route an incoming PayPal payment to a delivery shift or paid sale. The logged pay and tips, sale price, or take-home sale amount must equal its gross or net.</p></section>
   <nav id="balNav" role="tablist" aria-label="Market sections">
     <button role="tab" aria-selected="true" aria-controls="bal-drive" id="b-drive">Delivery and rides</button>
     <button role="tab" aria-selected="false" aria-controls="bal-sell" id="b-sell">Selling</button>
@@ -266,6 +293,8 @@
     <div class="slip row">
       <h2>Spotlight: your creator income</h2>
       <p class="muted">Money that comes from your own audience on YouTube, TikTok, Instagram and Facebook. Starter gigs like SideShift stay in First Dime, so nothing is counted twice.</p>
+      <p id="rank-spotlight" class="rank-summary" aria-live="polite">Creator rank loads with your progress.</p>
+      <p class="field-help">Matched to your PayPal activity: route an incoming PayPal payment to paid creator income. The logged amount must equal its gross or net.</p>
     </div>
     <dl class="stats" id="sasuStats" aria-label="Spotlight selected month"></dl>
 
@@ -338,6 +367,12 @@
       <p class="muted" style="margin-top:8px;font-size:.85rem">Creator income is usually self-employment income. Set part of every payout aside for taxes, and share your totals with a tax preparer.</p>
     </section>
   </section>
+<section id="app-stats" role="tabpanel" aria-labelledby="app-tab-stats" hidden class="stats-screen">
+  <section class="stats-lcd"><div class="stats-heading"><svg class="stats-coin" viewBox="0 0 16 16" aria-hidden="true"><g><path class="coin-ink" d="M5 1h6v1h2v2h1v2h1v4h-1v2h-1v2h-2v1H5v-1H3v-2H2v-2H1V6h1V4h1V2h2z"/><path fill="var(--lcd-2)" d="M5 3h6v1h1v1h1v6h-1v1h-1v1H5v-1H4v-1H3V5h1V4h1z"/></g></svg><div><h2><span class="stats-cursor" aria-hidden="true">▶</span> Your stats</h2><p id="stats-note">Your work, across every app.</p></div></div><dl id="stats-kpis" class="stats"></dl></section>
+  <section class="stats-lcd"><h2>Earned by month</h2><p class="stats-note">After platform fees, last 6 months, by app.</p><div id="stats-month-chart"></div><ul id="stats-legend" class="stats-legend"></ul><details><summary>Show as a table</summary><div id="stats-month-table" class="table-scroll"></div></details></section>
+  <section class="stats-lcd"><h2>Real hourly rate</h2><p class="stats-note">All work with time logged, matched or not.</p><div id="stats-rate-chart"></div><details><summary>Show as a table</summary><div id="stats-rate-table" class="table-scroll"></div></details></section>
+  <section class="stats-lcd"><h2>Matched vs pending</h2><p id="stats-meter-note" class="stats-note">This month, across all apps.</p><div id="stats-meter"></div><details><summary>Show as a table</summary><div id="stats-meter-table" class="table-scroll"></div></details></section>
+</section>
 <section id="app-paypal" role="tabpanel" aria-labelledby="app-tab-paypal" hidden><div class="slip row"><h2>PayPal</h2><p id="paypal-connection">Your PayPal sandbox identity is connected.</p><p>Activity import and routing arrive in the PayPal milestone.</p></div></section>
     </main><footer class="shell"><a href="https://sites.google.com/view/onedime-privacy-policy/home">Privacy</a><a href="https://sites.google.com/view/onedime-user-agreement/home">Terms</a><span>Adults 18+ | Private play-test</span></footer><div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>

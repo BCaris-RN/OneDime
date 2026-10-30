@@ -1,3 +1,7 @@
+/*  (o) OneDime | src/paypal/routing.ts
+ *  ----------------------------------------------------------
+ *  Links one incoming activity transaction to one owned record.
+ */
 import type { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { incoming, fixedSuggestion, type Activity } from "./activity.js";
@@ -5,6 +9,8 @@ import { NotFound, BadRequest, Conflict } from "../http/errors.js";
 import { insertRow, ownRow, updateRow, validateRow, view } from "../ledger/store.js";
 import type { TableKey, LedgerRow } from "../ledger/catalog.js";
 import { claimEligibleRungs } from "../game/rungs.js";
+import { markStartRecordComplete } from "../game/onboarding.js";
+import { syncProfessionRankClaims } from "../game/professions.js";
 export type Transaction = Activity & {
   id: string;
   player_id: string;
@@ -31,22 +37,18 @@ export async function transactions(prisma: Pick<PrismaClient, "$queryRaw">, play
   >`SELECT * FROM paypal_transactions WHERE player_id=${playerId}::uuid ORDER BY occurred_on DESC, created_at DESC`;
   return rows.map((row) => view(row) as unknown as Transaction);
 }
-function recordNet(type: string, row: LedgerRow) {
+function recordAmounts(type: string, row: LedgerRow) {
   const n = (key: string) => Number(row[key] ?? 0);
-  return type === "first"
-    ? n("amountCents")
-    : type === "income"
-      ? n("amount_cents")
-      : type === "gigs"
-        ? n("gross_cents") - n("fee_cents")
-        : type === "shifts"
-          ? n("pay_cents") + n("tips_cents")
-          : n("price_cents") - n("fee_cents");
+  if (type === "first") return [n("amountCents")];
+  if (type === "income") return [n("amount_cents")];
+  if (type === "gigs") return [n("gross_cents"), n("gross_cents") - n("fee_cents")];
+  if (type === "shifts") return [n("pay_cents") + n("tips_cents")];
+  if (type === "sales") return [n("price_cents"), n("price_cents") - n("fee_cents")];
+  return [];
 }
 export function paymentAmountMatches(type: string, row: LedgerRow, payment: Activity) {
-  const amountCents = recordNet(type, row);
-  return amountCents === payment.net_cents ||
-    (type === "first" && amountCents === payment.gross_cents);
+  return recordAmounts(type, row).some(amount =>
+    amount === payment.gross_cents || amount === payment.net_cents);
 }
 function newRecord(type: Route["record_type"], p: Transaction, platform: string) {
   if (type === "income")
@@ -112,6 +114,8 @@ export async function routePayment(
         (input.record_id && p.routed_record_id !== input.record_id)
       )
         throw new Conflict("payment_already_routed");
+      await markStartRecordComplete(tx, playerId);
+      await syncProfessionRankClaims(tx, playerId);
       return { transaction: p };
     }
     let row: LedgerRow;
@@ -168,6 +172,8 @@ export async function routePayment(
     >`SELECT id FROM paypal_transactions WHERE player_id=${playerId}::uuid AND routed_record_type=${input.record_type} AND routed_record_id=${row.id}::uuid`;
     if (other.length) throw new Conflict("record_already_linked");
     await tx.$executeRaw`UPDATE paypal_transactions SET routed_app=${routeApps[input.record_type]}, routed_record_type=${input.record_type},routed_record_id=${row.id}::uuid WHERE id=${id}::uuid AND player_id=${playerId}::uuid`;
+    await markStartRecordComplete(tx, playerId);
+    await syncProfessionRankClaims(tx, playerId);
     return {
       transaction: {
         ...p,

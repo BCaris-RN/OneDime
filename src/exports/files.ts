@@ -5,7 +5,7 @@
 import writeXlsxFile, { type Cell } from "write-excel-file/node";
 import { zipSync, strToU8 } from "fflate";
 export type ExportRow = Record<string, string | number | boolean | null>;
-export type ExportSheet = { name: string; columns: string[]; rows: ExportRow[] };
+export type ExportSheet = { name: string; columns: string[]; rows: ExportRow[]; headerNote?: string };
 export function safeText(value: string) { return /^[=+\-@\t\r\n]/.test(value) ? `'${value}` : value; }
 function rawValue(key: string, value: ExportRow[string]) {
   if (value === null || value === undefined) return "";
@@ -14,16 +14,22 @@ function rawValue(key: string, value: ExportRow[string]) {
 }
 export function csv(sheet: ExportSheet) {
   const quote = (value: string) => `"${value.replaceAll('"', '""')}"`;
-  return [sheet.columns.map(key => quote(key.replace(/_cents$/, "_usd"))).join(","), ...sheet.rows.map(row => sheet.columns.map(key => quote(rawValue(key, row[key]))).join(","))].join("\r\n") + "\r\n";
+  return [
+    ...(sheet.headerNote ? [`# ${safeText(sheet.headerNote)}`] : []),
+    sheet.columns.map(key => quote(key.replace(/_cents$/, "_usd"))).join(","),
+    ...sheet.rows.map(row => sheet.columns.map(key => quote(rawValue(key, row[key]))).join(",")),
+  ].join("\r\n") + "\r\n";
 }
 export function combine(name: string, sheets: ExportSheet[]): ExportSheet {
   return { name, columns: ["record_type", ...new Set(sheets.flatMap(sheet => sheet.columns))],
     rows: sheets.flatMap(sheet => sheet.rows.map(row => ({ record_type: sheet.name, ...row }))) };
 }
 export async function xlsx(sheets: ExportSheet[]) {
-  return writeXlsxFile(sheets.map(sheet => ({ sheet: sheet.name, stickyRowsCount: 1,
+  return writeXlsxFile(sheets.map(sheet => ({ sheet: sheet.name, stickyRowsCount: sheet.headerNote ? 2 : 1,
     columns: sheet.columns.map(() => ({ width: 22 })),
-    data: [sheet.columns.map(value => ({ value: value.replace(/_cents$/, "_usd"), fontWeight: "bold" as const })),
+    data: [
+      ...(sheet.headerNote ? [[{ value: safeText(sheet.headerNote), fontWeight: "bold" as const }, ...sheet.columns.slice(1).map(() => null)]] : []),
+      sheet.columns.map(value => ({ value: value.replace(/_cents$/, "_usd"), fontWeight: "bold" as const })),
       ...sheet.rows.map(row => sheet.columns.map((key): Cell => {
         const value = row[key];
         if (value === null || value === undefined) return null;

@@ -26,6 +26,7 @@ import type { AppConfig } from "../src/config.js";
 import type { PayPalIdentityClient } from "../src/auth/paypal.js";
 import { claimEligibleRungs } from "../src/game/rungs.js";
 import { parseBetaAllowlist } from "../src/auth/beta.js";
+import { aggregateSql, verifiedSql } from "../scripts/metrics-report.js";
 
 const testConfig: AppConfig = {
   nodeEnv: "test",
@@ -100,6 +101,7 @@ beforeEach(async () => {
       payouts,
       receipts,
       rung_claims,
+      profession_rank_claims,
       quest_progress,
       log_entries,
       players
@@ -477,8 +479,34 @@ describe("Phase 2 game API", () => {
     "/api/clock",
     "/api/quests",
     "/api/leaderboard",
+    "/api/onboarding",
   ])("requires a session for GET %s", async (route) => {
     await request(app).get(route).expect(401);
+  });
+  it("serves the install manifest, offline shell, and service worker as static files", async () => {
+    const manifest = await request(app).get("/manifest.webmanifest").expect(200);
+    expect(manifest.body).toMatchObject({
+      name: "OneDime", start_url: "/app", display: "standalone",
+      icons: expect.arrayContaining([expect.objectContaining({ src: "/icons/coin-192.png", type: "image/png" })])
+    });
+    await request(app).get("/offline.html").expect(200).expect(/You're offline/);
+    await request(app).get("/sw.js").expect(200).expect(/\/api\//);
+  });
+  it("stores first-run choices once per account and keeps them private", async () => {
+    const alice = await login("welcome-alice"), bob = await login("welcome-bob");
+    expect(alice.player.welcomeCompletedAt).toBeNull();
+    expect((await request(app).get("/api/onboarding").set("Cookie", alice.cookie).expect(200)).body)
+      .toEqual({ complete: false });
+    await write(alice.cookie, "/api/onboarding", { workTypes: ["market", "market"] }).expect(400);
+    await write(alice.cookie, "/api/onboarding", { workTypes: ["market"], playerId: bob.player.id }).expect(400);
+    await request(app).post("/api/onboarding").set("Cookie", alice.cookie).set("Origin", "https://other.example.test")
+      .send({ workTypes: ["market"] }).expect(403);
+    await write(alice.cookie, "/api/onboarding", { workTypes: ["spotlight", "market"] })
+      .expect(200).expect(({ body }) => expect(body).toMatchObject({ complete: true, workTypes: ["spotlight", "market"] }));
+    await write(alice.cookie, "/api/onboarding", { workTypes: ["freelance"] }).expect(200)
+      .expect(({ body }) => expect(body.workTypes).toEqual([]));
+    expect((await request(app).get("/api/onboarding").set("Cookie", bob.cookie).expect(200)).body)
+      .toEqual({ complete: false });
   });
   it.each([
     "/api/entries",
@@ -773,7 +801,7 @@ describe("Phase 2 game API", () => {
         .xp,
     ).toBe(0);
   });
-  it("serves the 19 real quests and rejects unknown quest IDs", async () => {
+  it("serves the real quests including the zero-XP first-run quest and rejects unknown IDs", async () => {
     const current = await login("no-pilot");
     const { createApp } = await import("../src/server.js");
     const productionCatalogApp = createApp({
@@ -786,7 +814,7 @@ describe("Phase 2 game API", () => {
       .set("Cookie", current.cookie)
       .expect(200);
     expect(catalog.body.pilotAvailable).toBe(true);
-    expect(catalog.body.quests).toHaveLength(19);
+    expect(catalog.body.quests).toHaveLength(20);
     await request(productionCatalogApp)
       .post("/api/quests/invented")
       .set("Cookie", current.cookie)
@@ -794,6 +822,41 @@ describe("Phase 2 game API", () => {
       .send({})
       .expect(404);
   });
+  it("completes Start your record automatically after the first log or PayPal import without XP", async () => {
+    const current = await login("welcome-record");
+    const { createApp } = await import("../src/server.js");
+    const productionApp = createApp({ config: testConfig, prisma, paypalClient, now: () => gameNow });
+    const logged = await request(productionApp).post("/api/entries").set("Cookie", current.cookie).set("Origin", origin)
+      .send(validEntry).expect(201);
+    expect(logged.body.entry.verified).toBe(false);
+    const progress = await request(productionApp).get("/api/quests").set("Cookie", current.cookie).expect(200);
+    expect(progress.body.completed).toContain("start-record");
+    const quest = progress.body.quests.find((item: { id: string }) => item.id === "start-record");
+    expect(quest).toMatchObject({ title: "Start your record", xp: 0 });
+
+    const imported = await login("welcome-import");
+    await request(productionApp).post("/api/paypal/import").set("Cookie", imported.cookie).set("Origin", origin)
+      .send({ csv: activityCsv() }).expect(200).expect(({ body }) => expect(body.added).toBeGreaterThan(0));
+    await request(productionApp).post("/api/paypal/import").set("Cookie", imported.cookie).set("Origin", origin)
+      .send({ csv: activityCsv() }).expect(200).expect(({ body }) => expect(body.added).toBe(0));
+    expect((await request(productionApp).get("/api/quests").set("Cookie", imported.cookie)).body.completed)
+      .toContain("start-record");
+    expect(await prisma.questProgress.count({ where: { playerId: imported.player.id, questId: "start-record" } })).toBe(1);
+    expect((await request(productionApp).get("/api/me/stats").set("Cookie", imported.cookie)).body.xp).toBe(0);
+  });
+  it.each(["/spotlight/income", "/freelance/gigs", "/market/shifts", "/market/sales"])(
+    "completes Start your record after a manual first record at %s",
+    async path => {
+      const current = await login("manual-first-record");
+      const { createApp } = await import("../src/server.js");
+      const productionApp = createApp({ config: testConfig, prisma, paypalClient, now: () => gameNow });
+      const record = workspaceCases.find(([candidate]) => candidate === path)![1];
+      await request(productionApp).post(`/api${path}`).set("Cookie", current.cookie).set("Origin", origin).send(record).expect(201);
+      expect((await request(productionApp).get("/api/quests").set("Cookie", current.cookie)).body.completed).toContain("start-record");
+      expect(await prisma.questProgress.count({ where: { playerId: current.player.id, questId: "start-record" } })).toBe(1);
+      expect((await request(productionApp).get("/api/me/stats").set("Cookie", current.cookie)).body.xp).toBe(0);
+    }
+  );
   it.each([
     [0, 0],
     [45_000, 0],
@@ -910,6 +973,8 @@ describe("Phase 2 game API", () => {
     expect(Object.keys(result.body.players[0]).sort()).toEqual([
       "displayName",
       "level",
+      "professionClass",
+      "professions",
       "rungClaims",
       "sites",
       "verifiedTotalCents",
@@ -1339,6 +1404,11 @@ describe("Phase 2 game API", () => {
     expect(payoutCsv).toContain("2026-10-14");
     expect(payoutCsv).not.toContain("2026-09-14");
     const text = Object.values(files).map(strFromU8).join("\n");
+    const taxCsv = strFromU8(files["Tax summary.csv"]);
+    expect(taxCsv).toContain("# For your records. Not tax advice.");
+    expect(taxCsv).toContain('"2026","2026-10","First Dime","1.23","0.00","0.00","0"');
+    expect(taxCsv).toContain('"2026","2026-10","Spotlight","1.99","0.00","0.00","0"');
+    expect(taxCsv).toContain('"2026","2026-10","Market delivery","0.00","0.00","0.00","0"');
     expect(text).not.toContain("BOB PRIVATE");
     expect(text).not.toContain(bob.player.id);
     const total = (
@@ -1662,7 +1732,7 @@ describe("Phase 2 game API", () => {
     ["shifts", "Uber", "/market/shifts"],
     ["sales", "eBay", "/market/sales"],
   ])(
-    "routes and unlinks %s without granting game XP",
+    "routes and unlinks %s while retaining earned rank XP",
     async (recordType, platform, path) => {
       const alice = await login(`paypal-${recordType}`);
       await write(alice.cookie, "/api/paypal/import", {
@@ -1685,6 +1755,12 @@ describe("Phase 2 game API", () => {
         },
       ).expect(200);
       const id = result.body.transaction.routed_record_id;
+      const duplicateRoutes = await Promise.all([1, 2].map(() => write(
+        alice.cookie,
+        `/api/paypal/transactions/${payment.id}/route`,
+        { record_type: recordType, platform },
+      )));
+      expect(duplicateRoutes.map(response => response.status)).toEqual([200, 200]);
       expect(
         (await request(app).get(`/api${path}`).set("Cookie", alice.cookie)).body
           .rows,
@@ -1692,13 +1768,22 @@ describe("Phase 2 game API", () => {
       expect(
         (await request(app).get("/api/me/stats").set("Cookie", alice.cookie))
           .body.xp,
-      ).toBe(0);
+      ).toBe(recordType === "gigs" || recordType === "sales" ? 400 : 390);
+      const profession = { income: "creator", gigs: "freelancer", shifts: "driver", sales: "seller" }[recordType];
+      const earned = (await request(app).get("/api/me/stats").set("Cookie", alice.cookie)).body;
+      expect(earned.professions.find((row: { profession: string }) => row.profession === profession)).toMatchObject({ rank: 2 });
       await request(app)
         .delete(`/api${path}/${id}`)
         .set("Cookie", alice.cookie)
         .set("Origin", origin)
         .send({})
         .expect(204);
+      const retained = (await request(app).get("/api/me/stats").set("Cookie", alice.cookie)).body;
+      expect(retained.xp).toBe(200);
+      expect(retained.professions.find((row: { profession: string }) => row.profession === profession))
+        .toMatchObject({ rank: 2, verifiedCents: 0, nextRankCents: 5000 });
+      expect(retained.professionClass).toMatchObject({ profession, rank: 2 });
+      expect(await prisma.professionRankClaim.count({ where: { playerId: alice.player.id } })).toBe(2);
       expect(
         (await activity(alice.cookie)).body.rows[0].routed_record_id,
       ).toBeNull();
@@ -1968,6 +2053,7 @@ describe("Phase 2 game API", () => {
     const alice = await login("feedback-private"), bob = await login("feedback-viewer");
     const body = "Fictional private feedback";
     await write(alice.cookie, "/api/feedback", { app: "market", body }).expect(201);
+    await write(alice.cookie, "/api/feedback", { app: "stats", body: "Fictional Stats feedback" }).expect(201);
     const row = await prisma.feedback.findFirstOrThrow();
     for (const route of ["/api/feedback", `/api/feedback/${row.id}`, `/api/feedback?playerId=${alice.player.id}`]) {
       const response = await request(app).get(route).set("Cookie", bob.cookie).expect(404);
@@ -2000,10 +2086,125 @@ describe("Phase 2 game API", () => {
     await write(alice.cookie,"/api/paypal/import",{csv:activityCsv()}).expect(200);
     const result=(await request(app).get("/api/overview?month=2026-10").set("Cookie",alice.cookie).expect(200)).body;
     expect(result.rows.at(-1)).toMatchObject({app:"total",earnedCents:322,pendingCents:322,paidCents:0,netCents:322});
+    const stats=(await request(app).get("/api/stats?month=2026-10").set("Cookie",alice.cookie).expect(200)).body;
+    expect(stats.earnedCents).toBe(result.rows.at(-1).earnedCents);
+    expect(stats.verifiedCents).toBe(0);
+    expect(stats.monthly.at(-1)).toMatchObject({month:"2026-10",first:123,spotlight:199});
+    expect(stats.monthly.some((row:Record<string,unknown>)=>Object.values(row).includes(999999))).toBe(false);
+    await request(app).get("/api/stats?month=2026-13").set("Cookie",alice.cookie).expect(400);
+    await request(app).get("/api/stats").expect(401);
     const older=(await request(app).get("/api/overview?month=2026-09").set("Cookie",alice.cookie).expect(200)).body;
     expect(older.rows.at(-1).earnedCents).toBe(0);
     await request(app).get("/api/overview?month=2026-13").set("Cookie",alice.cookie).expect(400);
     await request(app).get("/api/overview").expect(401);
+  });
+  it("uses the same gross-dollar basis for verified Stats share and overview", async () => {
+    const alice = await login("stats-fee-share");
+    const gig = (await write(alice.cookie, "/api/freelance/gigs", {
+      platform: "Upwork", client: "Fictional client", project: "Fee test", pricing: "fixed",
+      gross_cents: 1000, fee_cents: 30, hours_x100: 100, started_on: "2026-10-14", stage: "In progress"
+    }).expect(201)).body.row;
+    await write(alice.cookie, "/api/paypal/import", {
+      csv: activityCsv("STATS-FEE-SHARE", "Prolific", "USD", "10.00", "-0.30", "9.70")
+    }).expect(200);
+    const payment = (await activity(alice.cookie)).body.rows[0];
+    await write(alice.cookie, `/api/paypal/transactions/${payment.id}/route`, {
+      record_type: "gigs", platform: "Upwork", record_id: gig.id
+    }).expect(200);
+    const overview = (await request(app).get("/api/overview?month=2026-10").set("Cookie", alice.cookie).expect(200)).body.rows.at(-1);
+    const stats = (await request(app).get("/api/stats?month=2026-10").set("Cookie", alice.cookie).expect(200)).body;
+    expect(overview.earnedCents).toBe(1000);
+    expect(stats.earnedCents).toBe(overview.earnedCents);
+    expect(stats.verifiedCents).toBe(1000);
+  });
+  it("includes zero-record accounts in apps per account and counts accounts with records", async () => {
+    const alice = await login("metrics-all-accounts");
+    await prisma.player.createMany({ data: Array.from({ length: 9 }, (_, index) => ({
+      paypalUserId: `metrics-empty-${index}`, displayName: "Fictional empty account"
+    })) });
+    await write(alice.cookie, "/api/entries", validEntry).expect(201);
+    await write(alice.cookie, "/api/entries", validEntry).expect(201);
+    await write(alice.cookie, "/api/spotlight/income", workspaceCases[0][1]).expect(201);
+    const aggregate = (await prisma.$queryRawUnsafe<Record<string, unknown>[]>(aggregateSql))[0];
+    expect(Number(aggregate.players)).toBe(10);
+    expect(Number(aggregate.apps)).toBe(0.2);
+    expect(Number(aggregate.accounts_with_records)).toBe(1);
+  });
+  it("distinguishes no accounts from accounts without records in app metrics", async () => {
+    const empty = (await prisma.$queryRawUnsafe<Record<string, unknown>[]>(aggregateSql))[0];
+    expect(empty.apps).toBeNull();
+    expect(Number(empty.accounts_with_records)).toBe(0);
+    await login("metrics-empty-account");
+    const registered = (await prisma.$queryRawUnsafe<Record<string, unknown>[]>(aggregateSql))[0];
+    expect(Number(registered.apps)).toBe(0);
+    expect(Number(registered.accounts_with_records)).toBe(0);
+  });
+  it("reports fee-matched gig and sale earnings at the matched net amount", async () => {
+    const alice = await login("metrics-fee-match");
+    const gig = (await write(alice.cookie, "/api/freelance/gigs", {
+      platform: "Upwork", client: "Fictional client", project: "Metrics fee test", pricing: "fixed",
+      gross_cents: 1100, fee_cents: 200, hours_x100: 100, started_on: "2026-10-14", stage: "In progress"
+    }).expect(201)).body.row;
+    const sale = (await write(alice.cookie, "/api/market/sales", {
+      store: "Printify Shop", item: "Metrics fee test", sold_on: "2026-10-14",
+      price_cents: 1100, fee_cents: 200, cost_cents: 0, ship_cents: 0, made_by: "Printify", status: "pending"
+    }).expect(201)).body.row;
+    await write(alice.cookie, "/api/paypal/import", { csv: activityCsv("METRICS-GIG", "Prolific", "USD", "9.00", "-0.00", "9.00") }).expect(200);
+    const gigPayment = (await activity(alice.cookie)).body.rows[0];
+    await write(alice.cookie, `/api/paypal/transactions/${gigPayment.id}/route`, { record_type: "gigs", platform: "Upwork", record_id: gig.id }).expect(200);
+    await write(alice.cookie, "/api/paypal/import", { csv: activityCsv("METRICS-SALE", "Prolific", "USD", "9.00", "-0.00", "9.00") }).expect(200);
+    const salePayment = (await activity(alice.cookie)).body.rows.find((row: { id: string }) => row.id !== gigPayment.id);
+    const saleRoute = await write(alice.cookie, `/api/paypal/transactions/${salePayment.id}/route`, { record_type: "sales", platform: "Printify Shop", record_id: sale.id });
+    expect(saleRoute.status, JSON.stringify(saleRoute.body)).toBe(200);
+
+    const monthly = await prisma.$queryRawUnsafe<Record<string, unknown>[]>(verifiedSql);
+    const aggregate = (await prisma.$queryRawUnsafe<Record<string, unknown>[]>(aggregateSql))[0];
+    const october = monthly.find(row => row.month_key === "2026-10")!;
+    expect(Number(october.verified_cents)).toBe(1800);
+    expect(Number(october.logged_cents)).toBe(2200);
+    expect(Number(aggregate.verified_cents)).toBe(1800);
+    expect(Number(aggregate.logged_cents)).toBe(2200);
+  });
+  it("preserves hundredths of an hour until the final Stats rate is rounded", async () => {
+    const alice = await login("stats-fractional-hour");
+    const gig = (await write(alice.cookie, "/api/freelance/gigs", {
+      platform: "Upwork", client: "Fictional client", project: "Fractional hour", pricing: "fixed",
+      gross_cents: 1000, fee_cents: 0, hours_x100: 1, started_on: "2026-10-14", stage: "In progress"
+    }).expect(201)).body.row;
+    await write(alice.cookie, "/api/paypal/import", {
+      csv: activityCsv("STATS-FRACTIONAL-HOUR", "Prolific", "USD", "10.00", "-0.00", "10.00")
+    }).expect(200);
+    const payment = (await activity(alice.cookie)).body.rows[0];
+    await write(alice.cookie, `/api/paypal/transactions/${payment.id}/route`, {
+      record_type: "gigs", platform: "Upwork", record_id: gig.id
+    }).expect(200);
+    const stats = (await request(app).get("/api/stats?month=2026-10").set("Cookie", alice.cookie).expect(200)).body;
+    expect(stats.hourly).toEqual([{ platform: "Upwork", centsPerHour: 100000 }]);
+  });
+
+  it.each([['first', 'Prolific'], ['income', 'YouTube'], ['gigs', 'Upwork'], ['shifts', 'DoorDash'], ['sales', 'Etsy']])(
+    "completes Start your record once for a routed %s payment",
+    async (recordType, platform) => {
+      const current = await login("routed-first-record");
+      await write(current.cookie, "/api/paypal/import", { csv: activityCsv() }).expect(200);
+      await prisma.questProgress.deleteMany({ where: { playerId: current.player.id, questId: "start-record" } });
+      const payment = (await activity(current.cookie)).body.rows.find((row: { net_cents: number }) => row.net_cents > 0);
+      const route = () => write(current.cookie, `/api/paypal/transactions/${payment.id}/route`, { record_type: recordType, platform });
+      await route().expect(200);
+      await route().expect(200);
+      expect(await prisma.questProgress.count({ where: { playerId: current.player.id, questId: "start-record" } })).toBe(1);
+    }
+  );
+  it("includes unmatched timed work in Stats hourly rates without changing matched totals", async () => {
+    const current = await login("stats-unmatched-hours");
+    await write(current.cookie, "/api/freelance/gigs", {
+      platform: "Upwork", client: "Fictional client", project: "Unmatched work", pricing: "fixed",
+      gross_cents: 1500, fee_cents: 300, hours_x100: 100, started_on: "2026-10-14", stage: "In progress"
+    }).expect(201);
+    const stats = (await request(app).get("/api/stats?month=2026-10").set("Cookie", current.cookie).expect(200)).body;
+    expect(stats.hourly).toEqual([{ platform: "Upwork", centsPerHour: 1200 }]);
+    expect(stats.verifiedCents).toBe(0);
+    expect(stats.earnedCents).toBe(1500);
   });
   it("deletes every owned row after exact typed confirmation and ends the session",async()=>{
     const alice=await login("delete-alice"),bob=await login("delete-bob");

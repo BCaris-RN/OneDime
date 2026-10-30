@@ -214,6 +214,7 @@ export function showApp(app: string, focus = false) {
     el(tab.getAttribute("aria-controls")!).hidden = !active;
     if (active && focus) tab.focus();
   }
+  document.dispatchEvent(new CustomEvent("onedime:app", { detail: app }));
 }
 function tabKeys(nav: HTMLElement, select: (button: HTMLButtonElement) => void) {
   const tabs = [...nav.querySelectorAll<HTMLButtonElement>("[role=tab]")];

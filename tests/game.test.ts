@@ -31,6 +31,14 @@ describe("game rules", () => {
     expect(stats.sites[0].centsPerHour).toBe(1234);
     expect(stats.nextRungCents).toBe(10);
   });
+  it("adds other-app verified XP and permanent profession claims without altering First Dime XP", () => {
+    const history = [entry("2026-10-14", 60, 1234)];
+    const legacy = gameStats(history, { now: new Date("2026-10-14T20:00:00Z"), timeZone: "UTC", questXp: 50, claimedRungs: 1 });
+    const extended = gameStats(history, { now: new Date("2026-10-14T20:00:00Z"), timeZone: "UTC", questXp: 50, claimedRungs: 1, verifiedOtherCents: 1234, claimedProfessionRanks: 2 });
+    expect(legacy.xp).toBe(333);
+    expect(extended.xp - legacy.xp).toBe(323);
+    expect(extended.totals).toEqual(legacy.totals);
+  });
   it.each([[0, 1], [24.9, 1], [25, 2], [99.9, 2], [100, 3], [900, 7]])("level at %s XP is %s", (xp, level) => {
     expect(levelForXp(xp)).toBe(level);
   });
@@ -79,10 +87,10 @@ describe("game rules", () => {
     expect(stats.week.amountCents).toBe(300);
     expect(stats.sites[0].centsPerHour).toBeNull();
   });
-  it("ports all 19 quest IDs, titles, descriptions, and XP exactly from the pilot", () => {
+  it("ports the pilot quest catalog and includes the zero-XP first-run quest", () => {
     // Only the public quest catalog is retained; the private HTML stays local.
     const expected = JSON.parse(readFileSync("tests/fixtures/quests.json", "utf8"));
-    expect(expected).toHaveLength(19);
+    expect(expected).toHaveLength(20);
     expect(QUESTS).toEqual(expected);
   });
   it("uses the pilot's level titles, floored XP, and only timed earnings in rates", () => {
