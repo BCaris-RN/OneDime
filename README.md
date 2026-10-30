@@ -314,8 +314,9 @@ Do not merge old pre-cleanup history into this branch. The repository license is
 
 For the public release I run `scripts/export-public.ps1` from a clean checkout of main. It
 copies only committed files into a new single-commit repository at `..\onedime-public`,
-leaving out review, handoff, status, metrics, feedback and reference material, `.env*`
-files and anything that names an employer. It never adds a remote or pushes; making
+leaving out review, handoff, status, metrics, feedback and reference material, `.env`
+files other than `.env.example`, and anything that names an employer. Its README copy is
+rewritten to link only to exported files. It never adds a remote or pushes; making
 a repository public is a separate step I take myself.
 
 I merged Phase 3 App in [PR #4](https://github.com/BCaris-RN/OneDime/pull/4) and Phase 4
