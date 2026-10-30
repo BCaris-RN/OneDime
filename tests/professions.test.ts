@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { professionClass, professionRank, verifiedProfessionTotals } from "../src/game/professions.js";
+import { professionClass, professionRank, professionView, verifiedProfessionTotals } from "../src/game/professions.js";
 import type { LedgerRow } from "../src/ledger/catalog.js";
 import { paymentAmountMatches } from "../src/paypal/routing.js";
 
@@ -13,6 +13,15 @@ const payment = (recordType: string, recordId: string, gross = 1_000, fee = 30) 
 });
 
 describe("verified profession totals", () => {
+  it("retains claimed ranks while next-rank progress uses current matched cents", () => {
+    const totals = { creator: 0, freelancer: 100, driver: 0, seller: 0, starter: 0 };
+    const claims = [{ profession: "freelancer", rank: 2 }];
+    expect(professionView(totals, claims).find(row => row.profession === "freelancer"))
+      .toEqual({ profession: "freelancer", rank: 2, verifiedCents: 100, nextRankCents: 5000 });
+    expect(professionClass(totals, claims)).toMatchObject({ profession: "freelancer", rank: 2 });
+    expect(professionView({ ...totals, freelancer: 10000 }, claims).find(row => row.profession === "freelancer")?.rank).toBe(4);
+    expect(professionView(totals, [{ profession: "freelancer", rank: 7 }]).find(row => row.profession === "freelancer")?.nextRankCents).toBeNull();
+  });
   it.each([
     ["first", { amountCents: 1_000 }],
     ["income", { amount_cents: 1_000 }],

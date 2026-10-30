@@ -1769,13 +1769,20 @@ describe("Phase 2 game API", () => {
         (await request(app).get("/api/me/stats").set("Cookie", alice.cookie))
           .body.xp,
       ).toBe(recordType === "gigs" || recordType === "sales" ? 400 : 390);
+      const profession = { income: "creator", gigs: "freelancer", shifts: "driver", sales: "seller" }[recordType];
+      const earned = (await request(app).get("/api/me/stats").set("Cookie", alice.cookie)).body;
+      expect(earned.professions.find((row: { profession: string }) => row.profession === profession)).toMatchObject({ rank: 2 });
       await request(app)
         .delete(`/api${path}/${id}`)
         .set("Cookie", alice.cookie)
         .set("Origin", origin)
         .send({})
         .expect(204);
-      expect((await request(app).get("/api/me/stats").set("Cookie", alice.cookie)).body.xp).toBe(200);
+      const retained = (await request(app).get("/api/me/stats").set("Cookie", alice.cookie)).body;
+      expect(retained.xp).toBe(200);
+      expect(retained.professions.find((row: { profession: string }) => row.profession === profession))
+        .toMatchObject({ rank: 2, verifiedCents: 0, nextRankCents: 5000 });
+      expect(retained.professionClass).toMatchObject({ profession, rank: 2 });
       expect(await prisma.professionRankClaim.count({ where: { playerId: alice.player.id } })).toBe(2);
       expect(
         (await activity(alice.cookie)).body.rows[0].routed_record_id,
@@ -2109,6 +2116,28 @@ describe("Phase 2 game API", () => {
     expect(overview.earnedCents).toBe(1000);
     expect(stats.earnedCents).toBe(overview.earnedCents);
     expect(stats.verifiedCents).toBe(1000);
+  });
+  it("includes zero-record accounts in apps per account and counts accounts with records", async () => {
+    const alice = await login("metrics-all-accounts");
+    await prisma.player.createMany({ data: Array.from({ length: 9 }, (_, index) => ({
+      paypalUserId: `metrics-empty-${index}`, displayName: "Fictional empty account"
+    })) });
+    await write(alice.cookie, "/api/entries", validEntry).expect(201);
+    await write(alice.cookie, "/api/entries", validEntry).expect(201);
+    await write(alice.cookie, "/api/spotlight/income", workspaceCases[0][1]).expect(201);
+    const aggregate = (await prisma.$queryRawUnsafe<Record<string, unknown>[]>(aggregateSql))[0];
+    expect(Number(aggregate.players)).toBe(10);
+    expect(Number(aggregate.apps)).toBe(0.2);
+    expect(Number(aggregate.accounts_with_records)).toBe(1);
+  });
+  it("distinguishes no accounts from accounts without records in app metrics", async () => {
+    const empty = (await prisma.$queryRawUnsafe<Record<string, unknown>[]>(aggregateSql))[0];
+    expect(empty.apps).toBeNull();
+    expect(Number(empty.accounts_with_records)).toBe(0);
+    await login("metrics-empty-account");
+    const registered = (await prisma.$queryRawUnsafe<Record<string, unknown>[]>(aggregateSql))[0];
+    expect(Number(registered.apps)).toBe(0);
+    expect(Number(registered.accounts_with_records)).toBe(0);
   });
   it("reports fee-matched gig and sale earnings at the matched net amount", async () => {
     const alice = await login("metrics-fee-match");

@@ -1,5 +1,33 @@
 # OneDime status
 
+## OAuth and Claude-decision checkpoint, October 30, 2026 (Hawaii)
+
+PR #14 merged as `59e8043e8da5b345c6550f726b017063f11e6f63` after full
+CI [41095382067](https://github.com/BCaris-RN/OneDime/actions/runs/41095382067)
+and a clean bot review of exact head `607a0ddd2e164bb46f8846e6cd2c92d9c3716646`.
+All 247 local tests, build/typecheck, beta18/22, contrast24/no failing or uncovered
+pairs, mocked cross-site OAuth return and 3920-step browser suite passed. Earlier
+CI41021724204 failed a new browser fixture redirect interception; fixed without
+weakening assertions or production timeouts. No deployment; the running site's
+failure cause and actual hosted sandbox login remain unconfirmed.
+
+PR #9 is rebased onto that main. Claude's approved display rule now uses the
+maximum saved claim/current computed rank for both rank display and class.
+Current matched cents still drive progress; the existing XP claim count and XP
+formula are unchanged. Existing saved claims cover Creator, Freelancer, Driver
+and Seller; no new Starter claims or XP awards are introduced. Metrics now average
+over all accounts and separately report accounts with at least one work record.
+Tests cover all four claimed professions after record deletion, higher current
+ranks, top-rank progress, a ten-account/one-active-account denominator, and empty
+data. Local Node 24 build, contrast typecheck and all 284 application tests in 14
+files pass. Local testing excludes only the untracked reviews/** source archives.
+Exact-head CI, bot review and the full browser run are pending at this checkpoint.
+
+The code-reviewer and security-best-practices skills are applied before review;
+the handoff's Playwright runners remain the browser gate. #11/#12 and recordings
+wait for #9's merge. No deploys. Claude Code's beta-smoke, ship-license and
+public-export branches remain untouched.
+
 ## S7 final coordinator report, October 29, 2026 (Hawaii)
 
 Merged main candidate: `d43b9f184f252b56d4087915565a5c3fedf49d1d`.

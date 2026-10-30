@@ -174,18 +174,18 @@ export function createGameRouter(options: Options) {
       prisma.logEntry.findMany({ where: { playerId: id } }),
       prisma.questProgress.findMany({ where: { playerId: id } }),
       prisma.rungClaim.count({ where: { playerId: id } }),
-      prisma.professionRankClaim.count({ where: { playerId: id } })
+      prisma.professionRankClaim.findMany({ where: { playerId: id }, select: { profession: true, rank: true } })
     ]);
     const questXp = progress.reduce((xp, item) => xp + (quests.find((quest) => quest.id === item.questId)?.xp ?? 0), 0);
     const totals = await loadProfessionTotals(prisma, id, entries);
     const verifiedOtherCents = totals.creator + totals.freelancer + totals.driver + totals.seller;
     const stats = gameStats(entries, {
       now: now(), timeZone, questXp, claimedRungs, verifiedOtherCents,
-      claimedProfessionRanks: claims
+      claimedProfessionRanks: claims.length
     });
     return {
-      ...stats, professions: professionView(totals), professionClass: professionClass(totals),
-      professionRankClaims: claims, verifiedOtherCents
+      ...stats, professions: professionView(totals, claims), professionClass: professionClass(totals, claims),
+      professionRankClaims: claims.length, verifiedOtherCents
     };
   }
   router.get("/me/stats", async (request: AuthedRequest, response) => {

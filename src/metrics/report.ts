@@ -8,6 +8,7 @@ export type MonthlyMetrics = {
 
 export type AggregateMetrics = {
   players: number;
+  accountsWithRecords: number;
   firstEntryPlayers: number;
   verifiedFirstDimePlayers: number;
   medianHoursToFirstVerifiedDime: number | null;
@@ -61,7 +62,8 @@ export function formatMetricsReport(
     `| First-dime rate | ${percent(metrics.players ? metrics.verifiedFirstDimePlayers * 100 / metrics.players : 0)} | Accounts with at least one verified First Dime entry / all accounts |`,
     `| Time to first verified dime | ${duration(metrics.medianHoursToFirstVerifiedDime)} | Median account creation to verified entry creation |`,
     `| Active days per player-week | ${metrics.averageActiveDaysPerPlayerWeek === null ? "Not measurable" : metrics.averageActiveDaysPerPlayerWeek.toFixed(2)} | Average distinct logged work dates for each player-week |`,
-    `| Apps per account | ${metrics.averageAppsPerPlayer === null ? "Not measurable" : metrics.averageAppsPerPlayer.toFixed(2)} | Average distinct apps with at least one logged record |`,
+    `| Apps per account | ${metrics.averageAppsPerPlayer === null ? "Not measurable" : metrics.averageAppsPerPlayer.toFixed(2)} | Distinct apps with records summed across all accounts / all accounts, including accounts with no records |`,
+    `| Accounts with at least one record | ${count(metrics.accountsWithRecords)} | Accounts with a work record in any app |`,
     `| Week-1 retention | ${percent(metrics.week1RetentionPercent)} | Mature accounts last seen on/after day 7 / accounts at least 7 days old |`,
     `| Week-4 retention | ${percent(metrics.week4RetentionPercent)} | Mature accounts last seen on/after day 28 / accounts at least 28 days old |`,
     `| Return after a 7-day gap | ${percent(metrics.returnAfterSevenDayGapPercent)} | Requires sign-in event history; current schema stores only last-seen time |`,

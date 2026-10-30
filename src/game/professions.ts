@@ -62,15 +62,18 @@ export function professionRank(verifiedCents: number) {
   return RANK_THRESHOLDS_CENTS.filter(threshold => threshold <= verifiedCents).length;
 }
 
-export function professionView(totals: ProfessionTotals) {
+type RankClaim = { profession: string; rank: number };
+
+export function professionView(totals: ProfessionTotals, claims: readonly RankClaim[] = []) {
   return (Object.entries(totals) as [Profession, number][]).map(([profession, verifiedCents]) => {
-    const rank = professionRank(verifiedCents);
+    const savedRank = claims.reduce((rank, claim) => claim.profession === profession ? Math.max(rank, claim.rank) : rank, 0);
+    const rank = Math.max(savedRank, professionRank(verifiedCents));
     return { profession, rank, verifiedCents, nextRankCents: RANK_THRESHOLDS_CENTS[rank] ?? null };
   });
 }
 
-export function professionClass(totals: ProfessionTotals) {
-  const rows = professionView(totals).filter(row => row.rank > 0);
+export function professionClass(totals: ProfessionTotals, claims: readonly RankClaim[] = []) {
+  const rows = professionView(totals, claims).filter(row => row.rank > 0);
   rows.sort((a, b) => b.rank - a.rank || b.verifiedCents - a.verifiedCents || a.profession.localeCompare(b.profession));
   return rows[0] ?? null;
 }

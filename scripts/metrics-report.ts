@@ -133,7 +133,9 @@ export const aggregateSql = `
     SELECT (SELECT count(*) FROM players) players,(SELECT players FROM first_counts) first_players,
       (SELECT players FROM first_verified_counts) verified_first_players,
       (SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY extract(epoch FROM (vf.created_at-p.created_at))/3600) FROM players p JOIN LATERAL (SELECT created_at FROM verified_first x WHERE x.player_id=p.id ORDER BY created_at LIMIT 1) vf ON true) median_hours,
-      (SELECT avg(active_days) FROM weeks) active_days,(SELECT avg(apps) FROM app_counts) apps,
+      (SELECT avg(active_days) FROM weeks) active_days,
+      (SELECT avg(coalesce(a.apps,0)) FROM players p LEFT JOIN app_counts a ON a.player_id=p.id) apps,
+      (SELECT count(*) FROM app_counts) accounts_with_records,
       (SELECT count(*) FILTER (WHERE last_seen_at>=created_at+interval '7 days')::numeric*100/nullif(count(*) FILTER (WHERE created_at<=now()-interval '7 days'),0) FROM players) week1,
       (SELECT count(*) FILTER (WHERE last_seen_at>=created_at+interval '28 days')::numeric*100/nullif(count(*) FILTER (WHERE created_at<=now()-interval '28 days'),0) FROM players) week4,
       (SELECT median_cents FROM hours) median_hourly,
@@ -161,6 +163,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href && !process.en
       const ratio = (n: number, d: number) => d ? n * 100 / d : null;
       const metrics: AggregateMetrics = {
         players, firstEntryPlayers, verifiedFirstDimePlayers,
+        accountsWithRecords: num(agg.accounts_with_records),
         medianHoursToFirstVerifiedDime: agg.median_hours === null ? null : num(agg.median_hours),
         averageActiveDaysPerPlayerWeek: agg.active_days === null ? null : num(agg.active_days),
         averageAppsPerPlayer: agg.apps === null ? null : num(agg.apps),

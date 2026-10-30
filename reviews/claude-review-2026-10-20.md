@@ -154,3 +154,18 @@ Clear the body-parser and undici high advisories with the smallest version bumps
 Merge it before #9 so the live beta gets it on the next redeploy.
 
 Merge order: deps-security -> #9 -> rebase #11, #12 -> #11, #12 -> #10.
+
+## Operator-supplied decisions, October 30, 2026
+
+Brandon supplied Claude's decisions in chat: displayed profession rank is the
+maximum of saved claimed rank and current computed rank. Progress to the next
+rank uses current matched cents. XP rules stay unchanged. Test earning a rank,
+deleting its supporting record and retaining the displayed rank.
+
+Apps per account uses all accounts as the denominator. Also report accounts with
+at least one record, and test zero-record accounts. Brandon authorizes merging #9
+after both fixes, exact-head green CI and a bot review with nothing new.
+
+The OAuth PR must merge first under its own CI/review gates, then #9, #11, #12 and
+the remaining demo/preparation/report steps. No deployments. Claude Code owns
+beta-smoke, ship-license and public-export; those are outside this run.
