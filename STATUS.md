@@ -30,6 +30,28 @@ allowance. PR #9 will stay unmerged for Claude; S3 and S5 depend on that merge a
 cannot proceed. The hourly-fee finding is being corrected within S2's hourly scope.
 S4 documentation can proceed independently, with unmerged features explicitly labeled.
 
+S2 hourly-fee correction `b0da6f97e30b7a8c386033bdac2b970bbf8aab47` passes all
+270 application tests locally, including gross/share preservation and net hourly
+earnings for an unmatched fee-bearing gig. Its bot thread has a fix reply and is
+resolved; rank persistence remains open. A review ZIP for Claude will include the
+final source and current CI/review evidence. No S2 merge is permitted in this run.
+
+## S3 dependency checkpoint, October 29, 2026 (Hawaii)
+
+PR #11 remains at `6b0b51da5d105565e5b23f07d61841a91bcf31b0`; PR #12 remains
+at `f77a5e63dfb66c74a65c06de271e8d780597e449`. Neither was rebased or merged:
+S3 explicitly starts after S2 merges, and S2's rank-persistence finding prevents that.
+Their previous CI successes do not validate integration with the new S2 code.
+
+## S4 documentation checkpoint, October 29, 2026 (Hawaii)
+
+PR #10 is rebased onto security main and updated at
+`686c314c2b7846ff60e041875cdc3ba6f1d2d909`. Only docs/ship files change.
+Copy uses matched activity-file wording and explicitly marks #9/#11/#12 unmerged.
+Code Reviewer and Security Best Practices skill reviews found no actionable issues
+before marking the draft ready. Exact-head full CI run 41006770181 is running;
+merge remains gated on CI success and a documentation-only diff. No deployment.
+
 ## M2 checkpoint, October 26, 2026 (Hawaii)
 
 Branch `week5-features`, based on M1 main `756cc93e2f6a8a99db5861ca030bbbdefb7bd197`.
