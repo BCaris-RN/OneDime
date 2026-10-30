@@ -312,6 +312,12 @@ and seed flags stay false there. Source/reference HTML stays ignored and is not 
 Brandon accepted clean rewritten main `9953600` and owns GitHub Support cleanup of old PR refs.
 Do not merge old pre-cleanup history into this branch. The repository license is recorded in LICENSE.
 
+For the public release I run `scripts/export-public.ps1` from a clean checkout of main. It
+copies only committed files into a new single-commit repository at `..\onedime-public`,
+leaving out review, handoff, status, metrics, feedback and reference material, `.env*`
+files and anything that names an employer. It never adds a remote or pushes; making
+a repository public is a separate step I take myself.
+
 I merged Phase 3 App in [PR #4](https://github.com/BCaris-RN/OneDime/pull/4) and Phase 4
 Fixes and free AI in [PR #5](https://github.com/BCaris-RN/OneDime/pull/5). I am preparing
 Phase 5 Beta test for November 1-8, followed by Phase 6 Ship on November 9-10.
