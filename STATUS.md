@@ -1,5 +1,63 @@
 # OneDime status
 
+## S7 final coordinator report, October 29, 2026 (Hawaii)
+
+Merged main candidate: `d43b9f184f252b56d4087915565a5c3fedf49d1d`.
+No deployment was made. S1 and S4 merged only after their conditions passed.
+S2 is held for Claude's rank-persistence review; S3 and S5 are dependency-blocked.
+This final metadata checkpoint is pushed on week5-features; its own SHA and final
+CI run are recorded externally in the review ZIP manifest/API to avoid self-reference.
+
+| PR | Reviewed/checkpoint head | Merge SHA / disposition | CI evidence |
+| --- | --- | --- | --- |
+| #13 security | `1ff3a15157dec26da1d6bfd1d8f98449b2cec787` | Merged `81c0bc1d48bc29def97c2f827833ab77731c2e8c` | 41005618843, all required steps passed; exact-head bot had no findings; audit zero vulnerabilities |
+| #9 Phase 5 | `49e249e2ac98424fc153e32d97365fa6ba84be4b` before final metadata/rebase | NOT merged: open rank-persistence finding exceeds S2's hourly-only calculation allowance | 41006890083 passed all steps at that checkpoint; 270 local application tests; final metadata CI recorded in ZIP |
+| #11 demo | `6b0b51da5d105565e5b23f07d61841a91bcf31b0` | NOT merged/rebased: S3 depends on #9 merging | Prior 40470836379 passed; not a test of integration with new S2 |
+| #12 skins | `f77a5e63dfb66c74a65c06de271e8d780597e449` | NOT merged/rebased: S3 depends on #9 merging | Prior 40475677029 passed; post-rebase skins/grid gate not reached |
+| #10 ship docs | `13ce351b8b603e04971e82c176712ed6137323b2` | Merged `d43b9f184f252b56d4087915565a5c3fedf49d1d` | 41007100855, all steps passed; exact-head bot had no findings; four docs only |
+
+Claude: review the unresolved finding in src/game/professions.ts. Displayed ranks
+and class currently fall after deleting supporting matched records despite retained
+permanent rank claims/XP. Define the bounded persistence correction, including
+Starter behavior, before changing rank calculations. The hourly-fee finding was
+fixed within S2 and resolved; all seven original findings were replied to/resolved.
+
+Brandon: no new Render variables/settings are required for merged S1/S4. Any deploy,
+tester/policy/account work remains a separate action. Do not treat main as containing
+the unmerged Phase 5, demo tooling or skins. Review material is generated at
+`C:\Users\bwcar\Downloads\OneDime-S2-review-2026-10-29\onedime-s2-review.zip`.
+
+## S5 recording checkpoint, October 29, 2026 (Hawaii)
+
+No new recording was run: S5 requires S3, which requires the blocked S2 merge.
+The recorder and fictional-label mode remain in unmerged #11, not main. Existing
+ignored preview videos were preserved and are not represented as final recordings.
+The ship script now explicitly requires both #9 and #11 before filming.
+
+## S6 redeploy preparation, October 29, 2026 (Hawaii)
+
+Candidate main `d43b9f184f252b56d4087915565a5c3fedf49d1d` has nine migrations
+(000001-000009), unchanged from the prior deployed-candidate baseline. S1/S4 add no
+migrations. 000010_profession_rank_claims, 000011_feedback_stats and
+000012_first_run_welcome remain pending in #9 and will apply only after that feature
+branch is reviewed, merged and separately deployed.
+
+render.yaml remains unchanged: both plans free, PostgreSQL 16, /health, automatic
+deployment off, sandbox PayPal, payouts/Sheets/demo seed off. No new operator-entered
+variables or settings are required by S1/S4. No hosted-state or credentials were
+inspected or changed. No deploy was performed.
+
+Skills: Code Reviewer and Security Best Practices were used on each PR worked in
+this run before ready/merge gates; Playwright guided the mandated existing browser
+runners. Local build/typecheck and 270 application tests passed; beta covered 18
+combinations/22 pairs, Current contrast 24 regression groups with zero failing or
+uncovered pairs, and browser 4,288 focus steps plus offline/privacy checks passed.
+An initial local test command failed on five incomplete copied suites in untracked
+review archives; excluding only reviews/** passed the full application suite. A
+local reinstall collided with the active contrast fixture's Windows Prisma DLL;
+the owned fixture was stopped and a clean install/build then passed. No assertion,
+timeout, test configuration or database durability setting was weakened.
+
 ## S1 security checkpoint, October 29, 2026 (Hawaii)
 
 PR #13 (`deps-security`) head `1ff3a15157dec26da1d6bfd1d8f98449b2cec787`
