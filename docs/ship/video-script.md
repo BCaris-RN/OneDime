@@ -2,8 +2,10 @@
 
 Target runtime: 2:35, with a hard limit of 2:50. Capture only fictional demo data.
 The login shot uses the local fake demo login; it is not PayPal authentication.
-Phase 5 shots depend on open PR #9 and must be recorded only after that branch is
-merged and the demo runs against the merged code.
+Phase 5 shots depend on open PR #9. Fictional platform labels and the recorder depend
+on open PR #11. Record only after both branches are merged and the isolated demo runs
+against that merged code with DEMO_VIDEO enabled. Current main's ordinary demo still
+shows real platform labels and is not suitable for this recording.
 
 | Time | Picture | Voice-over |
 | --- | --- | --- |
@@ -25,7 +27,8 @@ merged and the demo runs against the merged code.
   payer, transaction or real financial information.
 - The video must show the finite Stats animations from a fresh tab open and must not
   imply that imported CSV files are authenticated evidence.
-- Never show real gig-platform names in the video; demo mode uses fictional labels.
+- Never show real gig-platform names in the video; PR #11's isolated DEMO_VIDEO mode
+  supplies fictional labels only after that tooling is merged.
   PayPal remains named because the app uses sandbox sign-in and matches entries to an uploaded PayPal activity file.
-- The ranks and Stats shots remain blocked until PR #9 is merged. No deployment or
-  live PayPal action is implied by the script.
+- The recording remains blocked until PR #9 and PR #11 are merged. No deployment
+  or live PayPal action is implied by the script.
