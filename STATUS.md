@@ -21,6 +21,13 @@ and class currently fall after deleting supporting matched records despite retai
 permanent rank claims/XP. Define the bounded persistence correction, including
 Starter behavior, before changing rank calculations. The hourly-fee finding was
 fixed within S2 and resolved; all seven original findings were replied to/resolved.
+Final review at `44849b3` also confirmed that scripts/metrics-report.ts averages
+apps only over accounts with records, omitting zero-record accounts. This overstates
+the labeled apps-per-account KPI (two apps in one of ten accounts gives 2.00 rather
+than 0.20). This additional metric-calculation finding is left open for Claude too;
+no metric definition was changed outside S2's enumerated fixes. Both open threads
+have source-confirmation replies. The final update is status-only; runtime bytes
+remain identical to the fully passing 49e249e checkpoint.
 
 Brandon: no new Render variables/settings are required for merged S1/S4. Any deploy,
 tester/policy/account work remains a separate action. Do not treat main as containing
