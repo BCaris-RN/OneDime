@@ -63,7 +63,7 @@ F4  OPERATOR METRICS REPORT
   No names, emails, notes or per-player rows. Reads DATABASE_URL, never prints it.
 
 F5  STATS SCREEN WITH HANDHELD-STYLE CHARTS (spec = the Stats tab in reference/pilot.html)
-  A fifth top-level tab, "Stats", after Market. Port the pilot's screen exactly:
+  Six top-level tabs, with "Stats" fifth after Market and PayPal retained as the sixth tab. Port the pilot's screen exactly:
   - KPI tiles: earned this month, paid share (verified share in the app), best hourly rate,
     active days in the last 7, streak across any app. Money tiles count up in 6 steps.
   - "Earned by month": stacked pixel bars, last 6 months, one fill pattern per app (solid,
@@ -78,7 +78,7 @@ F5  STATS SCREEN WITH HANDHELD-STYLE CHARTS (spec = the Stats tab in reference/p
   - All art is original inline SVG. If you add any outside pixel art, it must be CC0 or similarly
     licensed, credited in the README, embedded (no remote images), and never from a game
     company's assets.
-  - Phone: app tabs in two rows (3 + 2). No horizontal overflow at 320px.
+  - Phone: app tabs in two rows (3 + 3). No horizontal overflow at 320px.
   - Uses the app's real data: verified totals and ranks from F1, not the pilot's paid/pending.
 
 F6  TAX-TIME SUMMARY SHEET

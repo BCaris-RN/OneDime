@@ -70,9 +70,9 @@ export function createStatsRouter(prisma: PrismaClient, now: () => Date) {
       const earnedCents = current.reduce((s, x) => s + x.cents, 0);
       const verifiedCents = current.reduce((s, x) => s + x.verifiedCents, 0);
       const rates = new Map<string, { cents: number; minutesX100: number }>();
-      for (const item of dated.filter(x => x.minutesX100 > 0 && x.verifiedCents > 0)) {
+      for (const item of dated.filter(x => x.minutesX100 > 0)) {
         const rate = rates.get(item.platform) ?? { cents: 0, minutesX100: 0 };
-        rate.cents += item.verifiedCents; rate.minutesX100 += item.minutesX100; rates.set(item.platform, rate);
+        rate.cents += item.cents; rate.minutesX100 += item.minutesX100; rates.set(item.platform, rate);
       }
       const hourly = [...rates].map(([platform, r]) => ({ platform, centsPerHour: Math.round(r.cents * 6000 / r.minutesX100) })).sort((a, b) => b.centsPerHour - a.centsPerHour).slice(0, 8);
       const today = localDay(now(), player.timeZone ?? "UTC");

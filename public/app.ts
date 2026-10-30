@@ -83,7 +83,7 @@ async function perform(task: () => Promise<void>) {
 function rankText(rank: ProfessionRank) {
   const title = rank.profession[0].toUpperCase() + rank.profession.slice(1);
   const progress = rank.nextRankCents === null ? "Top rank reached" : `${money(rank.nextRankCents - rank.verifiedCents)} to rank ${rank.rank + 1}`;
-  return `${title} · ${rank.rank ? `rank ${rank.rank}` : "working toward rank 1"} · ${money(rank.verifiedCents)} verified · ${progress}`;
+  return `${title} · ${rank.rank ? `rank ${rank.rank}` : "working toward rank 1"} · ${money(rank.verifiedCents)} matched · ${progress}`;
 }
 function renderStats(stats: GameStatsWithProfessions) {
   element("total-amount").textContent = money(stats.totals.amountCents);
@@ -108,7 +108,7 @@ function renderStats(stats: GameStatsWithProfessions) {
   element("goal-ring").setAttribute("stroke-dashoffset", (326.7 * (1 - Math.min(1, stats.totals.amountCents / stats.goalCents))).toFixed(1));
   input("worked-on").max = stats.today;
   if (!input("worked-on").value) input("worked-on").value = stats.today;
-  element("next-rung").textContent = stats.nextRungCents === null ? "Your verified total has reached the top rung." : `Your next target: ${money(stats.nextRungCents)} verified.`;
+  element("next-rung").textContent = stats.nextRungCents === null ? "Your matched total has reached the top rung." : `Your next target: ${money(stats.nextRungCents)} matched.`;
   element("rung-list").replaceChildren(...rungCents.map((cents) => {
     const reached = stats.totals.verifiedCents >= cents;
     return node("li", `${money(cents)}${reached ? " · reached" : ""}`, reached ? "reached" : "");
@@ -140,7 +140,7 @@ function renderEntries(entries: Entry[]) {
       });
     });
     action.append(remove);
-    row.append(detail, node("td", `${entry.minutes} min`), node("td", money(entry.amountCents)), node("td", entry.verified ? "Verified" : "Awaiting verification"), action);
+    row.append(detail, node("td", `${entry.minutes} min`), node("td", money(entry.amountCents)), node("td", entry.verified ? "Matched" : "Awaiting matching"), action);
     return row;
   }));
   document.dispatchEvent(new Event("onedime:rendered"));
@@ -198,10 +198,10 @@ function renderLeaders(leaders: Leader[]) {
   }
   element("site-leaders").replaceChildren(...(siteLeaders.size ? [...siteLeaders].map(([platform, leader]) => {
     const row = node("li"); row.append(node("span", platform), node("span", `${leader.name} · ${money(leader.cents)}`)); return row;
-  }) : [node("li", "No verified site leaders yet.", "muted")]));
+  }) : [node("li", "No matched site leaders yet.", "muted")]));
   element("leaderboard-list").replaceChildren(...leaders.map((leader, index) => {
     const row = node("li");
-    row.append(node("h3", `${index + 1}. ${leader.displayName}`), node("p", `${money(leader.verifiedTotalCents)} verified · ${number(leader.xp)} XP · Level ${leader.level}${leader.professionClass ? ` · ${leader.professionClass.profession[0].toUpperCase() + leader.professionClass.profession.slice(1)} class` : ""}`));
+    row.append(node("h3", `${index + 1}. ${leader.displayName}`), node("p", `${money(leader.verifiedTotalCents)} matched · ${number(leader.xp)} XP · Level ${leader.level}${leader.professionClass ? ` · ${leader.professionClass.profession[0].toUpperCase() + leader.professionClass.profession.slice(1)} class` : ""}`));
     if (leader.professions.length) row.append(node("p", leader.professions.map(rank => `${rank.profession[0].toUpperCase() + rank.profession.slice(1)} rank ${rank.rank}`).join(" · ")));
     if (leader.sites.length) row.append(node("p", leader.sites.map((site) => `${site.platform}: ${money(site.verifiedCents)}`).join(" · ")));
     for (const claim of leader.rungClaims) row.append(node("p", `Claimed ${money(claim.rungCents)} · ${new Date(claim.claimedAt).toLocaleString([], { timeZone: player?.timeZone ?? "UTC" })}`));

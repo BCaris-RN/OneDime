@@ -2152,6 +2152,31 @@ describe("Phase 2 game API", () => {
     const stats = (await request(app).get("/api/stats?month=2026-10").set("Cookie", alice.cookie).expect(200)).body;
     expect(stats.hourly).toEqual([{ platform: "Upwork", centsPerHour: 100000 }]);
   });
+
+  it.each([['first', 'Prolific'], ['income', 'YouTube'], ['gigs', 'Upwork'], ['shifts', 'DoorDash'], ['sales', 'Etsy']])(
+    "completes Start your record once for a routed %s payment",
+    async (recordType, platform) => {
+      const current = await login("routed-first-record");
+      await write(current.cookie, "/api/paypal/import", { csv: activityCsv() }).expect(200);
+      await prisma.questProgress.deleteMany({ where: { playerId: current.player.id, questId: "start-record" } });
+      const payment = (await activity(current.cookie)).body.rows.find((row: { net_cents: number }) => row.net_cents > 0);
+      const route = () => write(current.cookie, `/api/paypal/transactions/${payment.id}/route`, { record_type: recordType, platform });
+      await route().expect(200);
+      await route().expect(200);
+      expect(await prisma.questProgress.count({ where: { playerId: current.player.id, questId: "start-record" } })).toBe(1);
+    }
+  );
+  it("includes unmatched timed work in Stats hourly rates without changing matched totals", async () => {
+    const current = await login("stats-unmatched-hours");
+    await write(current.cookie, "/api/freelance/gigs", {
+      platform: "Upwork", client: "Fictional client", project: "Unmatched work", pricing: "fixed",
+      gross_cents: 1500, fee_cents: 0, hours_x100: 100, started_on: "2026-10-14", stage: "In progress"
+    }).expect(201);
+    const stats = (await request(app).get("/api/stats?month=2026-10").set("Cookie", current.cookie).expect(200)).body;
+    expect(stats.hourly).toEqual([{ platform: "Upwork", centsPerHour: 1500 }]);
+    expect(stats.verifiedCents).toBe(0);
+    expect(stats.earnedCents).toBe(1500);
+  });
   it("deletes every owned row after exact typed confirmation and ends the session",async()=>{
     const alice=await login("delete-alice"),bob=await login("delete-bob");
     for(const [path,body] of workspaceCases) await write(alice.cookie,`/api${path}`,body).expect(201);
