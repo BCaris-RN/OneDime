@@ -50,7 +50,11 @@ try {
         body: `<a href="${callback.toString().replaceAll("&", "&amp;")}">Return to OneDime</a>` });
     });
     const loginPage = await loginContext.newPage();
-    await loginPage.goto(`${baseUrl}/auth/paypal`);
+    // Routing intercepts the first URL in a redirect chain, so begin the mocked
+    // provider navigation explicitly while retaining the context's cookie jar.
+    const start = await loginContext.request.get(`${baseUrl}/auth/paypal`, { maxRedirects: 0 });
+    assert.equal(start.status(), 302);
+    await loginPage.goto(start.headers().location);
     await loginPage.getByRole("link", { name: "Return to OneDime" }).click();
     await loginPage.waitForURL(`${baseUrl}/app`);
     const cookies = await loginContext.cookies(baseUrl);

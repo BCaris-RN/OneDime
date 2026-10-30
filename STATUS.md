@@ -2,6 +2,13 @@
 
 ## OAuth-first run, October 29, 2026 (Hawaii)
 
+October 30 continuation: head 8ef74c5 passed bot review, but CI 41021724204
+failed in the new browser fixture: Playwright did not intercept a redirected
+provider navigation. The fixture now starts that mocked navigation explicitly
+with the same cookie jar. No production logic or timeout was relaxed. Full CI
+and bot review must pass again on the new head. Claude Code owns beta-smoke,
+ship-license and public-export; this run does not modify those branches.
+
 `fix-oauth-callback` starts from main `d43b9f184f252b56d4087915565a5c3fedf49d1d`.
 Browser-bound one-time state, Lax cookies, fixed-field step diagnostics, production
 ingress trust and exact redirect configuration checks are implemented. Existing
