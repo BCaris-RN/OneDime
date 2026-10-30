@@ -6,8 +6,9 @@ The exact-head CI browser job exposed an outdated assertion that still expected
 the retired root-page wake-up sentence after deletion. Updated
 `scripts/check-browser-smart.ts` to assert the approved landing console's
 `Log in with PayPal` link instead. Local `npm run test:browser` is green,
-including OAuth, accessibility, offline/cache, and deletion checks. Pending
-commit/push and exact-head CI rerun; no deploy or merge.
+including OAuth, accessibility, offline/cache, and deletion checks. The pushed
+validation head was `20f6d585`; CI runs `41124321658` and `41124329689` both
+passed, and the bot reported no findings on that exact head. No deploy or merge.
 
 ## Landing console checkpoint, October 30, 2026 (Hawaii)
 
