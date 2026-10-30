@@ -324,6 +324,16 @@ I still require review and explicit approval for each merge, deploy and visibili
 The app does not scrape, automate or log into gig platforms, implement receipt-image
 verification or use live PayPal.
 
+## License
+
+The source is licensed under the GNU Affero General Public License v3.0 only
+(`AGPL-3.0-only`); the full text is in [LICENSE](LICENSE). Because OneDime runs as a web
+service, the AGPL's network clause applies: if you run a modified copy for other people,
+you have to offer them its source.
+
+The license covers the code, not the brand. The OneDime name and the coin logo aren't
+licensed for reuse, so a fork should go by its own name and mark.
+
 ## Built with
 
 Built by Brandon Caris with Claude (lead and reviewer) and Codex (implementation), on the PayPal Developer Platform.
