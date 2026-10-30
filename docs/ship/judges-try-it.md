@@ -23,7 +23,7 @@ Stop the command with Ctrl+C to remove its disposable database container.
 
 ## Current feature status
 
-Verified profession ranks, first-run/install, operator metrics, Stats and tax-summary
+Matched profession ranks, first-run/install, operator metrics, Stats and tax-summary
 exports are in open PR #9. They are not part of main until reviewed and merged. The
 hosted URL and sandbox tester login stay blank until Brandon finishes deployment and
 tester-access checks.

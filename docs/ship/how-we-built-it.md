@@ -12,12 +12,12 @@ Codex implements the approved handoffs. That separation keeps product decisions,
 implementation and release control in different hands.
 
 The first four phases are merged across five PRs. Three supporting beta-preparation
-PRs are also merged, for eight merged PRs on main. Phase 5 is in
+PRs are also merged, for eight merged PRs, followed by the dependency security fix in PR #13 on main. Phase 5 is in
 [open PR #9](https://github.com/BCaris-RN/OneDime/pull/9), which adds ranks, a Stats
 tab, first-run and install support, aggregate operator metrics and a tax-summary
-export. Its latest local checkpoint has 260 tests across 12 test files; earlier
-exact-head CI runs passed through F1-F6. Review fixes are being checked on the
-updated head, so Phase 5 is not presented as shipped. The repository also has 24
+export. Its latest local checkpoint has 270 application tests across 13 files.
+Review fixes are being checked on the updated head, and a rank-persistence finding
+needs Claude review, so Phase 5 is not presented as shipped. The repository also has 24
 automated contrast regression checks and a browser audit that covers 4,288 keyboard
 focus steps across workspaces and viewport sizes.
 
@@ -31,7 +31,7 @@ these orderings and month boundaries.
 
 I keep money in integer cents, and the database scopes records to their owner. PayPal
 activity imports are user-provided CSV evidence, not an authenticated transaction
-lookup. The app matches an incoming sandbox payment to one owned record; it never
+lookup. A record is matched to your PayPal activity, using a row in the uploaded file; it never
 adds the imported payment on top of that record as a second earning. Any operator
 metrics are aggregate-only. OneDime does not scrape, automate or log in to gig
 platforms. Its optional on-device suggestion model does not send ledger text to a

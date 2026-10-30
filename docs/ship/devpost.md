@@ -5,8 +5,8 @@
 ## Inspiration
 
 Independent workers often keep earnings and time records in different places. I
-wanted a small, private tool that helps someone record the work, understand what is
-verified, and decide where their next hour is best spent.
+wanted a small, private tool that helps someone record the work, see what is
+matched to your PayPal activity, and decide where their next hour is best spent.
 
 ## What it does
 
@@ -15,7 +15,7 @@ freelance work and marketplace shifts or sales, and a PayPal workspace for impor
 and reviewing the user's own activity CSV. A monthly overview and exports bring the
 records together without counting a linked PayPal payment twice.
 
-Phase 5 adds verified profession ranks, first-run and install support, aggregate
+Phase 5 adds matched profession ranks, first-run and install support, aggregate
 operator metrics, a Stats tab and a tax-summary worksheet. These additions are in
 [open PR #9](https://github.com/BCaris-RN/OneDime/pull/9), pending review and merge;
 they are not available from the current main branch yet.
@@ -27,7 +27,7 @@ Money is integer cents. Each phase starts from an approved handoff, gets impleme
 on its own branch, and goes through local tests, GitHub Actions and Claude review
 before Brandon decides whether to merge. See [how I built it](how-we-built-it.md).
 
-PayPal is used in sandbox mode for sign-in and payment-activity verification. A CSV
+PayPal is used in sandbox mode for sign-in. Entries are matched to your PayPal activity file. A CSV
 import is user-provided evidence and is not an authenticated PayPal transaction
 lookup. The isolated local demo uses fake sign-in and fictional data and makes no
 provider calls.
@@ -42,8 +42,8 @@ work. We kept money in integer cents and added tests for the failure and timing 
 ## Accomplishments
 
 The merged foundation supports private sessions, player-owned records, safe exports,
-optional local suggestions, sandbox payment review and a private feedback path. The
-current branch also has a 4,288-step browser focus audit, automated contrast checks,
+optional local suggestions, sandbox activity-file matching and a private feedback path. The
+pending Phase 5 branch also has a 4,288-step browser focus audit, automated contrast checks,
 and the Phase 5 work waiting in an unmerged PR.
 
 ## What we learned
@@ -58,8 +58,8 @@ different questions.
 
 Claude reviews the Phase 5 PR and Brandon decides whether to merge it. Before any
 private beta, Brandon must finish the policy and tester-account checks. Deployment,
-tester access and any live-payment use remain operator-controlled. Further ship work
-and the optional Paper/Slate skins are in separate open drafts, if opened; they are
+tester access and any live-payment use remain operator-controlled. Demo recording tooling (PR #11)
+and the optional Paper/Slate skins (PR #12) remain in separate open drafts; they are
 not part of this submission's main-branch claim.
 
 ## Built with
