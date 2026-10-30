@@ -42,13 +42,13 @@ export function createStatsRouter(prisma: PrismaClient, now: () => Date) {
         };
       });
       const allDates = new Set<string>();
-      const dated: { date: string; cents: number; verifiedCents: number; minutesX100: number; platform: string; app: string }[] = [];
+      const dated: { date: string; cents: number; rateCents: number; verifiedCents: number; minutesX100: number; platform: string; app: string }[] = [];
       for (const entry of entries) {
         const date = entry.workedOn.toISOString().slice(0, 10); allDates.add(date);
         const payment = payments.find(p => p.routed_record_type === "first" && p.routed_record_id === entry.id);
         const verified = entry.verified && payment && incoming(payment) && fixedSuggestion(payment.payer)?.platform === entry.platform && [payment.gross_cents, payment.net_cents].includes(entry.amountCents);
         const cents = verified ? payment.gross_cents : entry.amountCents;
-        dated.push({ date, cents, verifiedCents: verified ? cents : 0, minutesX100: entry.minutes * 100, platform: entry.platform, app: "first" });
+        dated.push({ date, cents, rateCents: entry.amountCents, verifiedCents: verified ? cents : 0, minutesX100: entry.minutes * 100, platform: entry.platform, app: "first" });
       }
       const descriptors = [
         { rows: data.income, app: "spotlight", date: "earned_on", amount: "amount_cents", minutes: "content_minutes", platform: "platform", type: "income", paid: (r: Record<string, unknown>) => r.status === "paid" },
@@ -64,7 +64,8 @@ export function createStatsRouter(prisma: PrismaClient, now: () => Date) {
         const verified = desc.paid(row) && payment && incoming(payment) && matchingAmounts.some(value => value === payment.gross_cents || value === payment.net_cents);
         const minutesX100 = desc.minutes === "hours_x100" ? numeric(row, desc.minutes) * 60 : desc.minutes ? numeric(row, desc.minutes) * 100 : 0;
         const cents = desc.type === "shifts" ? amount + numeric(row, "tips_cents") : amount;
-        dated.push({ date, cents, verifiedCents: verified ? cents : 0, minutesX100, platform: String(row[desc.platform] ?? "Other"), app: desc.app });
+        const rateCents = desc.type === "gigs" ? cents - numeric(row, "fee_cents") : cents;
+        dated.push({ date, cents, rateCents, verifiedCents: verified ? cents : 0, minutesX100, platform: String(row[desc.platform] ?? "Other"), app: desc.app });
       }
       const current = dated.filter(x => x.date.startsWith(month));
       const earnedCents = current.reduce((s, x) => s + x.cents, 0);
@@ -72,7 +73,7 @@ export function createStatsRouter(prisma: PrismaClient, now: () => Date) {
       const rates = new Map<string, { cents: number; minutesX100: number }>();
       for (const item of dated.filter(x => x.minutesX100 > 0)) {
         const rate = rates.get(item.platform) ?? { cents: 0, minutesX100: 0 };
-        rate.cents += item.cents; rate.minutesX100 += item.minutesX100; rates.set(item.platform, rate);
+        rate.cents += item.rateCents; rate.minutesX100 += item.minutesX100; rates.set(item.platform, rate);
       }
       const hourly = [...rates].map(([platform, r]) => ({ platform, centsPerHour: Math.round(r.cents * 6000 / r.minutesX100) })).sort((a, b) => b.centsPerHour - a.centsPerHour).slice(0, 8);
       const today = localDay(now(), player.timeZone ?? "UTC");

@@ -23,6 +23,13 @@ Rerunning with only `reviews/**` excluded passed all application tests. Six outd
 threads and the current first-record thread have fixing-commit replies and are resolved.
 Money, XP and rank calculations are unchanged except the authorized Stats hourly input.
 
+The fresh bot review of `53e597e` found a real rank-persistence defect: profession
+views derive ranks from remaining matched cents, ignoring permanent claims after
+record deletion. Fixing that requires a rank-calculation change beyond S2's merge
+allowance. PR #9 will stay unmerged for Claude; S3 and S5 depend on that merge and
+cannot proceed. The hourly-fee finding is being corrected within S2's hourly scope.
+S4 documentation can proceed independently, with unmerged features explicitly labeled.
+
 ## M2 checkpoint, October 26, 2026 (Hawaii)
 
 Branch `week5-features`, based on M1 main `756cc93e2f6a8a99db5861ca030bbbdefb7bd197`.

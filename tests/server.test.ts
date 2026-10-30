@@ -2170,10 +2170,10 @@ describe("Phase 2 game API", () => {
     const current = await login("stats-unmatched-hours");
     await write(current.cookie, "/api/freelance/gigs", {
       platform: "Upwork", client: "Fictional client", project: "Unmatched work", pricing: "fixed",
-      gross_cents: 1500, fee_cents: 0, hours_x100: 100, started_on: "2026-10-14", stage: "In progress"
+      gross_cents: 1500, fee_cents: 300, hours_x100: 100, started_on: "2026-10-14", stage: "In progress"
     }).expect(201);
     const stats = (await request(app).get("/api/stats?month=2026-10").set("Cookie", current.cookie).expect(200)).body;
-    expect(stats.hourly).toEqual([{ platform: "Upwork", centsPerHour: 1500 }]);
+    expect(stats.hourly).toEqual([{ platform: "Upwork", centsPerHour: 1200 }]);
     expect(stats.verifiedCents).toBe(0);
     expect(stats.earnedCents).toBe(1500);
   });
