@@ -2,7 +2,7 @@
 
 Every changed user-facing line is recorded below as before (-) and after (+). Code identifiers are retained. The account-identity verification and webhook signature verification terms retain their separate technical meanings.
 
-`diff
+```diff
 diff --git a/README.md b/README.md
 index 29c4f98..b6d535b 100644
 --- a/README.md
@@ -125,4 +125,4 @@ index 48aa1d5..cc01ad4 100644
 +  el("stats-meter").innerHTML = meter + `</svg><p class="stats-note">Matched ${money(data.verifiedCents)} · Pending ${money(Math.max(0, data.earnedCents - data.verifiedCents))}</p>`;
 +  el("stats-meter-table").replaceChildren(table(["Status", "Amount"], [["Matched", money(data.verifiedCents)], ["Pending", money(Math.max(0, data.earnedCents - data.verifiedCents))]]));
 
-`
+```
