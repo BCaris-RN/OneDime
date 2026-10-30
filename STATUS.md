@@ -11,6 +11,8 @@ Local validation is green: build, 285 tests, strict contrast typecheck, beta
 18 combinations/22 pairs, contrast 24 regressions with zero failing/uncovered,
 and Playwright landing checks at 390/1440 including keyboard navigation,
 reduced motion, plain links, and `/auth/paypal/start` handoff.
+The server now aliases `/auth/paypal/start` to the existing sandbox OAuth start
+handler; the alias has a regression test. The full suite is 286 tests / 14 files.
 
 ## S5/S7 checkpoint, October 30, 2026 (Hawaii)
 
