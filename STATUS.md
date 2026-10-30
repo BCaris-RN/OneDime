@@ -1,5 +1,14 @@
 # OneDime status
 
+## PR #11 rebase checkpoint, October 30, 2026 (Hawaii)
+
+PR #11 was rebased onto merged main `4bbdca2899ba6c37b96c47741aaf440a3ec343ca`.
+Git skipped only commits already present in main; the remaining diff is the
+fictional demo mode and recorder. No Claude Code branch was touched. Local build,
+application tests, contrast, beta and Playwright checks are being rerun before
+the branch is pushed for exact-head CI and bot review. Recordings stay in the
+ignored `video/` directory.
+
 ## OAuth and Claude-decision checkpoint, October 30, 2026 (Hawaii)
 
 PR #14 merged as `59e8043e8da5b345c6550f726b017063f11e6f63` after full
