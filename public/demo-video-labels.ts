@@ -69,9 +69,13 @@ if (window.__ONEDIME_DEMO_VIDEO__ === true) {
         }
       }
     });
-    root.querySelectorAll<HTMLSelectElement>("select[id*='plat' i] option, select[name='platform'] option").forEach(option => {
-      const before = option.textContent ?? option.value, translated = display(before);
+    root.querySelectorAll<HTMLOptionElement>("select[id*='plat' i] option, select[name='platform'] option, select[id*='sup' i] option, select[name='made_by'] option, datalist#platform-options option").forEach(option => {
+      const canonical = option.dataset.demoCanonical ?? option.value || option.textContent ?? "";
+      if (!option.dataset.demoCanonical) option.dataset.demoCanonical = canonical;
+      option.value = canonical;
+      const before = option.textContent ?? canonical, translated = display(before || canonical);
       if (translated !== before) option.textContent = translated;
+      if (option.parentElement?.tagName === "DATALIST") option.value = display(canonical);
     });
     root.querySelectorAll<HTMLInputElement>(platformControls).forEach(input => {
       const fictional = canonicalToFictional[input.value];
@@ -83,7 +87,7 @@ if (window.__ONEDIME_DEMO_VIDEO__ === true) {
     if (Array.isArray(value)) return value.map(restoreCanonicalValues);
     if (!value || typeof value !== "object") return value;
     return Object.fromEntries(Object.entries(value).map(([key, item]) => {
-      if ((key === "platform" || key === "store") && typeof item === "string")
+      if ((key === "platform" || key === "store" || key === "made_by") && typeof item === "string")
         return [key, fictionalToCanonical.get(item) ?? item];
       return [key, restoreCanonicalValues(item)];
     }));
