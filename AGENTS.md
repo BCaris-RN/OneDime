@@ -27,7 +27,7 @@ account. If a handoff seems to conflict with them, stop and ask in the PR.
 2. One agent owns a branch at a time.
 3. Sandbox PayPal only. Anything pointing at live PayPal: stop and flag it.
 4. Secrets live in .env and Render settings only. Never print, log or commit them.
-5. Personal accounts only. Nothing touches an employer (Vencer) account.
+5. Personal accounts only. Nothing touches an employer account.
 6. Money is integer cents everywhere. No floats for money, ever.
 7. Check external docs live (PayPal, Google, Anthropic, npm) and cite the pages in the PR.
 8. Unsure means ask in the PR, not guess.
