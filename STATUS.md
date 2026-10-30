@@ -6,15 +6,21 @@ PR #13 (`deps-security`) head `1ff3a15157dec26da1d6bfd1d8f98449b2cec787`
 changes only package-lock.json: body-parser 2.4.0, undici 8.12.2 and required qs 6.16.1.
 Node 24 install, build, strict contrast typecheck and 236 tests pass locally;
 npm audit reports zero vulnerabilities. Bot review on this exact head completed with
-no findings. Full CI run 41005618843 is still running; merge remains gated on its
-successful completion. Local browser/contrast checks are also running. No deployment.
+no findings. Every required step of full CI run 41005618843 passed; the tested merge
+tree equals the branch head tree. S1 merged as `81c0bc1d48bc29def97c2f827833ab77731c2e8c`.
+STATUS is recorded on the coordinator branch to keep PR #13 dependency-files-only.
+No deployment.
 
 ## S2 fixes in progress, October 29, 2026 (Hawaii)
 
 Prepared the routed-payment first-record quest fix, all-timed-work Stats hourly input,
 before-fees tile label, matched-payment copy, README XP clarification and six-tab spec.
 Copied the supplied review's Oct 21/29 updates to the canonical reviews path. Tests,
-final rebase after S1, exact-head CI and bot/thread reconciliation remain pending.
+final exact-head CI and bot review remain pending. Rebase onto S1 main is complete.
+The application suite passed 270 tests across 13 files locally; the initial unfiltered
+run also discovered untracked archive test copies and failed five archive-only suites.
+Rerunning with only `reviews/**` excluded passed all application tests. Six outdated
+threads and the current first-record thread have fixing-commit replies and are resolved.
 Money, XP and rank calculations are unchanged except the authorized Stats hourly input.
 
 ## M2 checkpoint, October 26, 2026 (Hawaii)
