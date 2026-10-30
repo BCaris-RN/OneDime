@@ -1,5 +1,14 @@
 # OneDime status
 
+## Landing console browser-regression checkpoint, October 30, 2026 (Hawaii)
+
+The exact-head CI browser job exposed an outdated assertion that still expected
+the retired root-page wake-up sentence after deletion. Updated
+`scripts/check-browser-smart.ts` to assert the approved landing console's
+`Log in with PayPal` link instead. Local `npm run test:browser` is green,
+including OAuth, accessibility, offline/cache, and deletion checks. Pending
+commit/push and exact-head CI rerun; no deploy or merge.
+
 ## Landing console checkpoint, October 30, 2026 (Hawaii)
 
 Branch `landing-console` is cut from main `004165d`. The landing page now ports

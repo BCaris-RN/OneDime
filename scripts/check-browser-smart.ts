@@ -314,7 +314,7 @@ try {
   await page.waitForURL(`${baseUrl}/`);
   assert.equal(await prisma.player.findUnique({where:{id:player.id}}),null);
   assert.equal(await prisma.feedback.count({where:{playerId:player.id}}),0);
-  await page.getByText("First visit after a quiet spell can take up to a minute to wake up.", { exact: true }).waitFor();
+  await page.getByRole("link", { name: "Log in with PayPal", exact: true }).waitFor();
   console.log("browser smart check passed: opt-in, inference, private requests, cached reload");
 } finally {
   await browser?.close();
