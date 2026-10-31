@@ -309,7 +309,11 @@ try {
     && ["system", "light", "dark"].includes(stored.mode ?? "")) appearance = stored as Appearance;
   else {
     const previousMode = localStorage.getItem("onedime-theme");
-    if (previousMode === "light" || previousMode === "dark") appearance.mode = previousMode;
+    if (previousMode === "light" || previousMode === "dark") {
+      appearance.mode = previousMode;
+      // Save first so a failed write keeps the old preference for the next load.
+      localStorage.setItem(appearanceKey, JSON.stringify(appearance));
+    }
     localStorage.removeItem("onedime-theme");
   }
 } catch { /* Appearance still works when storage is disabled. */ }

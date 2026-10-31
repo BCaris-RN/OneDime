@@ -108,6 +108,13 @@ try {
   await page.getByRole("tab",{name:"Freelance",exact:true}).waitFor();
   assert.equal(await page.locator("html").getAttribute("data-skin"),"paper");
   assert.equal(await page.locator("html").getAttribute("data-theme"),"dark");
+  await page.evaluate(()=>{localStorage.clear();localStorage.setItem("onedime-theme","dark");});
+  await page.reload();
+  await page.getByRole("tab",{name:"Freelance",exact:true}).waitFor();
+  assert.deepEqual(await page.evaluate(()=>Object.keys(localStorage).sort()),["onedime-appearance"]);
+  await page.reload();
+  await page.getByRole("tab",{name:"Freelance",exact:true}).waitFor();
+  assert.equal(await page.locator("html").getAttribute("data-theme"),"dark","a migrated theme survives a second load");
   await page.getByRole("button",{name:"Appearance",exact:true}).click();
   await page.getByRole("dialog",{name:"Appearance",exact:true}).getByRole("radio",{name:/Slate/}).check();
   await page.getByRole("dialog",{name:"Appearance",exact:true}).getByRole("radio",{name:/System/}).check();
