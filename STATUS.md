@@ -536,3 +536,14 @@ contrast CI on #12 passed. Known review risks remain: `npm audit` reports two hi
 advisories (`body-parser`, `undici`) outside this feature scope; the existing six-tab
 navigation keeps PayPal and therefore renders 3+3 on phones, while F5 says 3+2; and
 the CI browser failure on #9 must be cleared on the final pushed head before merge.
+
+## M7 checkpoint after rebase, October 30, 2026
+
+`week5-skins` (PR #12) is rebased onto main. The Paper and Slate commit is unchanged
+apart from conflict fixes in `package.json` and `public/styles.css`; the ranks commit
+it used to carry is already on main through #9. New: a pixel-based contrast check for
+the console landing page (`npm run test:contrast:landing`), a 3:1 check of the Stats
+chart ink on its panel for every skin and mode, and a two-row phone tab check at 320 and
+390px. The landing audit found the footer line below 4.5:1; it now has a dark backing.
+Local: build, strict typecheck, 299 tests, browser audit (4,396 tab steps) and the full
+contrast suite pass. Exact-head CI is recorded in the PR.
