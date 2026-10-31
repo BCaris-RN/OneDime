@@ -19,12 +19,9 @@ export type PayPalTokenResponse = {
 };
 
 export type PayPalUserInfo = {
-  user_id?: string;
-  sub?: string;
+  user_id: string;
   name?: string;
-  given_name?: string;
-  family_name?: string;
-  email?: string;
+  email: string;
   verified_account?: boolean;
 };
 
@@ -38,10 +35,10 @@ const STATE_TTL_MS = 10 * 60 * 1000;
 
 type OAuthStep = "state_create" | "state_check" | "code_check" | "token_exchange" | "userinfo" | "beta_access" | "player_save" | "session_create" | "redirect";
 
-type PayPalErrorFields = { status: number; errorName?: string; debugId?: string };
+type PayPalErrorFields = { status: number; errorName?: string; debugId?: string; missingClaims?: string[] };
 
 export class PayPalUserInfoError extends Error {
-  constructor(readonly fields: PayPalErrorFields) {
+  constructor(readonly fields: PayPalErrorFields, readonly missingClaims: string[] = []) {
     super(`PayPal userinfo request failed with HTTP ${fields.status}.`);
   }
 }
@@ -113,12 +110,44 @@ export class FetchPayPalIdentityClient implements PayPalIdentityClient {
       signal: AbortSignal.timeout(15000), redirect: "error"
     });
 
-    if (!response.ok) {
-      throw new PayPalUserInfoError(await readPayPalError(response));
+    if (!response.ok) throw new PayPalUserInfoError(await readPayPalError(response));
+    const payload = await response.json().catch(() => undefined);
+    try { return parsePayPalUserInfo(payload); }
+    catch (error) {
+      const missingClaims = error instanceof PayPalUserInfoError ? error.missingClaims : ["response"];
+      throw new PayPalUserInfoError({ status: response.status, missingClaims }, missingClaims);
     }
-
-    return (await response.json()) as PayPalUserInfo;
   }
+}
+
+export function parsePayPalUserInfo(payload: unknown): PayPalUserInfo {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new PayPalUserInfoError({ status: 200, missingClaims: ["response"] }, ["response"]);
+  }
+  const record = payload as Record<string, unknown>;
+  const userId = firstNonBlankString(record.user_id, record.payer_id, record.sub);
+  const email = firstNonBlankString(
+    record.email,
+    ...(Array.isArray(record.emails)
+      ? record.emails.map(value => typeof value === "string" ? value : value && typeof value === "object" ? (value as Record<string, unknown>).value : undefined)
+      : [])
+  );
+  const missingClaims = [
+    ...(userId ? [] : ["user_id"]),
+    ...(email ? [] : ["email"])
+  ];
+  if (missingClaims.length || !userId || !email) throw new PayPalUserInfoError({ status: 200, missingClaims }, missingClaims);
+  return {
+    user_id: userId,
+    email,
+    ...(typeof record.name === "string" && record.name.trim() ? { name: record.name } : {}),
+    ...(typeof record.verified_account === "boolean" ? { verified_account: record.verified_account } : {})
+  };
+}
+
+function firstNonBlankString(...values: unknown[]): string | undefined {
+  const value = values.find(candidate => typeof candidate === "string" && candidate.trim().length > 0);
+  return typeof value === "string" ? value.trim() : undefined;
 }
 
 export function createPayPalRouter(options: PayPalRouterOptions): Router {
@@ -187,10 +216,7 @@ export function createPayPalRouter(options: PayPalRouterOptions): Router {
 
       advance("userinfo");
       const identity = await paypalClient.fetchUserInfo(token.access_token);
-      const paypalUserId = identity.user_id ?? identity.sub;
-      if (!paypalUserId) {
-        throw new Error("PayPal identity response did not include a user identifier.");
-      }
+      const paypalUserId = identity.user_id;
 
       advance("beta_access");
       if (!allowsBetaEmail(identity.email, options.config.betaAllowlist)) {
