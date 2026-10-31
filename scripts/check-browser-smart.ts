@@ -292,6 +292,10 @@ try {
         await vault.getByText("What breaks tiles",{exact:true}).waitFor();
         assert.deepEqual(await vault.locator(".vault-bot svg").evaluateAll(svgs=>svgs.map(svg=>svg.getAttribute("viewBox")+" "+(svg.querySelectorAll("rect").length>40))),
           Array(5).fill("0 0 16 16 true"),"each robot is a 16x16 pixel sprite");
+        await page.emulateMedia({reducedMotion:"reduce"});
+        assert.equal(await vault.locator(".vault-tile:not(.gone)").first().evaluate(tile=>{tile.classList.add("crumble");return getComputedStyle(tile).visibility;}),"hidden",
+          "a newly broken tile is hidden even when its animation is off");
+        await page.emulateMedia({reducedMotion:null});
       }
       await checkPanel(`${appName} ${width} ${theme}`);
       await page.evaluate(()=>window.scrollTo(0,0));

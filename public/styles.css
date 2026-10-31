@@ -188,7 +188,7 @@ dialog.welcome-dialog[open]{display:grid;gap:16px}.welcome-dialog::backdrop{back
 @media(max-width:640px){.vault-layout{grid-template-columns:1fr}.vault-frame{max-width:320px}.vault-roster{grid-template-columns:repeat(3,minmax(0,1fr))}}
 /* Seven app tabs: wrap rather than scroll sideways at any width; phones get rows of four. */
 #app-nav{flex-wrap:wrap;overflow:visible}
-@media(prefers-reduced-motion:reduce){.vault-tile.crumble{animation:none}}
+@media(prefers-reduced-motion:reduce){.vault-tile.crumble{animation:none;visibility:hidden}}
 .log-layout,.log-context{display:grid;gap:18px}.entry-workspace,.clock-workspace,.rung-workspace,.workspace-section{background:var(--card);border:1px solid var(--divider);border-radius:6px;padding:16px}
 .entry-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.full-width{grid-column:1/-1}
 textarea{font:400 16px var(--body);background:var(--lcd-2);color:var(--lcd-4);padding:8px;border:3px solid var(--frame);border-radius:4px;width:100%}
