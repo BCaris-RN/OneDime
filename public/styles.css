@@ -429,6 +429,8 @@ caption{text-align:left;font-weight:700;padding:8px 0;color:var(--head)}
   --accent:#E8B54A;--accent-2:#7A5CFF;color-scheme:dark
 }
 :root[data-skin="glass"][data-theme]{color-scheme:dark}
+/* Beats the light-OS rule for skins (:root[data-skin]:not([data-theme="dark"])) so native pickers stay dark. */
+@media(prefers-color-scheme:light){:root[data-skin="glass"]:not([data-theme="dark"]){color-scheme:dark}}
 :root[data-skin="glass"][data-tab="spotlight"]{--accent:#E2558C}
 :root[data-skin="glass"][data-tab="freelance"]{--accent:#8F8CFF}
 :root[data-skin="glass"][data-tab="market"]{--accent:#3CC6B4}
@@ -443,6 +445,8 @@ caption{text-align:left;font-weight:700;padding:8px 0;color:var(--head)}
 .glass-shapes svg{position:absolute;overflow:visible;transition:transform .9s cubic-bezier(.2,.7,.2,1),opacity .6s}
 .glass-shapes .in{opacity:0!important;transform:translateY(24px) scale(.96)}
 :root[data-skin="glass"] :is(.topbar,.shell){position:relative;z-index:1}
+/* The header holds the fixed controls and the menu, so it must stack above the content. */
+:root[data-skin="glass"] .topbar{z-index:3}
 /* On narrower screens the shapes reach under the content column, so text outside panels gets a scrim. */
 @media(max-width:900px){:root[data-skin="glass"] :is(.topbar,.shell){background:linear-gradient(90deg,transparent,rgba(7,10,22,.6) 12px calc(100% - 12px),transparent)}}
 :root[data-skin="glass"] :is(.slip,.goal-hero,.stats-lcd,.entry-workspace,.clock-workspace,.rung-workspace,.workspace-section,.feedback-dialog,.toast,.header-menu>div){

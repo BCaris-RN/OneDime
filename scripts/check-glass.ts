@@ -85,6 +85,7 @@ try {
   const page = await open({ colorScheme: "light", reducedMotion: "reduce" });
   assert.equal(await page.locator("html").getAttribute("data-skin"), "glass", "Glass is the default skin");
   assert.equal(await page.locator("#theme-toggle").isHidden(), true, "Glass hides the light and dark toggle");
+  assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark", "Glass keeps native controls dark under a light OS in system mode");
   for (const [name, key] of tabs) {
     await page.getByRole("tab", { name, exact: true }).click();
     if (key === "stats") await page.waitForFunction(() => document.querySelectorAll("#app-stats svg[role='img']").length === 3);
@@ -95,6 +96,10 @@ try {
     assert.ok(opacities.every(value => value >= .4 && value <= .6), `${name} shapes stay between .4 and .6 opacity`);
     for (const width of [320, 390, 1440]) {
       await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
+      if (width < 500) assert.equal(await page.evaluate(() => {
+        const box = document.querySelector(".controls")!.getBoundingClientRect();
+        return !!document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)?.closest(".controls");
+      }), true, `${name}: the fixed controls stay above the content at ${width}px`);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       if (overflow > 1) problems.push(`${name} at ${width}px overflows by ${overflow}px`);
       const results = await measureText(page, { skip: ".sr-only,.skip-link,.glass-shapes,#post-login-boot", hide: "" });
