@@ -1828,6 +1828,40 @@ describe("Phase 2 game API", () => {
       ).toBeNull();
     },
   );
+  it("keeps the earned rungs and their XP after deleting the First Dime record that earned them", async () => {
+    const alice = await login("rung-first-delete");
+    const entry = (await write(alice.cookie, "/api/entries", { ...validEntry, platform: "Prolific", amountCents: 1000 }).expect(201)).body.entry;
+    await write(alice.cookie, "/api/paypal/import", {
+      csv: activityCsv("FIRST-RUNG", "Hyperwallet", "USD", "10.00", "0.00", "10.00"),
+    }).expect(200);
+    const payment = (await activity(alice.cookie)).body.rows[0];
+    await write(alice.cookie, `/api/paypal/transactions/${payment.id}/route`, {
+      record_type: "first", platform: "Prolific", record_id: entry.id,
+    }).expect(200);
+    const earned = (await request(app).get("/api/me/stats").set("Cookie", alice.cookie).expect(200)).body;
+    expect(earned.ladder.reachedRungs).toEqual([10, 100, 1000]);
+    await request(app).delete(`/api/entries/${entry.id}`).set("Cookie", alice.cookie).set("Origin", origin).send({}).expect(204);
+    const retained = (await request(app).get("/api/me/stats").set("Cookie", alice.cookie).expect(200)).body;
+    expect(retained.ladder.reachedRungs).toEqual([10, 100, 1000]);
+    expect(retained.xp).toBe(300);
+    expect(await prisma.rungClaim.count({ where: { playerId: alice.player.id } })).toBe(3);
+  });  it("counts the matched net amount as verified in Stats while earnings stay gross", async () => {
+    const alice = await login("stats-net-match");
+    const gig = (await write(alice.cookie, "/api/freelance/gigs", {
+      platform: "Upwork", client: "Fictional client", project: "Net match", pricing: "fixed",
+      gross_cents: 1100, fee_cents: 200, hours_x100: 100, started_on: "2026-10-14", stage: "In progress"
+    }).expect(201)).body.row;
+    await write(alice.cookie, "/api/paypal/import", {
+      csv: activityCsv("STATS-NET-MATCH", "Prolific", "USD", "9.00", "0.00", "9.00")
+    }).expect(200);
+    const payment = (await activity(alice.cookie)).body.rows[0];
+    await write(alice.cookie, `/api/paypal/transactions/${payment.id}/route`, {
+      record_type: "gigs", platform: "Upwork", record_id: gig.id
+    }).expect(200);
+    const stats = (await request(app).get("/api/stats?month=2026-10").set("Cookie", alice.cookie).expect(200)).body;
+    expect(stats.verifiedCents).toBe(900);
+    expect(stats.earnedCents).toBe(1100);
+  });
   it("reserves an idempotent payout outbox before API calls and retries with identical keys", async () => {
     const alice = await login("payout");
     await prisma.logEntry.create({
