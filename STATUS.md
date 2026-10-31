@@ -4,8 +4,9 @@
 
 Branch `personal-ladder` is cut from main `f3b9b1d`. The rung claim migration
 changes the primary key to `(player_id, rung_cents)` without deleting existing
-rows; claims remain per-player, add +100 XP once per rung, and retain payout
-references while payouts stay disabled. The app now presents one Your ladder
+rows; migration backfills every already-qualified player/rung, claims remain
+per-player, add +100 XP once per rung, and retain payout references while
+payouts stay disabled. The app now presents one Your ladder
 with matched/pending progress and permanent checks; opted-in leaderboard rows
 show highest rung only. Local build, server tests, contrast typecheck and beta
 checks are being rerun; no merge or deploy.
