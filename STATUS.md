@@ -1,5 +1,14 @@
 # OneDime status
 
+## OAuth userinfo checkpoint, October 30, 2026 (Hawaii)
+
+Branch `fix-userinfo` is cut from merged main `f8b3f9f`. PayPal userinfo now
+normalizes `user_id`/`payer_id`/`sub` and `email`/`emails[]`, requires only the
+stable user ID and email, treats name and account verification as optional, and
+logs only HTTP status, provider error name/debug ID, or missing required claim
+names. Local build, 293 tests, diff check, and high-severity npm audit pass.
+No deploy performed.
+
 ## Landing console browser-regression checkpoint, October 30, 2026 (Hawaii)
 
 The exact-head CI browser job exposed an outdated assertion that still expected

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildPayPalAuthorizationUrl, FetchPayPalIdentityClient, PayPalUserInfoError } from "../src/auth/paypal.js";
+import { buildPayPalAuthorizationUrl, FetchPayPalIdentityClient, parsePayPalUserInfo, PayPalUserInfoError } from "../src/auth/paypal.js";
 import { loadConfig } from "../src/config.js";
 
 const config = loadConfig({
@@ -30,6 +30,29 @@ describe("OAuth transport", () => {
     expect(transport).toHaveBeenCalledTimes(1);
     expect(transport.mock.calls[0][1].redirect).toBe("error");
   });
+
+  it.each([
+    { user_id: "payer-1", email: "payer@example.test" },
+    { payer_id: "payer-2", emails: [{ value: "payer2@example.test" }] },
+    { sub: "payer-3", emails: ["payer3@example.test"] }
+  ])("normalizes realistic userinfo claims and keeps optional fields optional", payload => {
+    expect(parsePayPalUserInfo(payload)).toMatchObject({
+      user_id: expect.stringMatching(/^payer-/),
+      email: expect.stringMatching(/^payer\d?@example\.test$/)
+    });
+  });
+
+  it.each([
+    [{ user_id: "payer-1" }, ["email"]],
+    [{ email: "payer@example.test" }, ["user_id"]],
+    [{ user_id: "", email: "" }, ["user_id", "email"]]
+  ])("rejects userinfo without required claim names", (payload, missingClaims) => {
+    expect(() => parsePayPalUserInfo(payload)).toThrow();
+    try { parsePayPalUserInfo(payload); } catch (error) {
+      expect(error).toMatchObject({ missingClaims });
+    }
+  });
+
 });
 
 describe("PayPal userinfo", () => {
@@ -42,7 +65,7 @@ describe("PayPal userinfo", () => {
     .then(() => { throw new Error("expected a rejection"); }, (error: unknown) => error as PayPalUserInfoError);
 
   it("requests the OpenID Connect profile with the openid schema", async () => {
-    const transport = respondWith(Response.json({ user_id: "fixture-user" }));
+    const transport = respondWith(Response.json({ user_id: "fixture-user", email: "fixture@example.test" }));
     await new FetchPayPalIdentityClient(config).fetchUserInfo("fixture-token");
     const url = new URL(transport.mock.calls[0][0]);
     expect(url.origin + url.pathname).toBe("https://api-m.sandbox.paypal.com/v1/identity/openidconnect/userinfo");
@@ -70,5 +93,12 @@ describe("PayPal userinfo", () => {
   it("keeps only the status when the error body is not JSON", async () => {
     respondWith(new Response("<html>private-token</html>", { status: 502 }));
     expect((await failure()).fields).toEqual({ status: 502 });
+  });
+
+  it("reports only missing required claim names for a successful but incomplete profile", async () => {
+    respondWith(Response.json({ user_id: "fixture-user" }));
+    const error = await failure();
+    expect(error.fields).toEqual({ status: 200, missingClaims: ["email"] });
+    expect(error.missingClaims).toEqual(["email"]);
   });
 });
