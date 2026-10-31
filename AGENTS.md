@@ -33,6 +33,21 @@ account. If a handoff seems to conflict with them, stop and ask in the PR.
 8. Unsure means ask in the PR, not guess.
 9. Never automate, scrape or log in to any gig platform for players.
 
+## Don't stop at the first obstacle
+When a step fails, try one safe, documented alternative before you report it:
+- A port is taken or reserved: pick another free local port.
+- A branch is checked out or dirty elsewhere: use a separate worktree.
+- A file is gitignored but the task asks for it: `git add -f` that file only.
+- A PR, run or log is hard to reach: use `gh` or the GitHub connector.
+- A test or build is still running: wait for it to finish, then read the result.
+
+"Blocked" means only one of these: the next step needs Brandon's decision, needs credentials you
+don't have, or is an action your permissions don't allow. A failing command is not blocked. The
+non-negotiables above still apply to every alternative.
+
+Never report work as done without checking the result: read the test output, the CI run on the exact
+head, or the page itself. If a check was skipped or failed, say so.
+
 ## Code style: write like one careful developer
 The goal is a codebase that reads as if one person wrote it with consistent habits.
 These rules apply to new code and code you touch for the task. Don't refactor unrelated files just to
