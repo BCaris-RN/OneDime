@@ -188,7 +188,7 @@ try {
   await page.getByRole("button",{name:"Cancel edit",exact:true}).press("Enter");
   assert.equal(await page.getByRole("button",{name:"Cancel edit",exact:true}).count(),0);
   let focusChecks=0;
-  const apps=["First Dime","Spotlight","Freelance","Market","Stats","PayPal"];
+  const apps=["First Dime","Spotlight","Freelance","Market","Stats","Vault","PayPal"];
   async function checkPanel(label:string) {
     const issues=await page.evaluate(()=>{
       const issues:string[]=[];
