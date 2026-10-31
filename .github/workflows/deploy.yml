@@ -1,0 +1,85 @@
+name: Deploy
+
+# A green Test run on main is the deploy approval (docs/SDLC.md). Manual runs deploy the chosen ref.
+on:
+  workflow_run:
+    workflows: [Test]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time; a newer pending run replaces an older pending one.
+concurrency:
+  group: deploy-beta
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+      BETA_URL: ${{ vars.BETA_URL || 'https://onedime-web.onrender.com' }}
+      RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+    steps:
+      - name: Check the deploy hook secret
+        id: gate
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "::notice::RENDER_DEPLOY_HOOK is not set, so nothing was deployed. Add it under Settings > Secrets and variables > Actions."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.skip != 'true'
+        with:
+          ref: ${{ env.SHA }}
+
+      - name: Skip if main has moved on
+        id: fresh
+        if: steps.gate.outputs.skip != 'true' && github.event_name == 'workflow_run'
+        run: |
+          head=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$head" != "$SHA" ]; then
+            echo "::notice::main is now at $head, so $SHA was not deployed. The newer commit deploys after its own green Test run."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger the Render deploy
+        if: steps.gate.outputs.skip != 'true' && steps.fresh.outputs.skip != 'true'
+        run: |
+          status=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "${RENDER_DEPLOY_HOOK}&ref=${SHA}")
+          echo "render deploy hook answered $status for $SHA"
+          case "$status" in 200|202) ;; *) exit 1 ;; esac
+
+      - name: Wait for the new commit on /health
+        if: steps.gate.outputs.skip != 'true' && steps.fresh.outputs.skip != 'true'
+        run: |
+          deadline=$((SECONDS + 600))
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            live=$(curl -sS --max-time 30 "$BETA_URL/health" | jq -r '.commit // empty' 2>/dev/null || true)
+            if [ "$live" = "$SHA" ]; then echo "live at $SHA after ${SECONDS}s"; exit 0; fi
+            echo "waiting: /health reports ${live:-no commit}"
+            sleep 15
+          done
+          echo "::error::$SHA was not live on /health within 10 minutes"
+          exit 1
+
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.skip != 'true' && steps.fresh.outputs.skip != 'true'
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Smoke-test the beta
+        if: steps.gate.outputs.skip != 'true' && steps.fresh.outputs.skip != 'true'
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run smoke:beta

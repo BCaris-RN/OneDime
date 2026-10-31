@@ -41,7 +41,7 @@ let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
 try {
   const startedAt = Date.now();
   const health = await waitForHealth();
-  assert.deepEqual(await health.json(), { ok: true }, "/health body");
+  assert.equal((await health.json() as { ok?: unknown }).ok, true, "/health body");
   log(`health ok after ${Math.round((Date.now() - startedAt) / 1000)}s`);
 
   // Third-party policy pages are not fetched; only the redirect targets are checked.

@@ -149,11 +149,19 @@ for build and migration output. Share only a redacted error and time if you need
 never share environment values, connection strings, authorization codes or account data.
 [Render's logs guide](https://render.com/docs/logging) describes the two views.
 
-After an approved fix merges and CI passes, use **Deploys > Manual Deploy > Deploy a
-specific commit** for the approved SHA. Wait for it to become live, check the login page
-and try the affected behavior with fictional data. If a build fails, read that deploy's
-log before retrying. Keep both automatic controls off; do not create a deploy hook.
-See [Render's manual-deploy guide](https://render.com/docs/deploys).
+Merging to main deploys. When Test passes on the merge commit, `.github/workflows/deploy.yml`
+posts that exact SHA to the Render deploy hook, waits up to 10 minutes for `/health` to report
+it as `commit`, then runs the smoke check below. If main has already moved on, it skips and
+the newer commit deploys after its own green run. **Actions > Deploy > Run workflow** deploys
+the chosen ref by hand. Keep Render's own auto-deploy off so the hook is the only trigger.
+
+The hook needs one repository secret, `RENDER_DEPLOY_HOOK`: copy the deploy hook URL from the
+web service's **Settings** and add it under **Settings > Secrets and variables > Actions**.
+Without it the workflow skips with a notice. Treat the URL as a password; if it leaks, use
+**Regenerate Hook** in Render and update the secret. An optional repository variable,
+`BETA_URL`, overrides the default origin. See [Render's deploy hooks](https://render.com/docs/deploy-hooks).
+
+If a build fails, read that deploy's log before retrying.
 
 ## Smoke-test the beta
 
@@ -176,7 +184,8 @@ Each run leaves one unused login state in the database that expires after 10 min
 Each passing step prints one `smoke:` line. A failure prints the step and exits nonzero.
 A `redirect_uri` failure means `PAYPAL_REDIRECT_URI` or `PUBLIC_BASE_URL` doesn't match
 the origin you passed. The check needs no credentials and prints none. It is not part
-of CI, because CI has no hosted service to reach.
+of the Test workflow, which has no hosted service to reach; the Deploy workflow runs it after
+each deploy.
 
-Writing this guide does not authorize paid hosting, enabling payouts, live PayPal,
-changing repository visibility or any later deployment.
+Writing this guide does not authorize paid hosting, enabling payouts, live PayPal or
+changing repository visibility.

@@ -215,14 +215,80 @@ function renderLeaders(leaders: Leader[]) {
     return row;
   }));
 }
+// --- vault: the pilot's 16x16 robots --------------------------------------------------------------
+const PENNY = ["......kk........", ".......k........", ".....kkkkkk.....", "....kmmmmmmk....", "....kmlkklmk....", "....kmmmmmmk....",
+  "....kmmkkmmk....", ".....kkkkkk.....", "..kkkkkkkkkkkk..", ".kmmmmmmmmmmmmk.", ".kmmmkkkkkkmmmk.", ".kmmkllllllkmmk.",
+  ".kmmkllkkllkmmk.", ".kmmmkkkkkkmmmk.", "..kkkkkkkkkkkk..", "...kk......kk..."];
+const BOTS = [
+  { name: "Penny", wakesWith: "First Dime", head: PENNY.slice(0, 8), feet: PENNY[15] },
+  { name: "Lumen", wakesWith: "Spotlight", head: ["...k.......k....", "....k.....k.....", ".....kkkkkk.....", "....kmmmmmmk....", "....kmlkklmk....", "....kmmmmmmk....", "....kmmmmmmk....", ".....kkkkkk....."], feet: PENNY[15] },
+  { name: "Quill", wakesWith: "Freelance", head: ["................", "...........kk...", "....kkkkkk.k....", "....kmmmmmmk....", "....kmlkklmk....", "....kmmmmmmk....", "....kmmkkmmk....", ".....kkkkkk....."], feet: PENNY[15] },
+  { name: "Axle", wakesWith: "Delivery", head: ["................", "................", "....kkkkkkkk....", "...kmmmmmmmmk...", "...kmlkmmklmk...", "...kmmmmmmmmk...", "....kkkkkkkk....", "................"], feet: "..kkk......kkk.." },
+  { name: "Barter", wakesWith: "Selling", head: ["................", "..kkkkkkkkkkkk..", "..kmkmkmkmkmkm..", "....kkkkkkkk....", "....kmlkklmk....", "....kmmmmmmk....", "....kmmkkmmk....", ".....kkkkkk....."], feet: PENNY[15] }
+];
+const SVG = "http://www.w3.org/2000/svg";
+function sprite(rows: string[], fill?: string) {
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("viewBox", "0 0 16 16"); svg.setAttribute("aria-hidden", "true");
+  rows.forEach((row, y) => [...row].forEach((pixel, x) => {
+    if (pixel === ".") return;
+    const rect = document.createElementNS(SVG, "rect");
+    for (const [name, value] of [["x", x], ["y", y], ["width", 1], ["height", 1]] as const) rect.setAttribute(name, String(value));
+    rect.setAttribute("class", fill ?? pixel);
+    svg.append(rect);
+  }));
+  return svg;
+}
+function vaultRule(label: string, tilesEach: number, percent: number) {
+  const row = node("div", undefined, "vault-rule");
+  const bar = node("i", undefined, "vault-rule-bar"); const fill = node("b");
+  fill.style.width = `${Math.min(100, percent)}%`; bar.append(fill);
+  row.append(node("span", label), bar, node("span", String(tilesEach)));
+  return row;
+}
 function renderVault(vault: Vault) {
-  const grid = element("vault-grid"); const visible = Math.max(vault.tiles, vault.seen);
-  grid.replaceChildren(...TILE_ORDER.map((tile, index) => node("span", index < visible ? "" : "?", index < visible ? "vault-tile broken" : "vault-tile")));
-  grid.setAttribute("aria-label", `The Vault. ${visible} of 100 tiles broken.`);
-  element("vault-count").textContent = `${visible} of 100 tiles broken · matched pay only`;
-  const awake = element("vault-awake"); awake.replaceChildren();
-  if (visible >= 100) awake.append(node("h3", "PENNY IS AWAKE"), node("p", "THE MINT DOOR"), node("p", "Your Lot opens soon."));
-  element("vault-roster").replaceChildren(...["Penny", "Lumen", "Quill", "Axle", "Barter"].map(name => node("li", `${name} · sleeping`)));
+  const visible = Math.max(vault.tiles, vault.seen), awake = visible >= 100;
+  const frame = node("div", undefined, "vault-frame");
+  // Only the picture is an image; the side panel and the count stay readable text.
+  frame.setAttribute("role", "img");
+  frame.setAttribute("aria-label", awake ? "The Vault is open. Penny is awake." : `The Vault. ${visible} of 100 tiles broken.`);
+  const tiles = node("div", undefined, "vault-tiles"); tiles.setAttribute("aria-hidden", "true");
+  const broken = new Set(TILE_ORDER.slice(0, visible)), fresh = new Set(TILE_ORDER.slice(Math.min(vault.seen, visible), visible));
+  let delay = 0;
+  for (let index = 0; index < 100; index++) {
+    const tile = node("i", undefined, `vault-tile${broken.has(index) ? fresh.has(index) ? " crumble" : " gone" : ""}`);
+    if (fresh.has(index)) tile.style.setProperty("--d", String(delay++));
+    tiles.append(tile);
+  }
+  frame.append(sprite(PENNY), tiles);
+  const side = node("div", undefined, "vault-side");
+  if (awake) {
+    const door = node("div", undefined, "vault-door");
+    door.append(node("strong", "THE MINT DOOR"), node("span", "Your Lot opens soon."));
+    side.append(node("h3", "PENNY IS AWAKE", "vault-awake-title"), door);
+  } else {
+    side.append(node("p", "What breaks tiles", "vault-side-title"),
+      vaultRule("Paid $1", 2, Math.floor(vault.matchedCents / 100) * 2),
+      vaultRule("Work day", 1, vault.distinctWorkDays),
+      vaultRule("Quest", 3, vault.completedQuests * 3),
+      node("p", `So far: ${money(vault.matchedCents)} paid, ${vault.distinctWorkDays} work day${vault.distinctWorkDays === 1 ? "" : "s"}, ${vault.completedQuests} quest${vault.completedQuests === 1 ? "" : "s"}. Only pay matched to your PayPal activity counts.`, "vault-so-far"),
+      node("p", `${100 - visible} tiles to go. No shortcuts, no purchases, no luck.`, "vault-so-far"));
+  }
+  element("vault-grid").querySelector(".vault-layout")!.replaceChildren(frame, side);
+  element("vault-count").textContent = awake ? "100 / 100 tiles. Penny is awake." : `${visible} / 100 tiles broken`;
+  element("vault-roster").replaceChildren(...BOTS.map((bot, index) => {
+    const open = index === 0 && awake;
+    const art = sprite([...bot.head, ...PENNY.slice(8, 15), bot.feet], open ? undefined : "sil");
+    if (index > 0) {
+      const mark = document.createElementNS(SVG, "text");
+      for (const [name, value] of [["class", "q"], ["x", "8"], ["y", "10.5"], ["text-anchor", "middle"]]) mark.setAttribute(name, value);
+      mark.textContent = "?"; art.append(mark);
+    }
+    const card = node("li", undefined, "vault-bot");
+    card.append(art, node("strong", open || index === 0 ? bot.name : "? ? ?"),
+      node("small", open ? "Awake" : index === 0 ? `${visible}% uncovered` : `Wakes with ${bot.wakesWith}`));
+    return card;
+  }));
 }
 async function refresh() {
   const [me, stats, entries, value, quests, leaders, vault] = await Promise.all([

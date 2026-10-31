@@ -1,6 +1,6 @@
 #  (o) OneDime | render.yaml
 #  ----------------------------------------------------------
-#  Render blueprint: web service and Postgres. Brandon deploys.
+#  Render blueprint: web service and Postgres. Deploys run from deploy.yml after green CI.
 services:
   - type: web
     name: onedime-web

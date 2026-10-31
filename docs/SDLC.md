@@ -1,6 +1,6 @@
 # OneDime Software Development Lifecycle
 
-Updated Oct 19, 2026 (Hawaii).
+Updated Oct 31, 2026 (Hawaii).
 
 How OneDime gets built: who does what, how each phase moves from plan to merged code, and what has to be true before anything ships.
 
@@ -17,7 +17,8 @@ How OneDime gets built: who does what, how each phase moves from plan to merged 
 
 **Non-negotiables:**
 
-1. Brandon approves every merge, deploy, release and visibility change, each time. No standing permission.
+1. Brandon approves every merge, release and visibility change, each time. No standing permission.
+   Approving a merge to main is also the deploy approval: the beta deploys itself once Test passes on that commit.
 2. One agent owns a branch at a time.
 3. Sandbox PayPal only until Brandon says otherwise. Anything pointing at live PayPal stops the work.
 4. Secrets live in .env and Render's settings, never in code, chat or commits.
@@ -43,7 +44,7 @@ Every handoff uses the same template: target repo, target and base branch, files
 | Push to a phase branch | The Codex agent that owns it, within an approved handoff |
 | Open a pull request | Codex |
 | Merge to main | Brandon only, after a passing review and green CI |
-| Deploy to Render | Brandon only, starting in phase 3 |
+| Deploy to Render | Automatic after a merge to main passes Test (.github/workflows/deploy.yml); Brandon can also run it by hand |
 | Make the repo public | Brandon only, before submission |
 | Add or change secrets | Brandon only |
 
@@ -76,8 +77,8 @@ A phase is done only when every box is checked.
 
 This is the current phase table. [STATUS.md](../STATUS.md) records the active checkpoint and validation;
 it links here instead of maintaining a second phase table. Beta testing runs Nov 1-8, 2026, followed by
-shipping work on Nov 9-10, 2026. Each merge, deployment and visibility change still needs Brandon's
-specific approval.
+shipping work on Nov 9-10, 2026. Each merge and visibility change still needs Brandon's specific
+approval; a merge that passes CI deploys.
 
 | Phase | Branch | Scope | Status / dates |
 | --- | --- | --- | --- |
@@ -89,7 +90,7 @@ specific approval.
 | 6. Ship | Not created | Demo video, submission, license and approved release steps | Planned; Nov 9-10, 2026 |
 
 Google Sites holds the only policy copies. Render's free web service and free Postgres are configured
-for beta testing; no deployment is authorized by that configuration.
+for beta testing. Deploys go through the Render deploy hook after green CI on main.
 
 **Open operator checks:** physical-device inference speed and screen-reader testing, real sandbox
 connectivity, and any decision to enable sandbox milestone payouts. The root LICENSE is the

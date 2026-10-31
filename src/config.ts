@@ -23,6 +23,7 @@ export type AppConfig = {
   paypalWebhookId?: string;
   betaAllowlist?: ReadonlySet<string>;
   demoVideo: boolean;
+  gitCommit?: string;
 };
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -69,6 +70,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   return {
     betaAllowlist: parseBetaAllowlist(env.BETA_ALLOWLIST),
     demoVideo: nodeEnv === "test" && env.DEMO_VIDEO === "true",
+    // Render sets this at runtime; the deploy workflow waits for /health to report it.
+    gitCommit: /^[0-9a-f]{40}$/.test(env.RENDER_GIT_COMMIT ?? "") ? env.RENDER_GIT_COMMIT : undefined,
     payoutsEnabled: env.PAYOUTS_ENABLED === "true",
     paypalWebhookId: blankToUndefined(env.PAYPAL_WEBHOOK_ID),
     nodeEnv,
