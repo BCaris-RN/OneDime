@@ -5,7 +5,8 @@ services:
   - type: web
     name: onedime-web
     runtime: node
-    plan: free
+    # Starter: 0.5 CPU, 512 MB. Same plan as the legacy name 'starter'.
+    plan: 0.5c-512mb
     autoDeployTrigger: "off"
     buildCommand: npm ci --include=dev && npm run build && npm run db:migrate
     startCommand: npm start
@@ -57,5 +58,6 @@ databases:
     postgresMajorVersion: "16"
     databaseName: onedime
     user: onedime
-    plan: free
+    # Basic-256mb: 0.1 CPU, 256 MB, 100 connections. Same plan as the legacy name 'basic-256mb'.
+    plan: 0.1c-256mb
 
