@@ -12,6 +12,11 @@ describe("configuration boundaries", () => {
         .toThrow("PAYPAL_REDIRECT_URI must exactly match the app origin plus /auth/paypal/callback.");
     }
   );
+  it("keeps a full Render commit SHA and ignores anything else", () => {
+    const sha = "0123456789abcdef0123456789abcdef01234567";
+    expect(loadConfig({ ...fixture, RENDER_GIT_COMMIT: sha }).gitCommit).toBe(sha);
+    expect(loadConfig({ ...fixture, RENDER_GIT_COMMIT: "<script>" }).gitCommit).toBeUndefined();
+  });
   it("rejects insecure production origins without echoing configuration", () => {
     expect(() => loadConfig({ ...fixture, NODE_ENV: "production", PUBLIC_BASE_URL: "http://app.example" })).toThrow("HTTPS in production");
   });
