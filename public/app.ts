@@ -329,18 +329,54 @@ tabs.forEach((tab, index) => {
 setTab(location.hash.slice(1) || "log");
 window.addEventListener("hashchange", () => setTab(location.hash.slice(1)));
 
-function theme(value: "light" | "dark") {
-  document.documentElement.dataset.theme = value;
-  element("theme-toggle").textContent = value === "dark" ? "Light mode" : "Dark mode";
-  element("theme-toggle").setAttribute("aria-label", `Switch to ${value === "dark" ? "light" : "dark"} mode`);
+type Appearance = { skin: "current" | "paper" | "slate"; mode: "system" | "light" | "dark" };
+const appearanceKey = "onedime-appearance";
+const systemDark = matchMedia("(prefers-color-scheme: dark)");
+const appearanceDialog = element<HTMLDialogElement>("appearance-dialog");
+let appearance: Appearance = { skin: "current", mode: "system" };
+try {
+  const stored = JSON.parse(localStorage.getItem(appearanceKey) ?? "null") as Partial<Appearance> | null;
+  if (stored && ["current", "paper", "slate"].includes(stored.skin ?? "")
+    && ["system", "light", "dark"].includes(stored.mode ?? "")) appearance = stored as Appearance;
+  else {
+    const previousMode = localStorage.getItem("onedime-theme");
+    if (previousMode === "light" || previousMode === "dark") {
+      appearance.mode = previousMode;
+      // Save first so a failed write keeps the old preference for the next load.
+      localStorage.setItem(appearanceKey, JSON.stringify(appearance));
+    }
+    localStorage.removeItem("onedime-theme");
+  }
+} catch { /* Appearance still works when storage is disabled. */ }
+function applyAppearance() {
+  const root = document.documentElement;
+  if (appearance.skin === "current") delete root.dataset.skin;
+  else root.dataset.skin = appearance.skin;
+  if (appearance.mode === "system") delete root.dataset.theme;
+  else root.dataset.theme = appearance.mode;
+  for (const input of document.querySelectorAll<HTMLInputElement>('input[name="skin"]')) input.checked = input.value === appearance.skin;
+  for (const input of document.querySelectorAll<HTMLInputElement>('input[name="mode"]')) input.checked = input.value === appearance.mode;
+  const dark = appearance.mode === "dark" || (appearance.mode === "system" && systemDark.matches);
+  element("theme-toggle").textContent = dark ? "Light mode" : "Dark mode";
+  element("theme-toggle").setAttribute("aria-label", "Switch to " + (dark ? "light" : "dark") + " mode");
 }
-let savedTheme: string | null = null;
-try { savedTheme = localStorage.getItem("onedime-theme"); } catch { /* Storage may be disabled. */ }
-theme(savedTheme === "dark" || (savedTheme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light");
+function saveAppearance() {
+  applyAppearance();
+  try { localStorage.setItem(appearanceKey, JSON.stringify(appearance)); } catch { /* Appearance still works when storage is disabled. */ }
+}
+applyAppearance();
+systemDark.addEventListener("change", () => { if (appearance.mode === "system") applyAppearance(); });
+element("appearance-open").addEventListener("click", () => appearanceDialog.showModal());
+element("appearance-close").addEventListener("click", () => appearanceDialog.close());
+for (const input of document.querySelectorAll<HTMLInputElement>('input[name="skin"]')) input.addEventListener("change", () => {
+  if (input.checked && ["current", "paper", "slate"].includes(input.value)) { appearance.skin = input.value as Appearance["skin"]; saveAppearance(); }
+});
+for (const input of document.querySelectorAll<HTMLInputElement>('input[name="mode"]')) input.addEventListener("change", () => {
+  if (input.checked && ["system", "light", "dark"].includes(input.value)) { appearance.mode = input.value as Appearance["mode"]; saveAppearance(); }
+});
 element("theme-toggle").addEventListener("click", () => {
-  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-  theme(next);
-  try { localStorage.setItem("onedime-theme", next); } catch { /* Theme still works without persistence. */ }
+  appearance.mode = (appearance.mode === "dark" || (appearance.mode === "system" && systemDark.matches)) ? "light" : "dark";
+  saveAppearance();
 });
 
 element<HTMLFormElement>("entry-form").addEventListener("submit", (event) => {
