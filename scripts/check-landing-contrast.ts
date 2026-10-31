@@ -94,7 +94,7 @@ async function measure(page: Page) {
       if (!seen || result.ratio < seen.ratio) worst.set(result.label, result);
     }
   }
-  await hide.evaluate(node => node.remove());
+  await hide.evaluate(node => (node as ChildNode).remove());
   await page.evaluate(() => scrollTo(0, 0));
   return [...worst].map(([label, value]) => ({ label, ...value }));
 }
