@@ -2,7 +2,7 @@ import { parseBetaAllowlist } from "./auth/beta.js";
 
 export const PAYPAL_AUTH_URL = "https://www.sandbox.paypal.com/connect";
 export const PAYPAL_API_BASE_URL = "https://api-m.sandbox.paypal.com";
-export const PAYPAL_USERINFO_PATH = "/v1/identity/openidconnect/userinfo";
+export const PAYPAL_USERINFO_PATH = "/v1/identity/openidconnect/userinfo?schema=openid";
 export const PAYPAL_SCOPE = "openid profile email https://uri.paypal.com/services/paypalattributes";
 
 export type AppConfig = {

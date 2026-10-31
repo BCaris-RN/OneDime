@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildPayPalAuthorizationUrl, FetchPayPalIdentityClient } from "../src/auth/paypal.js";
+import { buildPayPalAuthorizationUrl, FetchPayPalIdentityClient, PayPalUserInfoError } from "../src/auth/paypal.js";
 import { loadConfig } from "../src/config.js";
 
 const config = loadConfig({
@@ -29,5 +29,46 @@ describe("OAuth transport", () => {
     expect(timeout).toHaveBeenCalledWith(15000);
     expect(transport).toHaveBeenCalledTimes(1);
     expect(transport.mock.calls[0][1].redirect).toBe("error");
+  });
+});
+
+describe("PayPal userinfo", () => {
+  const respondWith = (response: Response) => {
+    const transport = vi.fn(async (_url: string, _options: RequestInit) => response);
+    vi.stubGlobal("fetch", transport);
+    return transport;
+  };
+  const failure = () => new FetchPayPalIdentityClient(config).fetchUserInfo("fixture-token")
+    .then(() => { throw new Error("expected a rejection"); }, (error: unknown) => error as PayPalUserInfoError);
+
+  it("requests the OpenID Connect profile with the openid schema", async () => {
+    const transport = respondWith(Response.json({ user_id: "fixture-user" }));
+    await new FetchPayPalIdentityClient(config).fetchUserInfo("fixture-token");
+    const url = new URL(transport.mock.calls[0][0]);
+    expect(url.origin + url.pathname).toBe("https://api-m.sandbox.paypal.com/v1/identity/openidconnect/userinfo");
+    expect(url.searchParams.get("schema")).toBe("openid");
+  });
+
+  it("keeps the status, error name and debug id from a failed response", async () => {
+    respondWith(Response.json({ name: "AUTHENTICATION_FAILURE", debug_id: "f00d1e5ca7", message: "private-token",
+      details: [{ issue: "private@example.test" }] }, { status: 401 }));
+    const error = await failure();
+    expect(error).toBeInstanceOf(PayPalUserInfoError);
+    expect(error.fields).toEqual({ status: 401, errorName: "AUTHENTICATION_FAILURE", debugId: "f00d1e5ca7" });
+  });
+
+  it("reads an OAuth-style error field as the error name", async () => {
+    respondWith(Response.json({ error: "invalid_token", error_description: "private-token" }, { status: 401 }));
+    expect((await failure()).fields).toEqual({ status: 401, errorName: "invalid_token" });
+  });
+
+  it("drops error fields that are not plain identifiers", async () => {
+    respondWith(Response.json({ name: "bad private@example.test", debug_id: "private token" }, { status: 400 }));
+    expect((await failure()).fields).toEqual({ status: 400 });
+  });
+
+  it("keeps only the status when the error body is not JSON", async () => {
+    respondWith(new Response("<html>private-token</html>", { status: 502 }));
+    expect((await failure()).fields).toEqual({ status: 502 });
   });
 });

@@ -23,7 +23,7 @@ import {
   vi,
 } from "vitest";
 import type { AppConfig } from "../src/config.js";
-import type { PayPalIdentityClient } from "../src/auth/paypal.js";
+import { PayPalUserInfoError, type PayPalIdentityClient } from "../src/auth/paypal.js";
 import { claimEligibleRungs } from "../src/game/rungs.js";
 import { parseBetaAllowlist } from "../src/auth/beta.js";
 import { aggregateSql, verifiedSql } from "../scripts/metrics-report.js";
@@ -145,6 +145,22 @@ describe("server", () => {
       for (const privateValue of [state, "private-code", "private-token", "private@example.test"])
         expect(output).not.toContain(privateValue);
       expect(paypalClient.fetchUserInfo).not.toHaveBeenCalled();
+    } finally { log.mockRestore(); }
+  });
+
+  it("logs the userinfo status, PayPal error name and debug id without private data", async () => {
+    const log = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      const state = await beginPayPalLogin();
+      vi.mocked(paypalClient.fetchUserInfo).mockRejectedValueOnce(
+        new PayPalUserInfoError({ status: 401, errorName: "AUTHENTICATION_FAILURE", debugId: "f00d1e5ca7" }));
+      await request(app).get(`/auth/paypal/callback?code=private-code&state=${state}`)
+        .set("Cookie", `onedime_oauth_state=${state}`).expect(500);
+      expect(log).toHaveBeenCalledWith("oauth step", { step: "userinfo", outcome: "failed", elapsedMs: expect.any(Number),
+        status: 401, errorName: "AUTHENTICATION_FAILURE", debugId: "f00d1e5ca7" });
+      const output = JSON.stringify(log.mock.calls);
+      for (const privateValue of [state, "private-code", "mock-access-token"])
+        expect(output).not.toContain(privateValue);
     } finally { log.mockRestore(); }
   });
 

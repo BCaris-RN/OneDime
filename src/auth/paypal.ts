@@ -38,9 +38,31 @@ const STATE_TTL_MS = 10 * 60 * 1000;
 
 type OAuthStep = "state_create" | "state_check" | "code_check" | "token_exchange" | "userinfo" | "beta_access" | "player_save" | "session_create" | "redirect";
 
-function logStep(step: OAuthStep, outcome: "start" | "ok" | "rejected" | "failed", started: number) {
-  // Fixed fields only: provider errors and callback input can contain credentials.
-  console.info("oauth step", { step, outcome, elapsedMs: Date.now() - started });
+type PayPalErrorFields = { status: number; errorName?: string; debugId?: string };
+
+export class PayPalUserInfoError extends Error {
+  constructor(readonly fields: PayPalErrorFields) {
+    super(`PayPal userinfo request failed with HTTP ${fields.status}.`);
+  }
+}
+
+function logStep(step: OAuthStep, outcome: "start" | "ok" | "rejected" | "failed", started: number,
+  provider?: PayPalErrorFields) {
+  // Fixed and pattern-checked fields only: provider errors and callback input can contain credentials.
+  console.info("oauth step", { step, outcome, elapsedMs: Date.now() - started, ...provider });
+}
+
+// PayPal's message and details can echo request data, so only identifier-shaped fields survive.
+async function readPayPalError(response: globalThis.Response): Promise<PayPalErrorFields> {
+  const body = await response.json().catch(() => undefined) as Record<string, unknown> | undefined;
+  // The identity spec documents `name`; OAuth-style responses carry `error` instead.
+  const errorName = body?.name ?? body?.error;
+  const debugId = body?.debug_id;
+  return {
+    status: response.status,
+    ...(typeof errorName === "string" && /^[A-Za-z0-9_.-]{1,64}$/.test(errorName) ? { errorName } : {}),
+    ...(typeof debugId === "string" && /^[A-Za-z0-9]{1,64}$/.test(debugId) ? { debugId } : {})
+  };
 }
 
 type PayPalRouterOptions = {
@@ -92,7 +114,7 @@ export class FetchPayPalIdentityClient implements PayPalIdentityClient {
     });
 
     if (!response.ok) {
-      throw new Error(`PayPal userinfo request failed with HTTP ${response.status}.`);
+      throw new PayPalUserInfoError(await readPayPalError(response));
     }
 
     return (await response.json()) as PayPalUserInfo;
@@ -205,7 +227,7 @@ export function createPayPalRouter(options: PayPalRouterOptions): Router {
       response.redirect("/app");
       logStep(step, "ok", started);
     } catch (error) {
-      logStep(step, "failed", started);
+      logStep(step, "failed", started, error instanceof PayPalUserInfoError ? error.fields : undefined);
       next(error);
     }
   });
