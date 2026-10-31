@@ -14,7 +14,7 @@ PayPal login. If the account does not work, tell Brandon; do not create another 
 ## What to try
 
 1. **First Dime:** log a fictional work session with time and earnings. Edit it, then
-   check Quests. Logged earnings can earn XP; a rung needs a matched payment.
+   check Quests. Logged earnings can earn XP; a ladder rung needs a matched payment.
 2. **Spotlight:** add fictional creator income and a brand deal. Move the deal through
    its stages to paid and check the totals.
 3. **Freelance:** add a fictional gig with hours and a fee. Change its payment stage
@@ -29,8 +29,8 @@ PayPal login. If the account does not work, tell Brandon; do not create another 
    If you want to test Smart suggestions, read the download notice before turning it
    on in PayPal. You still confirm each suggestion; it never moves a payment for you.
 
-OneDime never does gig work or logs into a gig platform for you. Sandbox milestone
-bonuses remain off during this beta.
+OneDime never does gig work or logs into a gig platform for you. Payouts remain
+disabled during this beta.
 
 ## Send feedback
 

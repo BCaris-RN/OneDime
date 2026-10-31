@@ -102,7 +102,7 @@ export const QUESTS: readonly QuestDefinition[] = [
     "id": "lb-join",
     "title": "Join the leaderboard",
     "xp": 20,
-    "description": "Then race for the bonus quests: first to each rung gets +100 XP."
+    "description": "Then build your ladder: each rung you reach adds +100 XP."
   },
   {
     "id": "tax",

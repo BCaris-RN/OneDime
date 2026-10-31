@@ -170,10 +170,11 @@ export function createGameRouter(options: Options) {
   });
 
   async function statsFor(id: string, timeZone: string) {
-    const [entries, progress, claimedRungs, claims] = await Promise.all([
+    const [entries, progress, claimedRungs, rungClaims, claims] = await Promise.all([
       prisma.logEntry.findMany({ where: { playerId: id } }),
       prisma.questProgress.findMany({ where: { playerId: id } }),
       prisma.rungClaim.count({ where: { playerId: id } }),
+      prisma.rungClaim.findMany({ where: { playerId: id }, orderBy: { rungCents: "asc" }, select: { rungCents: true } }),
       prisma.professionRankClaim.findMany({ where: { playerId: id }, select: { profession: true, rank: true } })
     ]);
     const questXp = progress.reduce((xp, item) => xp + (quests.find((quest) => quest.id === item.questId)?.xp ?? 0), 0);
@@ -184,7 +185,14 @@ export function createGameRouter(options: Options) {
       claimedProfessionRanks: claims.length
     });
     return {
-      ...stats, professions: professionView(totals, claims), professionClass: professionClass(totals, claims),
+      ...stats,
+      ladder: {
+        nextRungCents: stats.nextRungCents,
+        matchedCents: stats.totals.verifiedCents,
+        pendingCents: Math.max(0, stats.totals.amountCents - stats.totals.verifiedCents),
+        reachedRungs: rungClaims.map(({ rungCents }) => rungCents)
+      },
+      professions: professionView(totals, claims), professionClass: professionClass(totals, claims),
       professionRankClaims: claims.length, verifiedOtherCents
     };
   }
@@ -231,7 +239,7 @@ export function createGameRouter(options: Options) {
   router.get("/leaderboard", async (_request, response) => {
     const optedIn = await prisma.player.findMany({
       where: { leaderboardOptIn: true },
-      select: { id: true, displayName: true, timeZone: true, rungClaims: { select: { rungCents: true, claimedAt: true } } }
+      select: { id: true, displayName: true, timeZone: true, rungClaims: { select: { rungCents: true } } }
     });
     const leaders = await Promise.all(optedIn.map(async (row) => {
       const stats = await statsFor(row.id, row.timeZone ?? "UTC");
@@ -245,7 +253,7 @@ export function createGameRouter(options: Options) {
           .sort((left, right) => right.rank - left.rank || right.verifiedCents - left.verifiedCents)
           .slice(0, 2),
         sites: stats.sites.filter((site) => site.verifiedCents > 0).map((site) => ({ platform: site.platform, verifiedCents: site.verifiedCents })),
-        rungClaims: row.rungClaims
+        highestRungCents: row.rungClaims.reduce((highest, claim) => Math.max(highest, claim.rungCents), 0) || null
       };
     }));
     leaders.sort((a, b) => b.verifiedTotalCents - a.verifiedTotalCents || b.xp - a.xp || a.displayName.localeCompare(b.displayName));
