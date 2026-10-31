@@ -25,9 +25,10 @@
     "test:beta": "tsx scripts/check-beta-access.ts --check-only",
     "test:contrast": "npm run test:contrast:regressions && tsx scripts/check-current-contrast.ts --check-only",
     "test:contrast:regressions": "tsx scripts/check-current-contrast-regressions.ts",
-    "typecheck:contrast": "tsc --noEmit --strict --target es2022 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck scripts/check-current-contrast.ts scripts/current-contrast.ts scripts/check-current-contrast-regressions.ts scripts/prove-current-contrast-scope.ts scripts/measure-current-contrast-candidates.ts scripts/check-beta-access.ts",
+    "typecheck:contrast": "tsc --noEmit --strict --target es2022 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck scripts/check-current-contrast.ts scripts/current-contrast.ts scripts/check-current-contrast-regressions.ts scripts/prove-current-contrast-scope.ts scripts/measure-current-contrast-candidates.ts scripts/check-beta-access.ts scripts/beta-smoke.ts",
     "feedback:export": "tsx scripts/export-feedback.ts",
-    "metrics:report": "tsx scripts/metrics-report.ts"
+    "metrics:report": "tsx scripts/metrics-report.ts",
+    "smoke:beta": "tsx scripts/beta-smoke.ts"
   },
   "dependencies": {
     "@fontsource/atkinson-hyperlegible": "^5.3.0",
