@@ -547,3 +547,10 @@ contrast CI on #12 passed. Known review risks remain: `npm audit` reports two hi
 advisories (`body-parser`, `undici`) outside this feature scope; the existing six-tab
 navigation keeps PayPal and therefore renders 3+3 on phones, while F5 says 3+2; and
 the CI browser failure on #9 must be cleared on the final pushed head before merge.
+
+## Vault teaser checkpoint, October 30, 2026 (Hawaii)
+
+PR #22 was merged at exact reviewed head `fae5f3448719e381a880df4bd49e77e4babefdfd`; new main is `f124cd9efaffbb638f85b8bcb5058610dd7bfb45`.
+Branch `vault-teaser` adds migration-backed per-player tile progress, server-side matched-pay tile math, deterministic seeded tiles, Vault navigation, XP chip, roster copy, and focused tests.
+Local evidence: `npm run build` passed; `npx vitest run tests/vault.test.ts` passed; full `npm test` remains noisy from pre-existing untracked review-package suites and one stale expectation outside this branch.
+No Claude-owned branch was touched. No merge or deployment is authorized for the Vault PR.

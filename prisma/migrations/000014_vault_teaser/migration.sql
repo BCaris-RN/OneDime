@@ -1,0 +1,5 @@
+CREATE TABLE vault_progress (
+  player_id UUID PRIMARY KEY REFERENCES players(id) ON DELETE CASCADE,
+  tiles_seen INTEGER NOT NULL DEFAULT 0 CHECK (tiles_seen BETWEEN 0 AND 100),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

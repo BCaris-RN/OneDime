@@ -13,6 +13,9 @@ import { claimEligibleRungs } from "./rungs.js";
 import { loadProfessionTotals, professionClass, professionView } from "./professions.js";
 import { markStartRecordComplete } from "./onboarding.js";
 import { emptyBody, entrySchema, idSchema, platformSchema, timeZoneSchema } from "./validation.js";
+import { vaultTileCount } from "./vault.js";
+import { allRows } from "../ledger/router.js";
+import { incoming } from "../paypal/activity.js";
 
 type Options = {
   prisma: PrismaClient; config: AppConfig; sessions: SessionStore;
@@ -198,6 +201,35 @@ export function createGameRouter(options: Options) {
   }
   router.get("/me/stats", async (request: AuthedRequest, response) => {
     response.json(await statsFor(player(request).id, player(request).timeZone ?? "UTC"));
+  });
+  async function vaultFor(id: string) {
+    const [entries, rows, payments, completedQuests, progress] = await Promise.all([
+      prisma.logEntry.findMany({ where: { playerId: id }, select: { workedOn: true, amountCents: true, verified: true } }),
+      allRows(prisma, id),
+      prisma.$queryRaw<Record<string, unknown>[]>`SELECT routed_record_type, routed_record_id, currency, gross_cents, fee_cents, net_cents, kind FROM paypal_transactions WHERE player_id = ${id}::uuid`,
+      prisma.questProgress.count({ where: { playerId: id } }),
+      prisma.$queryRaw<{ tiles_seen: number }[]>`SELECT tiles_seen FROM vault_progress WHERE player_id = ${id}::uuid`
+    ]);
+    const matched: { cents: number; day: string }[] = entries.filter(entry => entry.verified).map(entry => ({ cents: entry.amountCents, day: entry.workedOn.toISOString().slice(0, 10) }));
+    const byType = new Map(payments.map(payment => [`${payment.routed_record_type}:${String(payment.routed_record_id)}`, payment]));
+    for (const [key, list] of Object.entries(rows)) for (const row of list) {
+      const type = key === "income" ? "income" : key === "gigs" ? "gigs" : key === "shifts" ? "shifts" : key === "sales" ? "sales" : "";
+      const payment = byType.get(`${type}:${row.id}`) as never;
+      if (!payment || !incoming(payment)) continue;
+      const cents = key === "income" ? Number(row.amount_cents) : key === "gigs" ? Number(row.gross_cents) : key === "shifts" ? Number(row.pay_cents) + Number(row.tips_cents) : key === "sales" ? Number(row.price_cents) : 0;
+      const day = String(row.earned_on ?? row.started_on ?? row.worked_on ?? row.sold_on ?? "");
+      if (cents > 0 && day) matched.push({ cents, day });
+    }
+    const distinctWorkDays = new Set(matched.map(item => item.day)).size;
+    const matchedCents = matched.reduce((sum, item) => sum + item.cents, 0);
+    return { tiles: vaultTileCount({ matchedCents, distinctWorkDays, completedQuests }), seen: Number(progress[0]?.tiles_seen ?? 0), matchedCents, distinctWorkDays, completedQuests };
+  }
+  router.get("/vault", async (request: AuthedRequest, response) => response.json(await vaultFor(player(request).id)));
+  router.post("/vault/seen", async (request: AuthedRequest, response) => {
+    emptyBody.parse(request.body);
+    const id = player(request).id; const current = await vaultFor(id);
+    await prisma.$executeRaw`INSERT INTO vault_progress (player_id, tiles_seen) VALUES (${id}::uuid, ${current.tiles}) ON CONFLICT (player_id) DO UPDATE SET tiles_seen = GREATEST(vault_progress.tiles_seen, EXCLUDED.tiles_seen), updated_at = now()`;
+    response.json(await vaultFor(id));
   });
   router.get("/quests", async (request: AuthedRequest, response) => {
     const progress = await prisma.questProgress.findMany({ where: { playerId: player(request).id } });

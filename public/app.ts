@@ -9,6 +9,7 @@ import { initializeFeedback } from "./feedback.js";
 import type { GameStats } from "../src/game/rules.js";
 import type { QuestDefinition } from "../src/game/catalog.js";
 import { dollarsToCents } from "../src/game/money.js";
+import { TILE_ORDER } from "../src/game/vault.js";
 
 type Player = { displayName: string | null; timeZone: string | null; leaderboardOptIn: boolean; welcomeCompletedAt: string | null };
 type Entry = { id: string; platform: string; workedOn: string; minutes: number; amountCents: number; note: string | null; verified: boolean };
@@ -17,6 +18,7 @@ type QuestPayload = { quests: QuestDefinition[]; completed: string[]; pilotAvail
 type ProfessionRank = { profession: "creator" | "freelancer" | "driver" | "seller" | "starter"; rank: number; verifiedCents: number; nextRankCents: number | null };
 type GameStatsWithProfessions = GameStats & { professions: ProfessionRank[]; professionClass: ProfessionRank | null; verifiedOtherCents: number; ladder: { nextRungCents: number | null; matchedCents: number; pendingCents: number; reachedRungs: number[] } };
 type Leader = { displayName: string; verifiedTotalCents: number; highestRungCents: number | null; xp: number; level: number; sites: { platform: string; verifiedCents: number }[]; professionClass: ProfessionRank | null; professions: ProfessionRank[] };
+type Vault = { tiles: number; seen: number; matchedCents: number; distinctWorkDays: number; completedQuests: number };
 const element = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const input = (id: string) => element<HTMLInputElement>(id);
 const money = (cents: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
@@ -94,6 +96,7 @@ function renderStats(stats: GameStatsWithProfessions) {
   element("streak").textContent = number(stats.streak);
   element("rested-pool").textContent = `${stats.restedPool} XP`;
   element("level-summary").textContent = `Level ${stats.level} · ${stats.title}${stats.professionClass ? ` · ${stats.professionClass.profession[0].toUpperCase() + stats.professionClass.profession.slice(1)} class` : ""} · ${number(stats.xp)} XP`;
+  element("xp-chip").textContent = `XP ${number(stats.xp)} ›`;
   for (const [id, profession] of [["rank-first", "starter"], ["rank-spotlight", "creator"], ["rank-freelance", "freelancer"]] as const) {
     const rank = stats.professions.find(item => item.profession === profession)!;
     element(id).textContent = rankText(rank);
@@ -211,15 +214,25 @@ function renderLeaders(leaders: Leader[]) {
     return row;
   }));
 }
+function renderVault(vault: Vault) {
+  const grid = element("vault-grid"); const visible = Math.max(vault.tiles, vault.seen);
+  grid.replaceChildren(...TILE_ORDER.map((tile, index) => node("span", index < visible ? "" : "?", index < vault.tiles ? "vault-tile broken" : "vault-tile")));
+  grid.setAttribute("aria-label", `The Vault. ${vault.tiles} of 100 tiles broken.`);
+  element("vault-count").textContent = `${vault.tiles} of 100 tiles broken · matched pay only`;
+  const awake = element("vault-awake"); awake.replaceChildren();
+  if (vault.tiles >= 100) awake.append(node("h3", "PENNY IS AWAKE"), node("p", "THE MINT DOOR"), node("p", "Your Lot opens soon."));
+  element("vault-roster").replaceChildren(...["Penny", "Lumen", "Quill", "Axle", "Barter"].map(name => node("li", `${name} · sleeping`)));
+}
 async function refresh() {
-  const [me, stats, entries, value, quests, leaders] = await Promise.all([
+  const [me, stats, entries, value, quests, leaders, vault] = await Promise.all([
     api<{ player: Player }>("/api/me"), api<GameStatsWithProfessions>("/api/me/stats"), api<{ entries: Entry[] }>("/api/entries"),
-    api<Clock>("/api/clock"), api<QuestPayload>("/api/quests"), api<{ players: Leader[] }>("/api/leaderboard")
+    api<Clock>("/api/clock"), api<QuestPayload>("/api/quests"), api<{ players: Leader[] }>("/api/leaderboard"), api<Vault>("/api/vault")
   ]);
   player = me.player;
   element("player-name").textContent = player.displayName ?? "Player";
   input("time-zone").value = player.timeZone ?? "UTC";
-  renderStats(stats); renderEntries(entries.entries); renderClock(value); renderQuests(quests); renderLeaders(leaders.players);
+  renderStats(stats); renderEntries(entries.entries); renderClock(value); renderQuests(quests); renderLeaders(leaders.players); renderVault(vault);
+  void api<Vault>("/api/vault/seen", {}).catch(() => undefined);
 }
 async function refreshAfterChange(success: string) {
   try { await refresh(); message(success); }
@@ -346,6 +359,7 @@ element<HTMLFormElement>("time-zone-form").addEventListener("submit", (event) =>
   void perform(async () => { await api("/api/me/time-zone", { timeZone: input("time-zone").value.trim() }); input("worked-on").value = ""; await refreshAfterChange("Time zone saved."); });
 });
 element("refresh").addEventListener("click", () => { if (!ready) void initialize(); else void perform(async () => { await refresh(); message("Your progress is up to date."); }); });
+element("xp-chip").addEventListener("click", () => showApp("vault", true));
 element("logout").addEventListener("click", async () => {
   try { await api("/api/logout", {}); window.location.assign("/"); }
   catch (error) { message(error instanceof Error ? error.message : "Could not log out. Please try again.", true); }
