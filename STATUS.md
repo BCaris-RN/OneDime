@@ -564,3 +564,7 @@ chart ink on its panel for every skin and mode, and a two-row phone tab check at
 390px. The landing audit found the footer line below 4.5:1; it now has a dark backing.
 Local: build, strict typecheck, 299 tests, browser audit (4,396 tab steps) and the full
 contrast suite pass. Exact-head CI is recorded in the PR.
+
+## Glass skin checkpoint, October 31, 2026
+
+`glass-skin` ports the pilot's Glass skin and makes it the default look; Current, Paper and Slate stay selectable and saved choices are kept. Glass is dark by design, so the light/dark toggle is hidden under it and Appearance says so. Each app tab has its own accent and two or three background shapes; `prefers-reduced-transparency` gives solid panels and no shapes, and `prefers-reduced-motion` drops the transitions. New: `npm run test:contrast:glass` (composite contrast of every text style and boundary over the brightest shape, plus a pixel audit of all seven tabs at 320, 390 and 1440px, both reduced-motion modes and switching skins without a reload) and a shared `scripts/pixel-contrast.ts`. Local: build, strict typecheck, 306 tests, browser audit and the full contrast suite pass. Exact-head CI is recorded in the PR.
