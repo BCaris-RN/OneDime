@@ -9,14 +9,16 @@ import { initializeFeedback } from "./feedback.js";
 import type { GameStats } from "../src/game/rules.js";
 import type { QuestDefinition } from "../src/game/catalog.js";
 import { dollarsToCents } from "../src/game/money.js";
+import { TILE_ORDER } from "../src/game/vault.js";
 
 type Player = { displayName: string | null; timeZone: string | null; leaderboardOptIn: boolean; welcomeCompletedAt: string | null };
 type Entry = { id: string; platform: string; workedOn: string; minutes: number; amountCents: number; note: string | null; verified: boolean };
 type Clock = { platform: string | null; startedAt: string | null };
 type QuestPayload = { quests: QuestDefinition[]; completed: string[]; pilotAvailable: boolean };
 type ProfessionRank = { profession: "creator" | "freelancer" | "driver" | "seller" | "starter"; rank: number; verifiedCents: number; nextRankCents: number | null };
-type GameStatsWithProfessions = GameStats & { professions: ProfessionRank[]; professionClass: ProfessionRank | null; verifiedOtherCents: number };
-type Leader = { displayName: string; verifiedTotalCents: number; xp: number; level: number; sites: { platform: string; verifiedCents: number }[]; rungClaims: { rungCents: number; claimedAt: string }[]; professionClass: ProfessionRank | null; professions: ProfessionRank[] };
+type GameStatsWithProfessions = GameStats & { professions: ProfessionRank[]; professionClass: ProfessionRank | null; verifiedOtherCents: number; ladder: { nextRungCents: number | null; matchedCents: number; pendingCents: number; reachedRungs: number[] } };
+type Leader = { displayName: string; verifiedTotalCents: number; highestRungCents: number | null; xp: number; level: number; sites: { platform: string; verifiedCents: number }[]; professionClass: ProfessionRank | null; professions: ProfessionRank[] };
+type Vault = { tiles: number; seen: number; matchedCents: number; distinctWorkDays: number; completedQuests: number };
 const element = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const input = (id: string) => element<HTMLInputElement>(id);
 const money = (cents: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
@@ -94,6 +96,7 @@ function renderStats(stats: GameStatsWithProfessions) {
   element("streak").textContent = number(stats.streak);
   element("rested-pool").textContent = `${stats.restedPool} XP`;
   element("level-summary").textContent = `Level ${stats.level} · ${stats.title}${stats.professionClass ? ` · ${stats.professionClass.profession[0].toUpperCase() + stats.professionClass.profession.slice(1)} class` : ""} · ${number(stats.xp)} XP`;
+  element("xp-chip").textContent = `XP ${number(stats.xp)} ›`;
   for (const [id, profession] of [["rank-first", "starter"], ["rank-spotlight", "creator"], ["rank-freelance", "freelancer"]] as const) {
     const rank = stats.professions.find(item => item.profession === profession)!;
     element(id).textContent = rankText(rank);
@@ -103,16 +106,20 @@ function renderStats(stats: GameStatsWithProfessions) {
   element("quest-xp").textContent = `${stats.xp} XP · next level at ${stats.nextLevelXp}`;
   element("xp-progress").setAttribute("aria-valuenow", String(stats.levelProgress));
   element("xp-fill").style.width = `${stats.levelProgress}%`;
-  element("goal-title").textContent = stats.goalComplete ? "Every rung cleared" : stats.goalCents === 10 ? "Earn your first dime" : `Next stop: ${money(stats.goalCents)}`;
-  element("goal-sub").textContent = `${money(stats.totals.amountCents)} of ${money(stats.goalCents)}`;
-  element("goal-percent").textContent = `${stats.goalPercent}%`;
-  element("goal-ring").setAttribute("stroke-dashoffset", (326.7 * (1 - Math.min(1, stats.totals.amountCents / stats.goalCents))).toFixed(1));
+  const nextRung = stats.ladder.nextRungCents;
+  const ladderPercent = nextRung === null ? 100 : Math.min(100, Math.floor(stats.ladder.matchedCents / nextRung * 100));
+  element("goal-title").textContent = nextRung === null ? "Every rung reached" : `Next rung: ${money(nextRung)}`;
+  element("goal-sub").textContent = nextRung === null ? "Your matched pay has reached the top rung." : `${money(stats.ladder.matchedCents)} matched toward ${money(nextRung)}`;
+  element("goal-percent").textContent = `${ladderPercent}%`;
+  element("goal-ring").setAttribute("stroke-dashoffset", (326.7 * (1 - ladderPercent / 100)).toFixed(1));
+  element("ladder-matched").textContent = `${money(stats.ladder.matchedCents)} matched · counts`;
+  element("ladder-pending").textContent = `${money(stats.ladder.pendingCents)} logged but unmatched · pending`;
   input("worked-on").max = stats.today;
   if (!input("worked-on").value) input("worked-on").value = stats.today;
-  element("next-rung").textContent = stats.nextRungCents === null ? "Your matched total has reached the top rung." : `Your next target: ${money(stats.nextRungCents)} matched.`;
+  element("next-rung").textContent = nextRung === null ? "Your matched total has reached the top rung." : `Your next target: ${money(nextRung)} matched.`;
   element("rung-list").replaceChildren(...rungCents.map((cents) => {
-    const reached = stats.totals.verifiedCents >= cents;
-    return node("li", `${money(cents)}${reached ? " · reached" : ""}`, reached ? "reached" : "");
+    const reached = stats.ladder.reachedRungs.includes(cents);
+    return node("li", `${reached ? "✓ " : ""}${money(cents)}${reached ? " · reached" : ""}`, reached ? "reached" : "");
   }));
   element("site-rates").replaceChildren(...(stats.sites.length ? stats.sites.map((site) => {
     const row = node("li");
@@ -186,13 +193,11 @@ function renderLeaders(leaders: Leader[]) {
   const button = element<HTMLButtonElement>("leaderboard-toggle");
   button.textContent = player?.leaderboardOptIn ? "Leave leaderboard" : "Join leaderboard";
   element("leaderboard-empty").textContent = leaders.length ? "" : "No players have joined yet.";
-  element("race-body").replaceChildren(...rungCents.map((rung) => {
-    const winner = leaders.find((leader) => leader.rungClaims.some((claim) => claim.rungCents === rung));
-    const claim = winner?.rungClaims.find((item) => item.rungCents === rung);
-    const row = node("tr");
-    row.append(node("td", `First to ${money(rung)} · +100 XP`), node("td", winner?.displayName ?? "No public claim"), node("td", claim ? new Date(claim.claimedAt).toLocaleString([], { timeZone: player?.timeZone ?? "UTC" }) : "—"));
+  element("highest-rung-list").replaceChildren(...(leaders.length ? leaders.map((leader) => {
+    const row = node("li");
+    row.append(node("span", leader.displayName), node("span", leader.highestRungCents === null ? "No rung reached" : `Highest rung: ${money(leader.highestRungCents)}`));
     return row;
-  }));
+  }) : [node("li", "No public ladder progress yet.", "muted")]));
   const siteLeaders = new Map<string, { name: string; cents: number }>();
   for (const leader of leaders) for (const site of leader.sites) {
     if (site.verifiedCents > (siteLeaders.get(site.platform)?.cents ?? 0)) siteLeaders.set(site.platform, { name: leader.displayName, cents: site.verifiedCents });
@@ -205,20 +210,29 @@ function renderLeaders(leaders: Leader[]) {
     row.append(node("h3", `${index + 1}. ${leader.displayName}`), node("p", `${money(leader.verifiedTotalCents)} matched · ${number(leader.xp)} XP · Level ${leader.level}${leader.professionClass ? ` · ${leader.professionClass.profession[0].toUpperCase() + leader.professionClass.profession.slice(1)} class` : ""}`));
     if (leader.professions.length) row.append(node("p", leader.professions.map(rank => `${rank.profession[0].toUpperCase() + rank.profession.slice(1)} rank ${rank.rank}`).join(" · ")));
     if (leader.sites.length) row.append(node("p", leader.sites.map((site) => `${site.platform}: ${money(site.verifiedCents)}`).join(" · ")));
-    for (const claim of leader.rungClaims) row.append(node("p", `Claimed ${money(claim.rungCents)} · ${new Date(claim.claimedAt).toLocaleString([], { timeZone: player?.timeZone ?? "UTC" })}`));
-    if (!leader.rungClaims.length) row.append(node("small", "No rung claims yet."));
+    row.append(node("p", leader.highestRungCents === null ? "No rung reached yet." : `Highest rung: ${money(leader.highestRungCents)}`));
     return row;
   }));
 }
+function renderVault(vault: Vault) {
+  const grid = element("vault-grid"); const visible = Math.max(vault.tiles, vault.seen);
+  grid.replaceChildren(...TILE_ORDER.map((tile, index) => node("span", index < visible ? "" : "?", index < visible ? "vault-tile broken" : "vault-tile")));
+  grid.setAttribute("aria-label", `The Vault. ${visible} of 100 tiles broken.`);
+  element("vault-count").textContent = `${visible} of 100 tiles broken · matched pay only`;
+  const awake = element("vault-awake"); awake.replaceChildren();
+  if (visible >= 100) awake.append(node("h3", "PENNY IS AWAKE"), node("p", "THE MINT DOOR"), node("p", "Your Lot opens soon."));
+  element("vault-roster").replaceChildren(...["Penny", "Lumen", "Quill", "Axle", "Barter"].map(name => node("li", `${name} · sleeping`)));
+}
 async function refresh() {
-  const [me, stats, entries, value, quests, leaders] = await Promise.all([
+  const [me, stats, entries, value, quests, leaders, vault] = await Promise.all([
     api<{ player: Player }>("/api/me"), api<GameStatsWithProfessions>("/api/me/stats"), api<{ entries: Entry[] }>("/api/entries"),
-    api<Clock>("/api/clock"), api<QuestPayload>("/api/quests"), api<{ players: Leader[] }>("/api/leaderboard")
+    api<Clock>("/api/clock"), api<QuestPayload>("/api/quests"), api<{ players: Leader[] }>("/api/leaderboard"), api<Vault>("/api/vault")
   ]);
   player = me.player;
   element("player-name").textContent = player.displayName ?? "Player";
   input("time-zone").value = player.timeZone ?? "UTC";
-  renderStats(stats); renderEntries(entries.entries); renderClock(value); renderQuests(quests); renderLeaders(leaders.players);
+  renderStats(stats); renderEntries(entries.entries); renderClock(value); renderQuests(quests); renderLeaders(leaders.players); renderVault(vault);
+  void api<Vault>("/api/vault/seen", {}).catch(() => undefined);
 }
 async function refreshAfterChange(success: string) {
   try { await refresh(); message(success); }
@@ -381,6 +395,7 @@ element<HTMLFormElement>("time-zone-form").addEventListener("submit", (event) =>
   void perform(async () => { await api("/api/me/time-zone", { timeZone: input("time-zone").value.trim() }); input("worked-on").value = ""; await refreshAfterChange("Time zone saved."); });
 });
 element("refresh").addEventListener("click", () => { if (!ready) void initialize(); else void perform(async () => { await refresh(); message("Your progress is up to date."); }); });
+element("xp-chip").addEventListener("click", () => showApp("vault", true));
 element("logout").addEventListener("click", async () => {
   try { await api("/api/logout", {}); window.location.assign("/"); }
   catch (error) { message(error instanceof Error ? error.message : "Could not log out. Please try again.", true); }

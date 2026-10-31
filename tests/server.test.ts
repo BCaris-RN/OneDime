@@ -994,10 +994,10 @@ describe("Phase 2 game API", () => {
     });
     expect(Object.keys(result.body.players[0]).sort()).toEqual([
       "displayName",
+      "highestRungCents",
       "level",
       "professionClass",
       "professions",
-      "rungClaims",
       "sites",
       "verifiedTotalCents",
       "xp",
@@ -1014,10 +1014,7 @@ describe("Phase 2 game API", () => {
       "playerId",
     ])
       expect(serialized).not.toContain(forbidden);
-    expect(result.body.players[0].rungClaims[0]).toMatchObject({
-      rungCents: 10,
-      claimedAt: expect.any(String),
-    });
+    expect(result.body.players[0].highestRungCents).toBe(10);
     await write(alice.cookie, "/api/leaderboard/leave").expect(200);
     expect(
       (await request(app).get("/api/leaderboard").set("Cookie", bob.cookie))
@@ -1034,6 +1031,11 @@ describe("Phase 2 game API", () => {
       claimEligibleRungs(tx, current.player.id),
     );
     await expect(prisma.rungClaim.count()).resolves.toBe(0);
+    expect((await request(app).get("/api/me/stats").set("Cookie", current.cookie)).body.ladder).toMatchObject({
+      matchedCents: 0,
+      pendingCents: 100000,
+      reachedRungs: []
+    });
     await prisma.$transaction(async (tx) => {
       await tx.logEntry.update({
         where: { id: entry.body.entry.id },
@@ -1050,6 +1052,11 @@ describe("Phase 2 game API", () => {
       (await request(app).get("/api/me/stats").set("Cookie", current.cookie))
         .body.xp,
     ).toBe(10815);
+    expect((await request(app).get("/api/me/stats").set("Cookie", current.cookie)).body.ladder).toMatchObject({
+      matchedCents: 100000,
+      pendingCents: 0,
+      reachedRungs: [10, 100, 1000, 5000, 10000, 25000, 50000, 100000]
+    });
     const claims = await prisma.rungClaim.findMany({
       orderBy: { rungCents: "asc" },
     });
@@ -1063,7 +1070,7 @@ describe("Phase 2 game API", () => {
       await prisma.rungClaim.findMany({ orderBy: { rungCents: "asc" } }),
     ).toEqual(claims);
   });
-  it("two players crossing a rung simultaneously yield exactly one winner and no loser error", async () => {
+  it("two players crossing the same rung each keep a claim", async () => {
     const alice = await login("race-alice");
     const bob = await login("race-bob");
     await Promise.all(
@@ -1085,9 +1092,19 @@ describe("Phase 2 game API", () => {
       ),
     );
     const claims = await prisma.rungClaim.findMany();
-    expect(claims).toHaveLength(1);
-    expect(claims[0].rungCents).toBe(10);
-    expect([alice.player.id, bob.player.id]).toContain(claims[0].playerId);
+    expect(claims).toHaveLength(2);
+    expect(claims.every((claim) => claim.rungCents === 10)).toBe(true);
+    expect(new Set(claims.map((claim) => claim.playerId))).toEqual(new Set([alice.player.id, bob.player.id]));
+  });
+  it("concurrent claims by one player count once and add 100 XP per rung", async () => {
+    const current = await login("rungs-concurrent");
+    await prisma.logEntry.create({ data: { ...validEntry, playerId: current.player.id, amountCents: 10, verified: true, workedOn: new Date("2026-10-14") } });
+    await Promise.all([
+      prisma.$transaction((tx) => claimEligibleRungs(tx, current.player.id)),
+      prisma.$transaction((tx) => claimEligibleRungs(tx, current.player.id))
+    ]);
+    expect(await prisma.rungClaim.count({ where: { playerId: current.player.id } })).toBe(1);
+    expect((await request(app).get("/api/me/stats").set("Cookie", current.cookie)).body.xp).toBe(116);
   });
   it("rolls back a claim with its enclosing verification transaction", async () => {
     const current = await login("rollback");

@@ -13,6 +13,9 @@ import { claimEligibleRungs } from "./rungs.js";
 import { loadProfessionTotals, professionClass, professionView } from "./professions.js";
 import { markStartRecordComplete } from "./onboarding.js";
 import { emptyBody, entrySchema, idSchema, platformSchema, timeZoneSchema } from "./validation.js";
+import { vaultTileCount } from "./vault.js";
+import { allRows } from "../ledger/router.js";
+import { incoming } from "../paypal/activity.js";
 
 type Options = {
   prisma: PrismaClient; config: AppConfig; sessions: SessionStore;
@@ -170,10 +173,11 @@ export function createGameRouter(options: Options) {
   });
 
   async function statsFor(id: string, timeZone: string) {
-    const [entries, progress, claimedRungs, claims] = await Promise.all([
+    const [entries, progress, claimedRungs, rungClaims, claims] = await Promise.all([
       prisma.logEntry.findMany({ where: { playerId: id } }),
       prisma.questProgress.findMany({ where: { playerId: id } }),
       prisma.rungClaim.count({ where: { playerId: id } }),
+      prisma.rungClaim.findMany({ where: { playerId: id }, orderBy: { rungCents: "asc" }, select: { rungCents: true } }),
       prisma.professionRankClaim.findMany({ where: { playerId: id }, select: { profession: true, rank: true } })
     ]);
     const questXp = progress.reduce((xp, item) => xp + (quests.find((quest) => quest.id === item.questId)?.xp ?? 0), 0);
@@ -184,12 +188,52 @@ export function createGameRouter(options: Options) {
       claimedProfessionRanks: claims.length
     });
     return {
-      ...stats, professions: professionView(totals, claims), professionClass: professionClass(totals, claims),
+      ...stats,
+      ladder: {
+        nextRungCents: stats.nextRungCents,
+        matchedCents: stats.totals.verifiedCents,
+        pendingCents: Math.max(0, stats.totals.amountCents - stats.totals.verifiedCents),
+        reachedRungs: rungClaims.map(({ rungCents }) => rungCents)
+      },
+      professions: professionView(totals, claims), professionClass: professionClass(totals, claims),
       professionRankClaims: claims.length, verifiedOtherCents
     };
   }
   router.get("/me/stats", async (request: AuthedRequest, response) => {
     response.json(await statsFor(player(request).id, player(request).timeZone ?? "UTC"));
+  });
+  async function vaultFor(id: string) {
+    const [entries, rows, payments, completedQuests, progress] = await Promise.all([
+      prisma.logEntry.findMany({ where: { playerId: id }, select: { workedOn: true, amountCents: true, verified: true } }),
+      allRows(prisma, id),
+      prisma.$queryRaw<Record<string, unknown>[]>`SELECT routed_record_type, routed_record_id, currency, gross_cents, fee_cents, net_cents, kind FROM paypal_transactions WHERE player_id = ${id}::uuid`,
+      prisma.questProgress.count({ where: { playerId: id } }),
+      prisma.$queryRaw<{ tiles_seen: number }[]>`SELECT tiles_seen FROM vault_progress WHERE player_id = ${id}::uuid`
+    ]);
+    const matched: { cents: number; day: string }[] = entries.filter(entry => entry.verified).map(entry => ({ cents: entry.amountCents, day: entry.workedOn.toISOString().slice(0, 10) }));
+    const byType = new Map(payments.map(payment => [`${payment.routed_record_type}:${String(payment.routed_record_id)}`, payment]));
+    for (const [key, list] of Object.entries(rows)) for (const row of list) {
+      const type = key === "income" ? "income" : key === "gigs" ? "gigs" : key === "shifts" ? "shifts" : key === "sales" ? "sales" : "";
+      const payment = byType.get(`${type}:${row.id}`) as Record<string, unknown> | undefined;
+      if (!payment || !incoming(payment as { currency: string; kind: string; gross_cents: number; net_cents: number; fee_cents: number })) continue;
+      const cents = key === "income" ? Number(row.amount_cents) : key === "gigs" ? Number(row.gross_cents) : key === "shifts" ? Number(row.pay_cents) + Number(row.tips_cents) : key === "sales" ? Number(row.price_cents) : 0;
+      const validStatus = key === "income" ? row.status === "paid" : key === "gigs" ? row.stage === "Paid" : key === "sales" ? row.status === "paid" : true;
+      const validAmount = [cents, key === "gigs" ? cents - Number(row.fee_cents) : key === "sales" ? cents - Number(row.fee_cents) : cents].includes(Number(payment.gross_cents)) || [cents, key === "gigs" ? cents - Number(row.fee_cents) : key === "sales" ? cents - Number(row.fee_cents) : cents].includes(Number(payment.net_cents));
+      if (!validStatus || !validAmount) continue;
+      const day = String(row.earned_on ?? row.started_on ?? row.worked_on ?? row.sold_on ?? "");
+      if (cents > 0 && day) matched.push({ cents, day });
+    }
+    const distinctWorkDays = new Set(matched.map(item => item.day)).size;
+    const matchedCents = matched.reduce((sum, item) => sum + item.cents, 0);
+    const eligibleQuests = matchedCents > 0 ? completedQuests : 0;
+    return { tiles: vaultTileCount({ matchedCents, distinctWorkDays, completedQuests: eligibleQuests }), seen: Number(progress[0]?.tiles_seen ?? 0), matchedCents, distinctWorkDays, completedQuests: eligibleQuests };
+  }
+  router.get("/vault", async (request: AuthedRequest, response) => response.json(await vaultFor(player(request).id)));
+  router.post("/vault/seen", async (request: AuthedRequest, response) => {
+    emptyBody.parse(request.body);
+    const id = player(request).id; const current = await vaultFor(id);
+    await prisma.$executeRaw`INSERT INTO vault_progress (player_id, tiles_seen) VALUES (${id}::uuid, ${current.tiles}) ON CONFLICT (player_id) DO UPDATE SET tiles_seen = GREATEST(vault_progress.tiles_seen, EXCLUDED.tiles_seen), updated_at = now()`;
+    response.json(await vaultFor(id));
   });
   router.get("/quests", async (request: AuthedRequest, response) => {
     const progress = await prisma.questProgress.findMany({ where: { playerId: player(request).id } });
@@ -231,7 +275,7 @@ export function createGameRouter(options: Options) {
   router.get("/leaderboard", async (_request, response) => {
     const optedIn = await prisma.player.findMany({
       where: { leaderboardOptIn: true },
-      select: { id: true, displayName: true, timeZone: true, rungClaims: { select: { rungCents: true, claimedAt: true } } }
+      select: { id: true, displayName: true, timeZone: true, rungClaims: { select: { rungCents: true } } }
     });
     const leaders = await Promise.all(optedIn.map(async (row) => {
       const stats = await statsFor(row.id, row.timeZone ?? "UTC");
@@ -245,7 +289,7 @@ export function createGameRouter(options: Options) {
           .sort((left, right) => right.rank - left.rank || right.verifiedCents - left.verifiedCents)
           .slice(0, 2),
         sites: stats.sites.filter((site) => site.verifiedCents > 0).map((site) => ({ platform: site.platform, verifiedCents: site.verifiedCents })),
-        rungClaims: row.rungClaims
+        highestRungCents: row.rungClaims.reduce((highest, claim) => Math.max(highest, claim.rungCents), 0) || null
       };
     }));
     leaders.sort((a, b) => b.verifiedTotalCents - a.verifiedTotalCents || b.xp - a.xp || a.displayName.localeCompare(b.displayName));

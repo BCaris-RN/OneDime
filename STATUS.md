@@ -1,5 +1,16 @@
 # OneDime status
 
+## Personal ladder checkpoint, October 31, 2026 (Hawaii)
+
+Branch `personal-ladder` is cut from main `f3b9b1d`. The rung claim migration
+changes the primary key to `(player_id, rung_cents)` without deleting existing
+rows; migration backfills every already-qualified player/rung, claims remain
+per-player, add +100 XP once per rung, and retain payout references while
+payouts stay disabled. The app now presents one Your ladder
+with matched/pending progress and permanent checks; opted-in leaderboard rows
+show highest rung only. Local build, server tests, contrast typecheck and beta
+checks are being rerun; no merge or deploy.
+
 ## OAuth userinfo checkpoint, October 30, 2026 (Hawaii)
 
 Branch `fix-userinfo` is cut from merged main `f8b3f9f`. PayPal userinfo now
@@ -537,6 +548,12 @@ advisories (`body-parser`, `undici`) outside this feature scope; the existing si
 navigation keeps PayPal and therefore renders 3+3 on phones, while F5 says 3+2; and
 the CI browser failure on #9 must be cleared on the final pushed head before merge.
 
+## Vault teaser checkpoint, October 30, 2026 (Hawaii)
+
+PR #22 was merged at exact reviewed head `fae5f3448719e381a880df4bd49e77e4babefdfd`; new main is `f124cd9efaffbb638f85b8bcb5058610dd7bfb45`.
+Branch `vault-teaser` adds migration-backed per-player tile progress, server-side matched-pay tile math with amount/status revalidation, deterministic seeded tiles, Vault navigation, XP chip, roster copy, and focused tests. Current head is pending the final persistence fix.
+Local evidence: `npm run build` and `npx vitest run tests/vault.test.ts` pass; browser/accessibility harness passed at 320/390/1280px and both themes. Full `npm test` remains noisy from pre-existing untracked review-package suites.
+No Claude-owned branch was touched. No merge or deployment is authorized for the Vault PR.
 ## M7 checkpoint after rebase, October 30, 2026
 
 `week5-skins` (PR #12) is rebased onto main. The Paper and Slate commit is unchanged

@@ -101,11 +101,12 @@ model QuestProgress {
 }
 
 model RungClaim {
-  rungCents Int      @id @map("rung_cents")
+  rungCents Int      @map("rung_cents")
   playerId   String   @map("player_id") @db.Uuid
   claimedAt  DateTime @default(now()) @map("claimed_at")
   player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
+  @@id([playerId, rungCents])
   @@index([playerId])
   @@map("rung_claims")
 }
