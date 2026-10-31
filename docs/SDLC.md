@@ -92,5 +92,5 @@ Google Sites holds the only policy copies. Render's free web service and free Po
 for beta testing; no deployment is authorized by that configuration.
 
 **Open operator checks:** physical-device inference speed and screen-reader testing, real sandbox
-connectivity, and any decision to enable sandbox milestone payouts. The existing root LICENSE is
-unchanged. Rested XP starting at zero after the first logged day is approved.
+connectivity, and any decision to enable sandbox milestone payouts. The root LICENSE is the
+canonical AGPL-3.0 text. Rested XP starting at zero after the first logged day is approved.
