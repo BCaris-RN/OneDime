@@ -181,6 +181,13 @@ describe("server", () => {
     await request(app).get("/health").expect(200, { ok: true });
   });
 
+  it("reports the deployed commit on /health when Render provides one", async () => {
+    const { createApp } = await import("../src/server.js");
+    const commit = "0123456789abcdef0123456789abcdef01234567";
+    const target = createApp({ config: { ...testConfig, gitCommit: commit }, prisma, paypalClient });
+    await request(target).get("/health").expect(200, { ok: true, commit });
+  });
+
   it("rejects an OAuth callback with missing state", async () => {
     await request(app).get("/auth/paypal/callback?code=abc").expect(400);
     expect(paypalClient.exchangeCodeForToken).not.toHaveBeenCalled();
