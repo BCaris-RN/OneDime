@@ -1,3 +1,4 @@
+import "./glass.js";
 import "./demo-video-labels.js";
 import "./paypal.js";
 import "./exports.js";
@@ -290,7 +291,8 @@ element("welcome-import").addEventListener("click", () => {
 });
 element("welcome-guide-dismiss").addEventListener("click", () => { element("welcome-guide").hidden = true; });
 
-const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-tab]")];
+// The root element also carries data-tab (the Glass accent), so only buttons are sub-tabs.
+const tabs = [...document.querySelectorAll<HTMLButtonElement>("button[data-tab]")];
 function setTab(id: string, focus = false) {
   const target = tabs.find((tab) => tab.dataset.tab === id) ?? tabs[0];
   for (const tab of tabs) {
@@ -312,19 +314,21 @@ tabs.forEach((tab, index) => {
 setTab(location.hash.slice(1) || "log");
 window.addEventListener("hashchange", () => setTab(location.hash.slice(1)));
 
-type Appearance = { skin: "current" | "paper" | "slate"; mode: "system" | "light" | "dark" };
+type Appearance = { skin: "glass" | "current" | "paper" | "slate"; mode: "system" | "light" | "dark" };
+const SKINS = ["glass", "current", "paper", "slate"];
 const appearanceKey = "onedime-appearance";
 const systemDark = matchMedia("(prefers-color-scheme: dark)");
 const appearanceDialog = element<HTMLDialogElement>("appearance-dialog");
-let appearance: Appearance = { skin: "current", mode: "system" };
+let appearance: Appearance = { skin: "glass", mode: "system" };
 try {
   const stored = JSON.parse(localStorage.getItem(appearanceKey) ?? "null") as Partial<Appearance> | null;
-  if (stored && ["current", "paper", "slate"].includes(stored.skin ?? "")
+  if (stored && SKINS.includes(stored.skin ?? "")
     && ["system", "light", "dark"].includes(stored.mode ?? "")) appearance = stored as Appearance;
   else {
     const previousMode = localStorage.getItem("onedime-theme");
     if (previousMode === "light" || previousMode === "dark") {
-      appearance.mode = previousMode;
+      // A mode saved before skins existed was chosen for Current, so keep that look.
+      appearance = { skin: "current", mode: previousMode };
       // Save first so a failed write keeps the old preference for the next load.
       localStorage.setItem(appearanceKey, JSON.stringify(appearance));
     }
@@ -342,6 +346,8 @@ function applyAppearance() {
   const dark = appearance.mode === "dark" || (appearance.mode === "system" && systemDark.matches);
   element("theme-toggle").textContent = dark ? "Light mode" : "Dark mode";
   element("theme-toggle").setAttribute("aria-label", "Switch to " + (dark ? "light" : "dark") + " mode");
+  // Glass is dark by design, so a light/dark toggle would do nothing visible.
+  element("theme-toggle").hidden = appearance.skin === "glass";
 }
 function saveAppearance() {
   applyAppearance();
@@ -352,7 +358,7 @@ systemDark.addEventListener("change", () => { if (appearance.mode === "system") 
 element("appearance-open").addEventListener("click", () => appearanceDialog.showModal());
 element("appearance-close").addEventListener("click", () => appearanceDialog.close());
 for (const input of document.querySelectorAll<HTMLInputElement>('input[name="skin"]')) input.addEventListener("change", () => {
-  if (input.checked && ["current", "paper", "slate"].includes(input.value)) { appearance.skin = input.value as Appearance["skin"]; saveAppearance(); }
+  if (input.checked && SKINS.includes(input.value)) { appearance.skin = input.value as Appearance["skin"]; saveAppearance(); }
 });
 for (const input of document.querySelectorAll<HTMLInputElement>('input[name="mode"]')) input.addEventListener("change", () => {
   if (input.checked && ["system", "light", "dark"].includes(input.value)) { appearance.mode = input.value as Appearance["mode"]; saveAppearance(); }
