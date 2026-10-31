@@ -1,5 +1,15 @@
 # OneDime status
 
+## Personal ladder checkpoint, October 31, 2026 (Hawaii)
+
+Branch `personal-ladder` is cut from main `f3b9b1d`. The rung claim migration
+changes the primary key to `(player_id, rung_cents)` without deleting existing
+rows; claims remain per-player, add +100 XP once per rung, and retain payout
+references while payouts stay disabled. The app now presents one Your ladder
+with matched/pending progress and permanent checks; opted-in leaderboard rows
+show highest rung only. Local build, server tests, contrast typecheck and beta
+checks are being rerun; no merge or deploy.
+
 ## OAuth userinfo checkpoint, October 30, 2026 (Hawaii)
 
 Branch `fix-userinfo` is cut from merged main `f8b3f9f`. PayPal userinfo now

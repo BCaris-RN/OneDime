@@ -164,7 +164,7 @@ settings.append(
   node("h2", "Settings"),
   node(
     "p",
-    "Sandbox milestone bonuses are off by default. Google Sheets connection is not enabled; use file exports to import into a new sheet."
+    "Payouts are disabled. Google Sheets connection is not enabled; use file exports to import into a new sheet."
   )
 );
 el("app-paypal").append(settings);
@@ -218,10 +218,10 @@ function render() {
   if (!payload) return;
   const payoutList = node("ul");
   for (const payout of payload.payouts) payoutList.append(node("li",
-    `${money(payout.rungCents)} milestone · Bonus ${money(payout.amountCents ?? 0)} · Item: ${payout.status} · Batch: ${payout.batchStatus ?? "not submitted"}`));
-  payoutSection.replaceChildren(node("h2", "Sandbox milestone bonuses"),
-    node("p", "Bonuses are disabled by default. Batch completion is separate from each item's outcome."),
-    payload.payouts.length ? payoutList : node("p", "No milestone bonuses yet."));
+    `${money(payout.rungCents)} rung · Reference ${money(payout.amountCents ?? 0)} · Item: ${payout.status} · Batch: ${payout.batchStatus ?? "not submitted"}`));
+  payoutSection.replaceChildren(node("h2", "Payout references"),
+    node("p", "Payouts are disabled. Existing references remain available for future review."),
+    payload.payouts.length ? payoutList : node("p", "No payout references yet."));
   connection.textContent = `${payload.connection.name ?? "PayPal player"} · Sandbox connected · ${payload.connection.verified === null ? "Account verification not returned" : payload.connection.verified ? "Verified PayPal account" : "Account not verified"}`;
   stats.replaceChildren(
     ...Object.entries(payload.totalsByApp).map(([app, total]) => {

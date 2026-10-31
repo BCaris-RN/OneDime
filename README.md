@@ -16,9 +16,9 @@ PayPal sandbox login and a plain HTML/CSS/TypeScript interface based on my handh
 
 I keep money in integer cents so amounts survive validation, storage and calculations
 without decimal drift. Hours, minutes and miles use explicit scaled integers. First Dime
-keeps its existing XP, streak, quest and rung rules. Matched earnings in Spotlight,
+keeps its existing XP, streak, quest and ladder rules. Matched earnings in Spotlight,
 Freelance and Market also add XP and advance a permanent profession rank; these ranks
-never create money or change rung claims. Matched totals decide earnings rankings, and
+never create money or change ladder claims. Matched totals decide earnings rankings, and
 general progression XP breaks leaderboard ties.
 
 ## Run locally
@@ -121,7 +121,7 @@ column so dates remain readable.
 
 A payment belongs in exactly one workspace. Printify and Ninja Transfers are suppliers
 (item cost); Printify Shop is a store (where the buyer paid). First Dime controls streaks,
-quests and rung claims. Other-workspace XP uses only payments matched to your PayPal activity
+quests and ladder claims. Other-workspace XP uses only payments matched to your PayPal activity
 and grants 10 XP per matched dollar. Creator, Freelancer, Driver, Seller and Starter ranks use matched
 totals at $1, $10, $50, $100, $250, $500 and $1,000; the four non-Starter professions earn
 100 XP once per rank. Clock-out rounds down to whole minutes, including zero under one minute.
@@ -165,9 +165,9 @@ Confirm a suggested workspace, choose another, or link an existing owned record.
 preserves your amount and shows a mismatch rather than fixing it automatically. First Dime,
 creator income and delivery use net; freelance/selling retain gross and fees separately.
 Every linked row shows its PayPal transaction ID. Deleting it unlinks the payment and
-preserves the import. An earned rung claim also survives entry deletion.
+preserves the import. Every earned ladder rung also survives entry deletion.
 
-CSV matching verifies a First Dime entry only when payer/platform matches the fixed map and
+Matching verifies a First Dime entry only when payer/platform matches the fixed map and
 the logged amount equals that transaction's gross or net, recording source `paypal_csv`.
 Linked First Dime entries show gross, fee and net without changing the logged amount.
 This is player-uploaded evidence; it
@@ -187,11 +187,12 @@ is not an authenticated PayPal activity lookup and does not prove the file is ge
 Do not put emails, passwords or keys in this table or the PR. Persisted account verification
 is shown only when returned. A missing name uses a generic display name, never email.
 
-### Disabled milestone bonuses
+### Ladder rewards and disabled payouts
 
 `PAYOUTS_ENABLED=false` sends nothing. If Brandon explicitly enables it locally later,
-a server-recorded rung claim creates a unique outbox row before any API call. The sandbox
-bonus is 10% of the rung, rounded down, minimum $0.10. It goes from OneDime's sandbox
+a server-recorded ladder claim creates a unique outbox row before any API call. The sandbox
+legacy payout references remain in place, but payouts stay disabled. Any future payout amount
+is 10% of the rung, rounded down, minimum $0.10. It goes from OneDime's sandbox
 business credentials to the player's login email. Batch/item/recipient/amount stay stable
 on retries; leases prevent concurrent sends. Pending work is retried by the server each
 minute. Ambiguous attempts older than 29 days require manual review instead of risking
