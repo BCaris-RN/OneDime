@@ -10,7 +10,7 @@ import { SessionStore, type AuthedRequest } from "../auth/session.js";
 import { QUESTS, PILOT_AVAILABLE, TITLES, type QuestDefinition } from "./catalog.js";
 import { gameStats, localDay } from "./rules.js";
 import { claimEligibleRungs } from "./rungs.js";
-import { loadProfessionTotals, professionClass, professionView } from "./professions.js";
+import { loadProfessionTotals, professionClass, professionView, syncProfessionRankClaims } from "./professions.js";
 import { markStartRecordComplete } from "./onboarding.js";
 import { emptyBody, entrySchema, idSchema, platformSchema, timeZoneSchema } from "./validation.js";
 import { vaultTileCount } from "./vault.js";
@@ -128,7 +128,12 @@ export function createGameRouter(options: Options) {
     const id = request.params.id
       ? (emptyBody.parse(request.body), idSchema.parse(request.params.id))
       : z.strictObject({ id: idSchema }).parse(request.body).id;
-    const result = await prisma.logEntry.deleteMany({ where: { id, playerId: player(request).id } });
+    const result = await prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM players WHERE id = ${player(request).id}::uuid FOR UPDATE`;
+      await claimEligibleRungs(tx, player(request).id);
+      await syncProfessionRankClaims(tx, player(request).id);
+      return tx.logEntry.deleteMany({ where: { id, playerId: player(request).id } });
+    });
     if (!result.count) { response.status(404).json({ error: "entry_not_found" }); return; }
     response.status(204).end();
   };
