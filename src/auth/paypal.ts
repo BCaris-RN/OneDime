@@ -3,7 +3,7 @@
  *  Sandbox identity and one-time OAuth state consumption.
  */
 import type { PrismaClient } from "@prisma/client";
-import { Router } from "express";
+import { Router, type NextFunction, type Request, type Response } from "express";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import path from "node:path";
 import { PAYPAL_USERINFO_PATH, type AppConfig } from "../config.js";
@@ -109,7 +109,7 @@ export function createPayPalRouter(options: PayPalRouterOptions): Router {
   });
   const paypalClient = options.paypalClient ?? new FetchPayPalIdentityClient(options.config);
 
-  router.get("/", async (_request, response, next) => {
+  const startLogin = async (_request: Request, response: Response, next: NextFunction) => {
     const started = Date.now();
     logStep("state_create", "start", started);
     try {
@@ -126,7 +126,9 @@ export function createPayPalRouter(options: PayPalRouterOptions): Router {
       logStep("state_create", "failed", started);
       next(error);
     }
-  });
+  };
+  router.get("/", startLogin);
+  router.get("/start", startLogin);
 
   router.get("/callback", async (request, response, next) => {
     const started = Date.now();

@@ -1,5 +1,29 @@
 # OneDime status
 
+## Landing console browser-regression checkpoint, October 30, 2026 (Hawaii)
+
+The exact-head CI browser job exposed an outdated assertion that still expected
+the retired root-page wake-up sentence after deletion. Updated
+`scripts/check-browser-smart.ts` to assert the approved landing console's
+`Log in with PayPal` link instead. Local `npm run test:browser` is green,
+including OAuth, accessibility, offline/cache, and deletion checks. The pushed
+validation head was `20f6d585`; CI runs `41124321658` and `41124329689` both
+passed, and the bot reported no findings on that exact head. No deploy or merge.
+
+## Landing console checkpoint, October 30, 2026 (Hawaii)
+
+Branch `landing-console` is cut from main `004165d`. The landing page now ports
+the supplied `reference/landing-console.html` console, CSS-only multiverse,
+keyboard/click controls, sandbox login handoff, plain-link fallback, and the
+session-scoped post-login boot overlay. Playwright captures at 390px and 1440px
+are saved under `docs/screenshots/landing-console-*.png`; no deploy or merge.
+Local validation is green: build, 285 tests, strict contrast typecheck, beta
+18 combinations/22 pairs, contrast 24 regressions with zero failing/uncovered,
+and Playwright landing checks at 390/1440 including keyboard navigation,
+reduced motion, plain links, and `/auth/paypal/start` handoff.
+The server now aliases `/auth/paypal/start` to the existing sandbox OAuth start
+handler; the alias has a regression test. The full suite is 286 tests / 14 files.
+
 ## S5/S7 checkpoint, October 30, 2026 (Hawaii)
 
 PR #11 merged into `main` as `a9c244ed906f4079c35f272fe7e0622cef0fa01b` after

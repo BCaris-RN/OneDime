@@ -1,6 +1,7 @@
 node_modules/
 dist/
 public/app.js
+public/landing.js
 .env
 .DS_Store
 coverage/

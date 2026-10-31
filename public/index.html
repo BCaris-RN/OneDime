@@ -2,22 +2,34 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>OneDime</title>
-    <meta name="theme-color" content="#C0C0C0" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/icons/coin-192.png" />
-    <link rel="stylesheet" href="/fonts.css" /><link rel="stylesheet" href="/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>OneDime: real work, leveled up</title>
+    <meta name="description" content="OneDime turns real online income into a game you can win. Log in with PayPal." />
+    <link rel="stylesheet" href="/fonts.css" />
+    <link rel="stylesheet" href="/landing.css" />
+    <link rel="icon" type="image/png" href="/icons/coin-192.png" />
   </head>
-  <body class="landing">
-    <main class="landing-panel">
-      <p class="eyebrow">OneDime</p>
-      <h1>Turn small wins into a visible ladder.</h1>
-      <p class="lead">
-        Log work, climb rungs, complete quests, and keep the tracker tied to a verified PayPal identity.
-      </p>
-      <a class="paypal-button" href="/auth/paypal">Log in with PayPal</a>
-      <p class="field-help">First visit after a quiet spell can take up to a minute to wake up.</p>
+  <body>
+    <a class="skip" href="#plain">Skip the console</a>
+    <div class="cosmos" aria-hidden="true"><div class="stars" id="stars"></div><div class="glow"></div><div class="portal"></div><div class="portal two"></div><div class="clouds"></div></div>
+    <main class="stage">
+      <h1 class="sr">OneDime. Real work, leveled up.</h1>
+      <section class="device" aria-label="OneDime console. Arrow keys work as the D-pad, Enter is A, Backspace is B, Space is Start.">
+        <div class="topline" aria-hidden="true"><span class="led"><i></i>POWER</span><span>ONEDIME · POCKET LEDGER</span></div>
+        <div class="bezel"><p class="bezel-label" aria-hidden="true">LEDGER SCREEN <b></b></p><div class="lcd" id="lcd"><div class="scan" id="scan" aria-hidden="true"></div><div class="sr" aria-live="polite" id="announce"></div>
+          <div class="screen" id="s-boot"><ul class="log" id="bootlog"></ul><div class="coin" id="bootcoin"></div><ul class="log" id="bootlog2"></ul></div>
+          <div class="screen" id="s-home" hidden><div class="coin" id="homecoin"></div><p class="tag">Real work. Real pay. Leveled up.</p><ul class="menu" aria-label="Main menu"><li aria-current="true"><span class="cursor" aria-hidden="true">▶</span>LOG IN WITH PAYPAL<span class="k">START</span></li><li><span aria-hidden="true">◀</span>TOUR THE APP<span class="k">LEFT</span></li><li><span aria-hidden="true">▼</span>INFO &amp; LINKS<span class="k">DOWN</span></li></ul><p class="sub">PayPal checks your password. OneDime never sees it.</p><div class="legend" aria-hidden="true"><span>START log in</span><span>A select</span><span>B back</span><span>▲ home</span></div></div>
+          <div class="screen" id="s-tour" hidden></div>
+          <div class="screen" id="s-info" hidden><h2>INFO</h2><ul class="menu" id="infomenu" aria-label="Info and links"></ul><div class="legend" aria-hidden="true"><span>▲▼ move</span><span>A open</span><span>B back</span></div></div>
+          <div class="screen" id="s-detail" hidden></div>
+          <div class="screen" id="s-go" hidden><ul class="log" id="golog"></ul><div class="bar" id="gobar" aria-hidden="true"></div><p class="sub" id="gonote"></p></div>
+        </div></div>
+        <div class="plate" aria-hidden="true"><strong>OneDime</strong><span>¢10</span></div>
+        <div class="controls"><div class="dpad"><button class="u" type="button" data-k="up" aria-label="Up: home and log in">▲</button><button class="l" type="button" data-k="left" aria-label="Left: tour the app">◀</button><span class="c" aria-hidden="true"></span><button class="r" type="button" data-k="right" aria-label="Right: next">▶</button><button class="d" type="button" data-k="down" aria-label="Down: info and links">▼</button></div><div class="ab"><div><button type="button" data-k="b" aria-label="B: back">B</button><span aria-hidden="true">B</span></div><div><button type="button" data-k="a" aria-label="A: select">A</button><span aria-hidden="true">A</span></div></div><div class="pills"><div><button type="button" data-k="select" aria-label="Select: home"></button><span aria-hidden="true">SELECT</span></div><div><button type="button" data-k="start" aria-label="Start: log in with PayPal"></button><span aria-hidden="true">START</span></div></div></div><div class="grille" aria-hidden="true"></div>
+      </section>
+      <nav class="fallback" id="plain" aria-label="Plain links"><a class="primary" href="/auth/paypal/start" data-login>Log in with PayPal</a><a href="https://sites.google.com/view/onedime-privacy-policy/home" target="_blank" rel="noopener">Privacy</a><a href="https://sites.google.com/view/onedime-user-agreement/home" target="_blank" rel="noopener">User agreement</a><a href="mailto:caris.industries@gmail.com">Contact</a></nav>
+      <p class="foot">Adults 18+ · Private play-test · Arrow keys, Enter, Backspace and Space work too.</p>
     </main>
-  <footer class="shell"><a href="https://sites.google.com/view/onedime-privacy-policy/home">Privacy</a><a href="https://sites.google.com/view/onedime-user-agreement/home">Terms</a><span>Adults 18+ | Private play-test</span></footer></body>
+    <script type="module" src="/landing.js"></script>
+  </body>
 </html>

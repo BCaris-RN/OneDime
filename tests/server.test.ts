@@ -116,6 +116,11 @@ afterAll(async () => {
 });
 
 describe("server", () => {
+  it("supports the landing console login alias", async () => {
+    const start = await request(app).get("/auth/paypal/start").expect(302);
+    expect(new URL(start.headers.location).pathname).toBe("/connect");
+  });
+
   it("binds login state to a Lax browser cookie and rejects a different browser", async () => {
     const start = await request(app).get("/auth/paypal").expect(302);
     const state = new URL(start.headers.location).searchParams.get("state");
