@@ -261,6 +261,12 @@ try {
   for(const name of ["Scroll up","Scroll down","Previous tab","Next tab","B: clock in or out","A: log a session"])
     assert.equal(await page.getByRole("button",{name,exact:true}).count(),1);
   await checkTabKeys("app-nav",apps);
+  for(const width of [320,390,520,640,768,1024,1280]) {
+    await page.setViewportSize({width,height:844});
+    const nav=await page.locator("#app-nav").evaluate(el=>({scroll:el.scrollWidth-el.clientWidth,rows:new Set([...el.children].map(tab=>Math.round(tab.getBoundingClientRect().top))).size}));
+    assert.ok(nav.scroll<=1,`app tabs scroll sideways at ${width}px`);
+    if(width<=520)assert.equal(nav.rows,2,`app tabs sit in rows of four at ${width}px`);
+  }
   for(const width of [320,390,1280]) for(const theme of ["light","dark"]) {
     await page.setViewportSize({width,height:844});
     if(await page.locator("html").getAttribute("data-theme")!==theme) {
@@ -277,6 +283,15 @@ try {
         await page.locator("#app-stats svg[role=img]").first().waitFor();
         assert.equal(await page.locator("#app-stats svg[role=img]").count(),3);
         assert.equal(await page.locator("#app-stats details summary",{hasText:"Show as a table"}).count(),3);
+      }
+      if(appName==="Vault") {
+        const vault=page.getByRole("tabpanel",{name:"Vault",exact:true});
+        assert.equal(await vault.getByRole("img").count(),1,"only the Vault picture is an image");
+        assert.match(await vault.locator(".vault-frame").getAttribute("aria-label")??"",/^The Vault/);
+        assert.match(await vault.getByRole("status").textContent()??"",/\d+ \/ 100 tiles broken|Penny is awake/);
+        await vault.getByText("What breaks tiles",{exact:true}).waitFor();
+        assert.deepEqual(await vault.locator(".vault-bot svg").evaluateAll(svgs=>svgs.map(svg=>svg.getAttribute("viewBox")+" "+(svg.querySelectorAll("rect").length>40))),
+          Array(5).fill("0 0 16 16 true"),"each robot is a 16x16 pixel sprite");
       }
       await checkPanel(`${appName} ${width} ${theme}`);
       await page.evaluate(()=>window.scrollTo(0,0));
