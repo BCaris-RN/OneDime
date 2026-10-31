@@ -551,6 +551,6 @@ the CI browser failure on #9 must be cleared on the final pushed head before mer
 ## Vault teaser checkpoint, October 30, 2026 (Hawaii)
 
 PR #22 was merged at exact reviewed head `fae5f3448719e381a880df4bd49e77e4babefdfd`; new main is `f124cd9efaffbb638f85b8bcb5058610dd7bfb45`.
-Branch `vault-teaser` adds migration-backed per-player tile progress, server-side matched-pay tile math, deterministic seeded tiles, Vault navigation, XP chip, roster copy, and focused tests. Current head is `520e537`.
-Local evidence: `npm run build` passed; `npx vitest run tests/vault.test.ts` passed; the browser harness was updated for the seventh tab and is being rerun on this head. Full `npm test` remains noisy from pre-existing untracked review-package suites.
+Branch `vault-teaser` adds migration-backed per-player tile progress, server-side matched-pay tile math with amount/status revalidation, deterministic seeded tiles, Vault navigation, XP chip, roster copy, and focused tests. Current head is pending the bot-fix commit.
+Local evidence: `npm run build` and `npx vitest run tests/vault.test.ts` pass; the browser harness passed on the prior UI head at 320/390/1280px and both themes. Full `npm test` remains noisy from pre-existing untracked review-package suites.
 No Claude-owned branch was touched. No merge or deployment is authorized for the Vault PR.

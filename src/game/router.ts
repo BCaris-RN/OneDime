@@ -214,15 +214,19 @@ export function createGameRouter(options: Options) {
     const byType = new Map(payments.map(payment => [`${payment.routed_record_type}:${String(payment.routed_record_id)}`, payment]));
     for (const [key, list] of Object.entries(rows)) for (const row of list) {
       const type = key === "income" ? "income" : key === "gigs" ? "gigs" : key === "shifts" ? "shifts" : key === "sales" ? "sales" : "";
-      const payment = byType.get(`${type}:${row.id}`) as never;
-      if (!payment || !incoming(payment)) continue;
+      const payment = byType.get(`${type}:${row.id}`) as Record<string, unknown> | undefined;
+      if (!payment || !incoming(payment as { currency: string; kind: string; gross_cents: number; net_cents: number; fee_cents: number })) continue;
       const cents = key === "income" ? Number(row.amount_cents) : key === "gigs" ? Number(row.gross_cents) : key === "shifts" ? Number(row.pay_cents) + Number(row.tips_cents) : key === "sales" ? Number(row.price_cents) : 0;
+      const validStatus = key === "income" ? row.status === "paid" : key === "gigs" ? row.stage === "Paid" : key === "sales" ? row.status === "paid" : true;
+      const validAmount = [cents, key === "gigs" ? cents - Number(row.fee_cents) : key === "sales" ? cents - Number(row.fee_cents) : cents].includes(Number(payment.gross_cents)) || [cents, key === "gigs" ? cents - Number(row.fee_cents) : key === "sales" ? cents - Number(row.fee_cents) : cents].includes(Number(payment.net_cents));
+      if (!validStatus || !validAmount) continue;
       const day = String(row.earned_on ?? row.started_on ?? row.worked_on ?? row.sold_on ?? "");
       if (cents > 0 && day) matched.push({ cents, day });
     }
     const distinctWorkDays = new Set(matched.map(item => item.day)).size;
     const matchedCents = matched.reduce((sum, item) => sum + item.cents, 0);
-    return { tiles: vaultTileCount({ matchedCents, distinctWorkDays, completedQuests }), seen: Number(progress[0]?.tiles_seen ?? 0), matchedCents, distinctWorkDays, completedQuests };
+    const eligibleQuests = matchedCents > 0 ? completedQuests : 0;
+    return { tiles: vaultTileCount({ matchedCents, distinctWorkDays, completedQuests: eligibleQuests }), seen: Number(progress[0]?.tiles_seen ?? 0), matchedCents, distinctWorkDays, completedQuests: eligibleQuests };
   }
   router.get("/vault", async (request: AuthedRequest, response) => response.json(await vaultFor(player(request).id)));
   router.post("/vault/seen", async (request: AuthedRequest, response) => {

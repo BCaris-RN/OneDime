@@ -6,6 +6,7 @@ describe("vault math", () => {
     expect(vaultTileCount({ matchedCents: 250, distinctWorkDays: 2, completedQuests: 1 })).toBe(9);
     expect(vaultTileCount({ matchedCents: 1_000_000, distinctWorkDays: 100, completedQuests: 100 })).toBe(100);
     expect(vaultTileCount({ matchedCents: 99, distinctWorkDays: 0, completedQuests: 0 })).toBe(0);
+    expect(vaultTileCount({ matchedCents: 0, distinctWorkDays: 0, completedQuests: 10 })).toBe(0);
   });
   it("keeps a deterministic seeded order and monotonic seen state", () => {
     expect(TILE_ORDER).toHaveLength(100);

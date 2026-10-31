@@ -1,6 +1,7 @@
 export const VAULT_TILE_COUNT = 100;
 export function vaultTileCount(input: { matchedCents: number; distinctWorkDays: number; completedQuests: number }) {
-  return Math.min(VAULT_TILE_COUNT, Math.max(0, Math.floor(input.matchedCents / 100) * 2 + Math.max(0, input.distinctWorkDays) + Math.max(0, input.completedQuests) * 3));
+  const questTiles = input.matchedCents > 0 ? Math.max(0, input.completedQuests) * 3 : 0;
+  return Math.min(VAULT_TILE_COUNT, Math.max(0, Math.floor(input.matchedCents / 100) * 2 + Math.max(0, input.distinctWorkDays) + questTiles));
 }
 export const TILE_ORDER = (() => {
   const order = Array.from({ length: VAULT_TILE_COUNT }, (_, index) => index); let seed = 42;
