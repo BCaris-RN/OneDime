@@ -216,12 +216,29 @@ function renderLeaders(leaders: Leader[]) {
 }
 function renderVault(vault: Vault) {
   const grid = element("vault-grid"); const visible = Math.max(vault.tiles, vault.seen);
-  grid.replaceChildren(...TILE_ORDER.map((tile, index) => node("span", index < visible ? "" : "?", index < visible ? "vault-tile broken" : "vault-tile")));
+  const container = node("div", undefined, "vault-frame");
+  const sprite = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  sprite.setAttribute("viewBox", "0 0 16 16"); sprite.setAttribute("aria-hidden", "true");
+  const penny = ["......kk........",".......k........",".....kkkkkk.....","....kmmmmmmk....","....kmlkklmk....","....kmmmmmmk....","....kmmkkmmk....",".....kkkkkk.....","..kkkkkkkkkkkk..",".kmmmmmmmmmmmmk.",".kmmmkkkkkkmmmk.",".kmmkllllllkmmk.",".kmmkllkkllkmmk.",".kmmmkkkkkkmmmk.","..kkkkkkkkkkkk..","...kk......kk..."];
+  penny.forEach((row,y)=>[...row].forEach((pixel,x)=>{if(pixel===".")return;const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");rect.setAttribute("x",String(x));rect.setAttribute("y",String(y));rect.setAttribute("width","1");rect.setAttribute("height","1");rect.setAttribute("class",pixel);sprite.append(rect);}));
+  const tiles=node("div",undefined,"vault-tiles"); tiles.setAttribute("aria-hidden","true");
+  const broken = new Set(TILE_ORDER.slice(0,visible)); const fresh = new Set(TILE_ORDER.slice(Math.min(vault.seen, visible), visible)); let delay=0;
+  for(let i=0;i<100;i++){const tile=node("i",undefined,`vault-tile${broken.has(i)?fresh.has(i)?" crumble":" gone":""}`);if(fresh.has(i))tile.style.setProperty("--d",String(delay++));tiles.append(tile);}
+  container.append(sprite,tiles); grid.querySelector(".vault-layout")!.replaceChildren(container);
   grid.setAttribute("aria-label", `The Vault. ${visible} of 100 tiles broken.`);
-  element("vault-count").textContent = `${visible} of 100 tiles broken · matched pay only`;
+  element("vault-count").textContent = `${visible} / 100 tiles broken`;
   const awake = element("vault-awake"); awake.replaceChildren();
-  if (visible >= 100) awake.append(node("h3", "PENNY IS AWAKE"), node("p", "THE MINT DOOR"), node("p", "Your Lot opens soon."));
-  element("vault-roster").replaceChildren(...["Penny", "Lumen", "Quill", "Axle", "Barter"].map(name => node("li", `${name} · sleeping`)));
+  const side=node("div",undefined,"vault-side");
+  if(visible>=100){side.append(node("h3","PENNY IS AWAKE","vault-awake-title"));const door=node("div",undefined,"vault-door");door.append(node("strong","THE MINT DOOR"),node("span","Your Lot opens soon."));side.append(door);}
+  else {
+    side.append(node("p","What breaks tiles","vault-side-title"));
+    const rows:[[string,number,number], [string,number,number], [string,number,number]]=[["Paid $1",vault.matchedCents,100],["Work day",vault.distinctWorkDays,1],["Quest",vault.completedQuests,1]];
+    rows.forEach(([label,value,unit])=>{const row=node("div",undefined,"vault-rule");row.append(node("span",label),node("span",`${label==="Paid $1"?"2":label==="Work day"?"1":"3"}`));const bar=node("i",undefined,"vault-rule-bar");const fill=node("b");fill.style.width=`${Math.min(100,label==="Paid $1"?Math.floor(value/100)*2:label==="Work day"?value:value*3)}%`;bar.append(fill);row.replaceChildren(node("span",label),bar,node("span",label==="Paid $1"?"2":label==="Work day"?"1":"3"));side.append(row);});
+    side.append(node("p",`So far: ${money(vault.matchedCents)} paid, ${vault.distinctWorkDays} work day${vault.distinctWorkDays===1?"":"s"}, ${vault.completedQuests} quest${vault.completedQuests===1?"":"s"}.`,"vault-so-far"),node("p",`${100-visible} tiles to go. No shortcuts, no purchases, no luck.`,"vault-so-far"));
+  }
+  grid.querySelector(".vault-layout")!.append(side);
+  const bots=["Penny","Lumen","Quill","Axle","Barter"];
+  element("vault-roster").replaceChildren(...bots.map((name,index)=>{const card=node("li",undefined,"vault-bot");const icon=node("span",index===0?"▣":"?","vault-bot-icon");card.append(icon,node("strong",index===0?"Penny":"? ? ?"),node("small",index===0?`${visible}% uncovered`:`Wakes with ${["","Spotlight","Freelance","Delivery","Selling"][index]}`));return card;}));
 }
 async function refresh() {
   const [me, stats, entries, value, quests, leaders, vault] = await Promise.all([
