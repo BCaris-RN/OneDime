@@ -23,9 +23,7 @@ account. If a handoff seems to conflict with them, stop and ask in the PR.
 - You: implementer. Build from the handoff, test, open or update the PR, then stop and report.
 
 ## Non-negotiables (from docs/SDLC.md)
-1. Brandon approves every merge, release and visibility change, each time. Never merge on your own.
-   A merge to main that passes CI deploys the beta (.github/workflows/deploy.yml); that merge approval
-   is the deploy approval. Never trigger a deploy any other way without his go-ahead.
+1. Brandon approves every merge, deploy, release and visibility change, each time. Never merge on your own.
 2. One agent owns a branch at a time.
 3. Sandbox PayPal only. Anything pointing at live PayPal: stop and flag it.
 4. Secrets live in .env and Render settings only. Never print, log or commit them.
