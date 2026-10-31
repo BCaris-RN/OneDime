@@ -216,11 +216,11 @@ function renderLeaders(leaders: Leader[]) {
 }
 function renderVault(vault: Vault) {
   const grid = element("vault-grid"); const visible = Math.max(vault.tiles, vault.seen);
-  grid.replaceChildren(...TILE_ORDER.map((tile, index) => node("span", index < visible ? "" : "?", index < vault.tiles ? "vault-tile broken" : "vault-tile")));
-  grid.setAttribute("aria-label", `The Vault. ${vault.tiles} of 100 tiles broken.`);
-  element("vault-count").textContent = `${vault.tiles} of 100 tiles broken · matched pay only`;
+  grid.replaceChildren(...TILE_ORDER.map((tile, index) => node("span", index < visible ? "" : "?", index < visible ? "vault-tile broken" : "vault-tile")));
+  grid.setAttribute("aria-label", `The Vault. ${visible} of 100 tiles broken.`);
+  element("vault-count").textContent = `${visible} of 100 tiles broken · matched pay only`;
   const awake = element("vault-awake"); awake.replaceChildren();
-  if (vault.tiles >= 100) awake.append(node("h3", "PENNY IS AWAKE"), node("p", "THE MINT DOOR"), node("p", "Your Lot opens soon."));
+  if (visible >= 100) awake.append(node("h3", "PENNY IS AWAKE"), node("p", "THE MINT DOOR"), node("p", "Your Lot opens soon."));
   element("vault-roster").replaceChildren(...["Penny", "Lumen", "Quill", "Axle", "Barter"].map(name => node("li", `${name} · sleeping`)));
 }
 async function refresh() {
