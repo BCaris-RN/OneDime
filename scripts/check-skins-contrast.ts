@@ -25,7 +25,7 @@ const fixture = [
   '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">',
   "<style>" + css + "</style></head><body>",
   '<header class="topbar"><a class="brand">OneDime</a><div class="player-strip"><button id="appearance-open" class="ghost-button">Appearance</button><button class="text-button">Log out</button></div></header>',
-  '<nav class="apps" id="app-nav" aria-label="Apps"><button aria-selected="true">First Dime</button><button>Spotlight</button><button>Freelance</button><button>Market</button><button>Stats</button><button>PayPal</button></nav>',
+  '<nav class="apps" id="app-nav" aria-label="Apps"><button aria-selected="true">First Dime</button><button>Spotlight</button><button>Freelance</button><button>Market</button><button>Stats</button><button>Vault</button><button>PayPal</button></nav>',
   '<main class="shell"><section class="slip"><h1>Fictional work record</h1><p class="muted">Theme check text on a panel.</p><a href="#">Privacy</a>',
   '<label>Platform<input value="Prolific" placeholder="Choose a platform"></label><label>Month<select><option>October</option></select></label>',
   '<div class="btns"><button class="primary-button">Save entry</button><button class="ghost-button">Cancel</button><button class="act ghost small">Secondary action</button></div>',
@@ -58,7 +58,7 @@ try {
           return { left: box.left, right: box.right, top: Math.round(box.top), clipped: node.scrollWidth > node.clientWidth };
         }));
         const label = skin + "/" + mode + "/OS-" + scheme + " at " + width + "px";
-        assert.deepEqual([...new Set(tabs.map(tab => tab.top))].length, 2, label + " phone tabs must sit in two rows");
+        assert.equal(new Set(tabs.map(tab => tab.top)).size, Math.ceil(tabs.length / 3), label + " phone tabs must sit in rows of three");
         assert.deepEqual(tabs.filter(tab => tab.left < 0 || tab.right > width || tab.clipped), [], label + " phone tabs must stay inside the viewport without clipping");
       }
       const pairs = await inspectContrast(page, skin + "; mode=" + mode + "; OS=" + scheme + "; width=" + width);
