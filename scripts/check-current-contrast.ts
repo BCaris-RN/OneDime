@@ -18,14 +18,17 @@ const baseUrl = `http://127.0.0.1:${port}`;
 const args = process.argv.slice(2);
 const option = (name: string) => { const index = args.indexOf(name); return index < 0 ? undefined : args[index + 1]; };
 for (let index = 0; index < args.length; index++) {
-  if (["--before", "--check-only"].includes(args[index])) continue;
+  if (["--before", "--check-only", "--skin-matrix"].includes(args[index])) continue;
   if (["--report", "--screenshots"].includes(args[index]) && args[index + 1] && !args[index + 1].startsWith("--")) { index++; continue; }
   throw new Error(`Unknown or incomplete argument: ${args[index]}`);
 }
 const before = args.includes("--before");
 const checkOnly = args.includes("--check-only");
+const skinMatrix = args.includes("--skin-matrix");
+const skinReportPath = resolve(option("--report") ?? "docs/skins-contrast.md");
 const reportPath = resolve(option("--report") ?? `docs/contrast/current-${before ? "before" : "after"}.md`);
 const screenshotDirectory = option("--screenshots");
+const reportDestination = skinMatrix ? skinReportPath : reportPath;
 const cssPath = resolve(before ? "docs/contrast/current-before.css" : "public/styles.css");
 const stylesheet = await readFile(cssPath, "utf8");
 const stylesheetHash = createHash("sha256").update(stylesheet).digest("hex");
@@ -54,9 +57,11 @@ try {
   console.log("contrast local fixture initialized");
   if (screenshotDirectory) await mkdir(resolve(screenshotDirectory), { recursive: true });
 
+  let currentSkin = "current";
   const inspect = async (page: Page, label: string, selection = true) => {
-    pairs.push(...await inspectContrast(page, label, selection));
-    coverage.push(label);
+    const state = skinMatrix ? "skin=" + currentSkin + "; " + label : label;
+    pairs.push(...await inspectContrast(page, state, selection));
+    coverage.push(state);
   };
   const states = async (page: Page, label: string) => {
     const selectors = [".primary-button", ".ghost-button", ".text-button", "button.act:not(.ghost)", "button.act.ghost", ".facebtns button:first-child", ".facebtns button:last-child", ".dpad button", "nav.apps button[aria-selected='true']", "nav.apps button[aria-selected='false']", "nav.tabs button[aria-selected='true']", "#balNav button[aria-selected='true']", "input:not([type='checkbox'])", "input#clock-platform", ".slip input:not([type='checkbox'])", "input[type='checkbox']", "select", "textarea", "summary", "a:not(.brand):not(.paypal-button):not(.skip-link)", ".skip-link", ".paypal-button", ".brand"];
@@ -95,14 +100,17 @@ try {
     await page.screenshot({ path: resolve(screenshotDirectory, filename), fullPage: true, animations: "disabled" });
   };
 
-  for (const os of ["light", "dark"] as const) for (const theme of ["light", "dark"] as const) {
+  const skins = skinMatrix ? ["paper", "slate"] as const : ["current"] as const;
+  for (const skin of skins) for (const os of ["light", "dark"] as const) for (const theme of ["light", "dark"] as const) {
+    currentSkin = skin;
     // Each color-scheme combination gets a fresh first-run state for the welcome dialog.
     await prisma.player.update({ where: { id: player.id }, data: { welcomeCompletedAt: null } });
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: os, reducedMotion: "reduce", timezoneId: "Pacific/Honolulu" });
     // tsx preserves names inside callbacks serialized into the isolated test browser.
     await context.addInitScript({ content: "globalThis.__name = function (target) { return target; };" });
     await context.route("**/styles.css", route => route.fulfill({ contentType: "text/css", body: stylesheet }));
-    await context.addInitScript(({ theme }) => localStorage.setItem("onedime-theme", theme), { theme });
+    if (skinMatrix) await context.addInitScript(({ skin, theme }) => localStorage.setItem("onedime-appearance", JSON.stringify({ skin, mode: theme })), { skin, theme });
+    else await context.addInitScript(({ theme }) => localStorage.setItem("onedime-theme", theme), { theme });
     const page = await context.newPage();
     const errors: string[] = [];
     const external: string[] = [];
@@ -124,8 +132,16 @@ try {
     await page.waitForFunction(() => (document.getElementById("sasuStats")?.children.length ?? 0) > 0);
     await page.waitForFunction(() => document.getElementById("player-name")?.textContent === "Demo player");
     assert.equal(await page.locator("html").getAttribute("data-theme"), theme);
-    for (const appName of ["First Dime", "Spotlight", "Freelance", "Market", "PayPal"]) {
+    assert.equal(await page.locator("html").getAttribute("data-skin"), skin === "current" ? null : skin);
+    await page.getByRole("button", { name: "Appearance", exact: true }).click();
+    const appearanceDialog = page.getByRole("dialog", { name: "Appearance", exact: true });
+    const appearanceLabel = "Appearance settings; theme=" + theme + "; OS=" + os;
+    await inspect(page, appearanceLabel);
+    await states(page, appearanceLabel);
+    await appearanceDialog.getByRole("button", { name: "Close", exact: true }).click();
+    for (const appName of ["First Dime", "Spotlight", "Freelance", "Market", "Stats", "PayPal"]) {
       await page.getByRole("tab", { name: appName, exact: true }).click();
+      if (appName === "Stats") await page.waitForFunction(() => document.querySelectorAll("#app-stats svg[role='img']").length === 3);
       const label = `${appName}; populated; theme=${theme}; OS=${os}`;
       await inspect(page, label);
       pairs.push(...await inspectNativeGlyphs(page, label));
@@ -141,6 +157,11 @@ try {
         await page.setViewportSize({ width, height: width === 375 ? 844 : 900 });
         await inspect(page, `${label}; width=${width}`);
         await screenshot(page, `${appName.toLowerCase().replaceAll(" ", "-")}-${theme}-${width}.png`);
+      }
+      if (skinMatrix) for (const width of [320, 390]) {
+        await page.setViewportSize({ width, height: 844 });
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), skin + " " + theme + " must not overflow at " + width + "px");
+        await inspect(page, label + "; width=" + width);
       }
       await page.setViewportSize({ width: 1280, height: 900 });
       console.log(`contrast workspace collected: ${label}`);
@@ -221,8 +242,9 @@ try {
     await page.goto(`${baseUrl}/contrast-login?empty=1`);
     await page.waitForFunction(() => document.getElementById("player-name")?.textContent === "Empty demo player");
     await page.waitForFunction(() => (document.getElementById("sasuStats")?.children.length ?? 0) > 0);
-    for (const appName of ["First Dime", "Spotlight", "Freelance", "Market", "PayPal"]) {
+    for (const appName of ["First Dime", "Spotlight", "Freelance", "Market", "Stats", "PayPal"]) {
       await page.getByRole("tab", { name: appName, exact: true }).click();
+      if (appName === "Stats") await page.waitForFunction(() => document.querySelectorAll("#app-stats svg[role='img']").length === 3);
       await inspect(page, `${appName}; empty; theme=${theme}; OS=${os}`);
       if (appName === "Market") {
         await page.getByRole("tab", { name: "Selling", exact: true }).click();
@@ -272,9 +294,10 @@ try {
   lines.push("", "## Route and state coverage", "", ...[...new Set(coverage)].map(value => `- ${value}`), "",
     "## Scope", "", "The audit covers actual DOM text and placeholders, selected text, authored control boundaries, D-pad icons, disclosure markers, keyboard focus, selected tabs, progress fills, hover and pressed button combinations. Error, invalid and toast cases use clearly marked test-only DOM fixtures. Feedback uses the real local UI with intercepted fictional error and delayed-success responses, including empty, invalid, error, sending and sent states. Open modal scans exclude inert background controls; neutral native checkbox references are inserted inside the modal top layer. Empty and populated views use separate fictional players. Policy redirects are checked without fetching third-party destinations. No production API credentials, data or financial/game/auth calculations are changed.", "",
     "Dormant legacy `.goal`, `.coin`, `.ladder`, `.quest` and `.money` selectors are not represented as rendered UI. Decorative container/table separators and aria-hidden goal/controller ornaments are measured and listed as exemptions. Native calendar/month/select/checkbox glyph colors are sampled from actual Chromium element screenshots. Chromium's visited-color privacy protection is handled by requiring unconditional authored link colors and rejecting visited-specific overrides; otherwise coverage is explicitly uncovered. No unsupported authored background is silently accepted.", "");
+  if (skinMatrix) lines[0] = "# Paper and Slate skin contrast";
   if (!checkOnly) {
-    await mkdir(dirname(reportPath), { recursive: true });
-    await writeFile(reportPath, lines.join("\n"), "utf8");
+    await mkdir(dirname(reportDestination), { recursive: true });
+    await writeFile(reportDestination, lines.join("\n"), "utf8");
   }
   console.log(`contrast ${checkOnly ? "check" : `report: ${reportPath}`}; ${failures.length} failing pairs; ${uncovered.length} uncovered`);
   for (const { pair } of [...failures, ...uncovered]) console.log(`${pair.result}: ${pair.role}; ${pair.foreground} / ${pair.background}; ${pair.ratio?.toFixed(6) ?? "n/a"}; ${pair.example}; ${pair.reason}`);

@@ -28,10 +28,25 @@
         <span id="player-name">Loading…</span>
         <button type="button" class="ghost-button" id="xp-chip" aria-label="Open your Vault">XP …</button>
         <button type="button" class="ghost-button" id="theme-toggle" aria-label="Switch to dark mode">Dark mode</button>
+        <button type="button" class="ghost-button" id="appearance-open" aria-haspopup="dialog" aria-controls="appearance-dialog">Appearance</button>
         <button type="button" class="text-button" id="logout">Log out</button>
         <details class="header-menu" id="header-menu"><summary>Menu</summary><div><button type="button" class="ghost-button" data-feedback-open>Send feedback</button></div></details>
       </div>
     </header>
+    <dialog id="appearance-dialog" class="feedback-dialog appearance-dialog" aria-labelledby="appearance-title">
+      <div class="section-heading"><h2 id="appearance-title">Appearance</h2><button type="button" class="ghost-button" id="appearance-close">Close</button></div>
+      <fieldset><legend>Skin</legend>
+        <label><input type="radio" name="skin" value="current"> Current <span>handheld screen</span></label>
+        <label><input type="radio" name="skin" value="paper"> Paper <span>warm with a blue accent</span></label>
+        <label><input type="radio" name="skin" value="slate"> Slate <span>cool with an amber accent</span></label>
+      </fieldset>
+      <fieldset><legend>Mode</legend>
+        <label><input type="radio" name="mode" value="system"> System <span>follows your device</span></label>
+        <label><input type="radio" name="mode" value="light"> Light</label>
+        <label><input type="radio" name="mode" value="dark"> Dark</label>
+      </fieldset>
+      <p class="field-help">Saved on this device. Only your appearance choice is stored here.</p>
+    </dialog>
     <dialog id="welcome-dialog" class="feedback-dialog welcome-dialog" aria-labelledby="welcome-title">
       <h1 id="welcome-title">What kind of work do you do?</h1>
       <p>Choose any that fit. You can change what you track later.</p>

@@ -554,3 +554,13 @@ PR #22 was merged at exact reviewed head `fae5f3448719e381a880df4bd49e77e4babefd
 Branch `vault-teaser` adds migration-backed per-player tile progress, server-side matched-pay tile math with amount/status revalidation, deterministic seeded tiles, Vault navigation, XP chip, roster copy, and focused tests. Current head is pending the final persistence fix.
 Local evidence: `npm run build` and `npx vitest run tests/vault.test.ts` pass; browser/accessibility harness passed at 320/390/1280px and both themes. Full `npm test` remains noisy from pre-existing untracked review-package suites.
 No Claude-owned branch was touched. No merge or deployment is authorized for the Vault PR.
+## M7 checkpoint after rebase, October 30, 2026
+
+`week5-skins` (PR #12) is rebased onto main. The Paper and Slate commit is unchanged
+apart from conflict fixes in `package.json` and `public/styles.css`; the ranks commit
+it used to carry is already on main through #9. New: a pixel-based contrast check for
+the console landing page (`npm run test:contrast:landing`), a 3:1 check of the Stats
+chart ink on its panel for every skin and mode, and a two-row phone tab check at 320 and
+390px. The landing audit found the footer line below 4.5:1; it now has a dark backing.
+Local: build, strict typecheck, 299 tests, browser audit (4,396 tab steps) and the full
+contrast suite pass. Exact-head CI is recorded in the PR.
