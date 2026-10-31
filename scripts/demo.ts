@@ -8,6 +8,7 @@ import { SessionStore } from "../src/auth/session.js";
 import { localDay } from "../src/game/rules.js";
 import { seedDemo } from "../src/demo/seed.js";
 const container = await new PostgreSqlContainer("postgres:16").start();
+const port = Number(process.env.PORT ?? 3403);
 let prisma: PrismaClient | undefined;
 try {
   const databaseUrl = container.getConnectionUri();
@@ -20,8 +21,8 @@ try {
   const config = loadConfig({
     NODE_ENV: "test",
     DEMO_VIDEO: "true",
-    PORT: "3403",
-    PUBLIC_BASE_URL: "http://127.0.0.1:3403",
+    PORT: String(port),
+    PUBLIC_BASE_URL: `http://127.0.0.1:${port}`,
     SESSION_SECRET: randomBytes(32).toString("hex"),
     PAYOUTS_ENABLED: "false"
   });
@@ -43,8 +44,8 @@ try {
     await sessions.createSession(player.id, res);
     res.redirect("/app");
   });
-  const server = app.listen(3403, "127.0.0.1", () =>
-    console.log("fictional demo: http://127.0.0.1:3403/demo-login")
+  const server = app.listen(port, "127.0.0.1", () =>
+    console.log(`fictional demo: http://127.0.0.1:${port}/demo-login`)
   );
   const close = async () => {
     server.close();

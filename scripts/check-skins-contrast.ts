@@ -58,7 +58,7 @@ try {
           return { left: box.left, right: box.right, top: Math.round(box.top), clipped: node.scrollWidth > node.clientWidth };
         }));
         const label = skin + "/" + mode + "/OS-" + scheme + " at " + width + "px";
-        assert.equal(new Set(tabs.map(tab => tab.top)).size, Math.ceil(tabs.length / 3), label + " phone tabs must sit in rows of three");
+        assert.equal(new Set(tabs.map(tab => tab.top)).size, Math.ceil(tabs.length / 4), label + " phone tabs must sit in rows of four");
         assert.deepEqual(tabs.filter(tab => tab.left < 0 || tab.right > width || tab.clipped), [], label + " phone tabs must stay inside the viewport without clipping");
       }
       const pairs = await inspectContrast(page, skin + "; mode=" + mode + "; OS=" + scheme + "; width=" + width);
