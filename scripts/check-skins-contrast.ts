@@ -3,6 +3,18 @@ import { readFile } from "node:fs/promises";
 import { chromium } from "playwright";
 import { inspectContrast } from "./current-contrast.js";
 
+function contrastRatio(foreground: string, background: string) {
+  const luminance = (color: string) => {
+    const [r, g, b] = color.match(/[\d.]+/g)!.slice(0, 3).map(value => {
+      const c = Number(value) / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const [high, low] = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+  return (high + 0.05) / (low + 0.05);
+}
+
 const css = await readFile("public/styles.css", "utf8");
 const browser = await chromium.launch();
 const skins = ["paper", "slate"] as const;
@@ -40,6 +52,15 @@ try {
       }, { skin, mode });
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       assert.ok(overflow <= 1, skin + "/" + mode + "/OS-" + scheme + " at " + width + "px overflowed by " + overflow + "px");
+      if (width < 500) {
+        const tabs = await page.locator("#app-nav button").evaluateAll(nodes => nodes.map(node => {
+          const box = node.getBoundingClientRect();
+          return { left: box.left, right: box.right, top: Math.round(box.top), clipped: node.scrollWidth > node.clientWidth };
+        }));
+        const label = skin + "/" + mode + "/OS-" + scheme + " at " + width + "px";
+        assert.deepEqual([...new Set(tabs.map(tab => tab.top))].length, 2, label + " phone tabs must sit in two rows");
+        assert.deepEqual(tabs.filter(tab => tab.left < 0 || tab.right > width || tab.clipped), [], label + " phone tabs must stay inside the viewport without clipping");
+      }
       const pairs = await inspectContrast(page, skin + "; mode=" + mode + "; OS=" + scheme + "; width=" + width);
       const failures = pairs.filter(pair => pair.result === "fail" || pair.result === "uncovered");
       assert.deepEqual(failures.map(pair => ({ result: pair.result, role: pair.role, fg: pair.foreground, bg: pair.background, example: pair.example })), [],
@@ -49,6 +70,9 @@ try {
       const expectedInk = skin === "paper" ? (dark ? "rgb(169, 200, 242)" : "rgb(30, 77, 140)")
         : (dark ? "rgb(242, 179, 61)" : "rgb(138, 90, 0)");
       assert.equal(chartInk, expectedInk, skin + "/" + mode + "/OS-" + scheme + " uses the pilot chart ink");
+      const panel = await page.locator(".stats-lcd").evaluate(node => getComputedStyle(node).backgroundColor);
+      const inkRatio = contrastRatio(chartInk, panel);
+      assert.ok(inkRatio >= 3, skin + "/" + mode + "/OS-" + scheme + " chart ink on the Stats panel is " + inkRatio.toFixed(2) + ":1, below 3:1");
       await page.locator("#appearance-dialog").evaluate(node => (node as HTMLDialogElement).showModal());
       const modalPairs = await inspectContrast(page, skin + "; appearance modal; mode=" + mode + "; OS=" + scheme + "; width=" + width);
       const modalFailures = modalPairs.filter(pair => pair.result === "fail" || pair.result === "uncovered");
