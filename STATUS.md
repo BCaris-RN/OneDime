@@ -1,5 +1,16 @@
 # OneDime status
 
+## Vault pilot parity checkpoint, November 2, 2026 (Hawaii)
+
+Branch `vault-pilot-parity` is cut from main `edcb40c`. Main already has the pilot Vault; the hosted beta does
+not, because every Deploy run skips with `RENDER_DEPLOY_HOOK` unset. I compared the Vault with
+`reference/pilot.html` at 390 and 1280 px in Glass, Current, Paper and Slate (light and dark where the skin has
+both). Penny, the side panel and the roster silhouettes match in all of them. Two gaps are fixed: the tile
+count now sits under the board in bold, and Glass meters use the pilot's bright outline and fill.
+`check-browser-smart` checks the count's position and weight; `check-glass` checks silhouette and meter contrast
+in all four skins. Build, 306 tests, contrast typecheck, the Glass audit and the browser audit (4,804 tab steps)
+pass locally. No deploy or merge.
+
 ## Personal ladder checkpoint, October 31, 2026 (Hawaii)
 
 Branch `personal-ladder` is cut from main `f3b9b1d`. The rung claim migration
