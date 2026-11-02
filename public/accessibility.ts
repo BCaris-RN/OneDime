@@ -1,7 +1,8 @@
 /*  (o) OneDime | public/accessibility.ts
  *  ----------------------------------------------------------
- *  Shared table semantics and focus protection above phone controls.
+ *  Shared table semantics and focus protection around the docked and floating pad.
  */
+import { movePaneAway } from "./pad.js";
 const captions: Record<string,string> = {
   sPlatBody:"Spotlight platform totals (all time)",jPlatBody:"Freelance platform totals (all time)",
   dPlatBody:"Delivery and service platform totals (all time)",sPlatBody2:"Store totals (all time)",
@@ -24,11 +25,31 @@ function tables() {
     wrap.setAttribute("role","region");wrap.setAttribute("aria-label",`${table.caption!.textContent} table`);
   }
 }
+function clearPane(target:HTMLElement,pane:HTMLElement,offsetTop:number,height:number) {
+  const gap=12,top=offsetTop+gap,bottom=offsetTop+height-gap;
+  const covered=()=>{
+    const a=target.getBoundingClientRect(),b=pane.getBoundingClientRect();
+    return a.left<b.right+4&&a.right>b.left-4&&a.top<b.bottom+4&&a.bottom>b.top-4;
+  };
+  const a=target.getBoundingClientRect(),b=pane.getBoundingClientRect();
+  // A region taller than half the screen overlaps the pane wherever it sits; only its edge shows focus.
+  if(!covered()||a.height>height/2)return;
+  const up=a.bottom-(b.top-gap),down=a.top-(b.bottom+gap);
+  // Scroll the control clear of the pane when it still fits on screen; otherwise move the pane.
+  if(a.top-up>=top)window.scrollBy({top:up,behavior:"instant"});
+  else if(a.bottom-down<=bottom)window.scrollBy({top:down,behavior:"instant"});
+  if(covered())movePaneAway();
+}
 function protectFocus() {
   const target=document.activeElement;
   const controls=document.querySelector<HTMLElement>(".controls");
-  if(!(target instanceof HTMLElement)||!controls||controls.contains(target)||!matchMedia("(max-width:520px)").matches)return;
+  if(!(target instanceof HTMLElement)||!controls||controls.contains(target)||controls.classList.contains("in-dialog"))return;
   const viewport=visualViewport;
+  if(controls.classList.contains("is-floating")) {
+    clearPane(target,controls,viewport?.offsetTop??0,viewport?.height??innerHeight);
+    return;
+  }
+  if(!matchMedia("(max-width:520px)").matches)return;
   const top=(viewport?.offsetTop??0)+12;
   const bottom=Math.min(controls.getBoundingClientRect().top,(viewport?.height??innerHeight)+(viewport?.offsetTop??0))-12;
   const rect=target.getBoundingClientRect();

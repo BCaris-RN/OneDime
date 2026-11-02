@@ -1,5 +1,17 @@
 # OneDime status
 
+## D-pad pane checkpoint, November 2, 2026 (Hawaii)
+
+Branch `dpad-pane` is cut from main `edcb40c`. The pad is now `public/pad.ts`. It docks where it was, detaches
+into a floating pane (drag by the grip, arrow keys on the grip, position kept per device, bad saved positions
+fall back to docked), and drives the whole app: Left/Right cycle the seven top tabs, Up/Down move focus through
+reachable controls, A presses the focused control and B closes a dialog or goes to the current top tab. A modal
+dialog makes the page inert, so the pad rides inside the open dialog and returns afterward. The old A and B
+shortcuts (log a session, clock in or out) and `currentApp` are removed. `protectFocus` now covers the floating
+pane at every width. Build, 306 tests, `test:beta`, all contrast audits (floating pane included, four skins) and
+the browser audit (4,920 tab steps) pass locally; CI pending. No deploy or merge. `DEMO_VIDEO` mode still hides
+the pad, so the recorded walkthrough does not show it.
+
 ## Personal ladder checkpoint, October 31, 2026 (Hawaii)
 
 Branch `personal-ladder` is cut from main `f3b9b1d`. The rung claim migration

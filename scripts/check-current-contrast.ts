@@ -166,6 +166,13 @@ try {
       await page.setViewportSize({ width: 1280, height: 900 });
       console.log(`contrast workspace collected: ${label}`);
     }
+    await page.getByRole("button", { name: "Detach the pad", exact: true }).click();
+    for (const width of [320, 390, 1280]) {
+      await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
+      await inspect(page, `Floating pad; theme=${theme}; OS=${os}; width=${width}`);
+    }
+    await page.getByRole("button", { name: "Dock the pad", exact: true }).click();
+    await page.setViewportSize({ width: 1280, height: 900 });
     await page.getByRole("tab", { name: "First Dime", exact: true }).click();
     await page.getByRole("tab", { name: "Log", exact: true }).click();
     await page.evaluate(() => {
