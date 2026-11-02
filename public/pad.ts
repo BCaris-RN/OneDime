@@ -12,6 +12,7 @@ const storageKey = "onedime-pad";
 const margin = 8, step = 16, bigStep = 64;
 const focusSelector = 'a[href],button,input:not([type="hidden"]),select,textarea,summary,[tabindex]:not([tabindex="-1"])';
 const pressTypes = ["button", "submit", "reset", "image", "checkbox", "radio", "file"];
+const pickerTypes = ["date", "time", "datetime-local", "month", "week"];
 let cursor: HTMLElement | null = null;
 
 controls.before(home);
@@ -208,7 +209,8 @@ function press() {
   const target = cursor?.isConnected ? cursor : null;
   if (!target) return say("Nothing selected");
   const typing = target instanceof HTMLTextAreaElement || (target instanceof HTMLInputElement && !pressTypes.includes(target.type));
-  if (target instanceof HTMLSelectElement) {
+  const hasPicker = target instanceof HTMLSelectElement || (target instanceof HTMLInputElement && pickerTypes.includes(target.type));
+  if (hasPicker) {
     try { target.showPicker(); } catch { target.focus(); }
   } else if (typing) target.focus();
   else target.click();

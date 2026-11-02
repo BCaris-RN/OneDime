@@ -1,5 +1,13 @@
 # OneDime status
 
+## D-pad date picker checkpoint, November 2, 2026 (Hawaii)
+
+Branch `pad-date-picker` is cut from main `0fc8654`. The bot found that A only focused date fields, so a pad user
+could not choose a date. A now calls `showPicker()` on date, time, datetime-local, month and week inputs and
+falls back to focus. `check-browser-smart` stubs `showPicker` and asserts one call; the browser audit passes
+locally (4,920 tab steps). Unit tests and contrast audits were not rerun because only `public/pad.ts` and the
+browser check changed. CI pending; no deploy or merge.
+
 ## D-pad pane checkpoint, November 2, 2026 (Hawaii)
 
 Branch `dpad-pane` is cut from main `edcb40c`. The pad is now `public/pad.ts`. It docks where it was, detaches
