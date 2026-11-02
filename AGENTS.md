@@ -84,7 +84,8 @@ Frontend
 - Small, focused commits. Imperative, plain subject, 50 characters or so, no prefixes or emoji:
   `Add per-mile stat to delivery shifts`, `Reject fees above the client total`.
 - A body only when the why isn't obvious, wrapped at 72 characters.
-- PR descriptions: what changed, how to run it, test results, doc links used, open questions. No marketing tone.
+- PR descriptions use the sections in `.github/pull_request_template.md`, including PRs opened with
+  `gh pr create --body` or `--body-file`, which skip the template. No marketing tone.
 
 ## README voice
 Write the README the way Brandon would explain the project to another developer: first person ("I built..."),

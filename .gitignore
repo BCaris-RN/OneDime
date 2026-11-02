@@ -21,3 +21,11 @@ public/models/
 public/vendor/
 public/smart-worker.js
 public/smart-model.json
+
+# Secrets and keys: never commit. .env.example stays tracked.
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+.claude/settings.local.json
