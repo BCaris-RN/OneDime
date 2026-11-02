@@ -11,8 +11,14 @@ handoff documentation; no app code, workflow, Render, or ship-prep files changed
 Local validation passed: all requested secret/key paths are ignored,
 `.env.example` is not ignored, no tracked files are ignored, settings JSON parses,
 `npm ci` completed with 0 vulnerabilities, and `npm run build` passed. The full
-application suite was not run locally per the handoff; CI is pending on the
-pushed head. No merge, deploy, repository settings, rulesets, or secrets changed.
+application suite was not run locally per the handoff. Exact-head CI run
+[41522058669](https://github.com/BCaris-RN/OneDime/actions/runs/41522058669)
+passed on `b3f147e6c594c8d4912e2033aa0b1b72ed2d88a1`: build, contrast typecheck,
+15 test files / 306 tests, beta checks (18 combinations / 22 pairs, zero failures
+or uncovered pairs), contrast checks (24 regressions passed), and browser checks
+(4,804 accessibility tab steps and smart checks). PR #35 is open for Claude's
+review and Brandon's merge approval. No merge, deploy, repository settings,
+rulesets, or secrets changed.
 
 ## Personal ladder checkpoint, October 31, 2026 (Hawaii)
 
