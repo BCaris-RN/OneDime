@@ -48,7 +48,7 @@ Paste the "Testing instructions" section of devpost.md, then add:
 - [ ] Repo link added; the repo is public while judging runs.
 - [ ] Video recorded (`npm run record:demo`), voice-over added, under 2:50, uploaded, link opens when signed out.
 - [ ] Privacy policy and user agreement pages (Google Sites) match the current beta wording.
-- [ ] Draft claims re-checked: "more than 300 application tests" and "4,804-step keyboard audit" match the
+- [ ] Draft claims re-checked: "more than 300 application tests" and "4,920-step keyboard audit" match the
       latest CI output.
 - [ ] Read the submission once as a judge would: no real platform names, no "verified by PayPal", no live
       PayPal claim.

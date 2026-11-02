@@ -29,7 +29,7 @@ own PayPal password.
    entry before you confirm; leaving it on "Create a new record" adds a second $1.99 entry. The record is
    now matched to your PayPal activity, and two rungs of your ladder, with their XP, land.
 4. Open **Stats**, then **Vault**, to see the matched pay turn into tiles. Open **Appearance** to try the
-   Glass, Current, Paper and Slate skins.
+   skins. Glass is the default once the beta runs the newest build, and the local demo always has it.
 
 **Cold start.** The beta sleeps when nobody is using it, so the first visit after a quiet spell can take up
 to a minute. Wait for the console to load; refreshing does not make it faster.

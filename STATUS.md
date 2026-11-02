@@ -8,7 +8,9 @@ Prolific entry under Create or link, and `docs/ship/video-script.md` now follows
 captures (2:30 target, 2:50 limit) with the landing console, Vault and Appearance as optional separate clips.
 Docs only; no merge or deploy is done. CI passed on `5ef1e2b` (both Test runs); the bot's remaining notes on that
 head (recorder note, voice-over length, this entry) are fixed in the next commit. Local tests were not run
-because only docs changed; the PR head moves with each fix, so the latest CI run is the check of record.
+because only docs changed; the PR head moves with each fix, so the latest CI run is the check of record. The bot's notes on `f81a7f9` (Glass gated on the newest build, a
+combined 20-second budget for the video inserts, the 4,920-step audit count after the D-pad merge) are fixed
+in the next commit.
 
 Judge path against the hosted beta: `/health`, the landing page and the sandbox PayPal handoff (redirect URI
 `/auth/paypal/callback`) work. Signing in, logging an entry and importing the CSV were not run because they

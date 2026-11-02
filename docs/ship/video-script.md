@@ -25,8 +25,9 @@ The times below follow the recorder's own pauses. Read the voice-over slowly; ea
 ## Optional inserts
 
 The recorder does not open the landing console, the Vault or Appearance. If you want them, capture each as a
-separate clip from the local demo and cut it in. Each insert stays under 10 seconds so the total stays under
-2:50, and none is needed to match the footage above.
+separate clip from the local demo and cut it in. All the inserts together get a 20-second budget (for example
+6, 8 and 6 seconds), which takes the 2:30 cut to at most 2:50. Anything longer needs matching cuts from the
+main timeline. None is needed to match the footage above.
 
 - Landing console: press START and show the short boot overlay. "OneDime starts on a handheld console."
 - Vault: open it right after routing so the new tiles are unseen and crumble. "Matched pay, work days and

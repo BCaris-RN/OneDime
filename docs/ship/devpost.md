@@ -63,7 +63,7 @@ pixels over the brightest shape behind each tab instead of trusting the color to
 
 Private sessions, player-owned records, safe exports, optional on-device suggestions, sandbox activity-file
 matching, personal ladders, profession ranks, Stats, the Vault and a private feedback path are all merged and
-tested. There are more than 300 application tests, a 4,804-step keyboard focus audit across every workspace
+tested. There are more than 300 application tests, a 4,920-step keyboard focus audit across every workspace
 and phone and desktop widths, and automated contrast checks for four skins, the landing console and the
 Glass backdrops.
 

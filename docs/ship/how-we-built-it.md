@@ -17,7 +17,7 @@ support, aggregate operator metrics and a tax-summary export. After that came pe
 ladder rungs, the Vault, the console landing page, the Paper, Slate and Glass skins and a
 deploy that runs after green CI on main. The repository has more than 300 application tests,
 contrast checks for every skin, the landing console and the Glass backdrops, and a browser
-audit that covers 4,804 keyboard focus steps across workspaces and viewport sizes.
+audit that covers 4,920 keyboard focus steps across workspaces and viewport sizes.
 
 Two code-review catches changed how the app treats edge cases. First, payout batch
 status and the individual payout item's outcome are separate facts: a successful

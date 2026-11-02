@@ -18,8 +18,8 @@ The beta sleeps when nobody is using it, so the first visit after a quiet spell 
    payment to First Dime. Under **Create or link**, pick your existing Prolific entry before you confirm;
    leaving it on "Create a new record" adds a second $1.99 entry. The record is now matched to your PayPal
    activity, and two rungs of your ladder land with their XP. The second payment in that file is in euros and cannot be routed, on purpose.
-4. Open **Stats** and **Vault** to see the matched pay become tiles. Open **Appearance** to try Glass, Current,
-   Paper and Slate.
+4. Open **Stats** and **Vault** to see the matched pay become tiles. Open **Appearance** to try the skins.
+   Glass is the default once the beta runs the newest build, and the local demo always has it.
 
 ## Local demo
 
