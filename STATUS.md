@@ -6,8 +6,15 @@ Branch `ship-prep` now includes main `edcb40c` (Glass skin and the paid-plan blu
 two bot findings on `89cf8a7`: the README, judge guide and Devpost draft tell judges to pick the existing
 Prolific entry under Create or link, and `docs/ship/video-script.md` now follows what `npm run record:demo`
 captures (2:30 target, 2:50 limit) with the landing console, Vault and Appearance as optional separate clips.
-Docs only; CI on the new head is pending and no merge or deploy is done. Next: judge path against the hosted
-beta, public export dry run, Devpost checklist.
+Docs only; no merge or deploy is done.
+
+Judge path against the hosted beta: `/health`, the landing page and the sandbox PayPal handoff (redirect URI
+`/auth/paypal/callback`) work. Signing in, logging an entry and importing the CSV were not run because they
+need the judge login. The beta is not running main: the Deploy workflow finishes green but skips the deploy
+because `RENDER_DEPLOY_HOOK` is not set, so Glass and the paid-plan blueprint are not live. The public export
+dry run (303 of 354 files) has the README and LICENSE, no handoffs, reviews, STATUS or employer name, and no
+remote; a few exported docs still link to files the export leaves out. `docs/ship/devpost-checklist.md` lists
+every submission field. Next: set the deploy hook, then re-run the judge path signed in.
 
 ## Personal ladder checkpoint, October 31, 2026 (Hawaii)
 
