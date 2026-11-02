@@ -16,7 +16,7 @@ The times below follow the recorder's own pauses. Read the voice-over slowly; ea
 | 0:18-0:42 | A fictional entry is typed in and saved: 42 minutes, $3.25. It lands in the ledger. | A worker logs an amount and time by hand. Money is stored as whole cents, so the record never depends on decimal rounding. |
 | 0:42-0:56 | Spotlight: one creator income row is added. Then the Freelance and Market tabs, each with a fictional record. | The same private ledger covers creator income, freelance gigs, deliveries and sales. Each app keeps its own records. |
 | 0:56-1:04 | PayPal tab: a fictional activity CSV is imported. | A worker can import their own PayPal activity file. It is their supplied file, not an independent payment lookup. |
-| 1:04-1:22 | First Dime after the five payments are linked: the entry shows as matched, and the ladder and profession rank badge update. | Linking one payment to one record keeps an earning from counting twice. A matched record is matched to your PayPal activity; PayPal does not independently confirm it. A match moves your ladder up and, in the field apps, your profession rank. Ranks grant XP. They never create money. |
+| 1:04-1:22 | First Dime after the five payments are linked: the entry shows as matched, and the ladder and profession rank badge update. | Linking one payment to one record keeps an earning from counting twice. A matched record is matched to your PayPal activity; PayPal does not confirm it. Matches move your ladder and field-app ranks. Ranks grant XP, never money. |
 | 1:22-1:46 | Stats: the charts draw, then "Show as a table" opens the numbers behind a chart. | Stats shows monthly income, matched share, work rates and a streak across every app. Each chart has a table view, and the motion respects reduced-motion settings. |
 | 1:46-2:04 | PayPal tab: the monthly summary of imported activity. | The PayPal tab keeps a monthly summary of the imported activity, so a worker can see what came in. |
 | 2:04-2:20 | Back to First Dime, then the Help tab. | Help explains the rules in plain words, including what matched means and what it does not. |
@@ -36,7 +36,8 @@ separate clip from the local demo and cut it in. Each insert stays under 10 seco
 
 ## Recording notes
 
-- Run the recorder once per size and check both files before editing. The 390x844 clip is the phone shot.
+- Run the recorder once. It records both sizes in one run, so check both files before editing. The 390x844
+  clip is the phone shot.
 - Use the isolated local demo and fictional records. Do not use personal account, payer, transaction or real
   financial information.
 - Say "matched to your PayPal activity", not "verified by PayPal". Do not imply that imported CSV files are

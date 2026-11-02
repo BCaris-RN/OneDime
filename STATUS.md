@@ -6,7 +6,9 @@ Branch `ship-prep` now includes main `edcb40c` (Glass skin and the paid-plan blu
 two bot findings on `89cf8a7`: the README, judge guide and Devpost draft tell judges to pick the existing
 Prolific entry under Create or link, and `docs/ship/video-script.md` now follows what `npm run record:demo`
 captures (2:30 target, 2:50 limit) with the landing console, Vault and Appearance as optional separate clips.
-Docs only; no merge or deploy is done.
+Docs only; no merge or deploy is done. CI passed on `5ef1e2b` (both Test runs); the bot's remaining notes on that
+head (recorder note, voice-over length, this entry) are fixed in the next commit. Local tests were not run
+because only docs changed; the PR head moves with each fix, so the latest CI run is the check of record.
 
 Judge path against the hosted beta: `/health`, the landing page and the sandbox PayPal handoff (redirect URI
 `/auth/paypal/callback`) work. Signing in, logging an entry and importing the CSV were not run because they
