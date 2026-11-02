@@ -93,7 +93,7 @@ Developer Platform (sandbox).
 sandbox email>`, password `<judge sandbox password>`. Use only that login. The first visit after a quiet
 spell can take up to a minute. Then follow the steps in [Try OneDime](judges-try-it.md): log a $1.99 Prolific
 entry, import `tests/fixtures/paypal-activity.csv` on the PayPal tab, and route the Hyperwallet payment to First
-Dime.
+Dime, choosing the existing Prolific entry under Create or link.
 
 **Local demo:** with Node 24 and Docker Desktop, run `npm ci` then `npm run demo`, and open
 `http://127.0.0.1:3403/demo-login`. It uses fake sign-in and fictional data.

@@ -25,8 +25,9 @@ own PayPal password.
    for the judge login above. OneDime never sees the password.
 2. In **First Dime**, log a session: platform Prolific, amount `1.99`, any minutes.
 3. Open **PayPal**, import [tests/fixtures/paypal-activity.csv](tests/fixtures/paypal-activity.csv), and
-   route the Hyperwallet payment to First Dime. The record is now matched to your PayPal activity, and
-   two rungs of your ladder, with their XP, land.
+   route the Hyperwallet payment to First Dime. Under **Create or link**, pick your existing Prolific
+   entry before you confirm; leaving it on "Create a new record" adds a second $1.99 entry. The record is
+   now matched to your PayPal activity, and two rungs of your ladder, with their XP, land.
 4. Open **Stats**, then **Vault**, to see the matched pay turn into tiles. Open **Appearance** to try the
    Glass, Current, Paper and Slate skins.
 

@@ -1,5 +1,14 @@
 # OneDime status
 
+## Ship prep checkpoint, November 2, 2026 (Hawaii)
+
+Branch `ship-prep` now includes main `edcb40c` (Glass skin and the paid-plan blueprint merged). It fixes the
+two bot findings on `89cf8a7`: the README, judge guide and Devpost draft tell judges to pick the existing
+Prolific entry under Create or link, and `docs/ship/video-script.md` now follows what `npm run record:demo`
+captures (2:30 target, 2:50 limit) with the landing console, Vault and Appearance as optional separate clips.
+Docs only; CI on the new head is pending and no merge or deploy is done. Next: judge path against the hosted
+beta, public export dry run, Devpost checklist.
+
 ## Personal ladder checkpoint, October 31, 2026 (Hawaii)
 
 Branch `personal-ladder` is cut from main `f3b9b1d`. The rung claim migration

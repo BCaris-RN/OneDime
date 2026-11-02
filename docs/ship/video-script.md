@@ -1,32 +1,47 @@
 # OneDime walkthrough video script
 
-Target runtime: 2:35, with a hard limit of 2:50. Capture only fictional demo data.
-Everything shown is on main. Record with `npm run record:demo`, which runs the isolated demo with
-DEMO_VIDEO enabled so every platform label is fictional. The login shot uses the local fake demo login; it is
-not PayPal authentication. The hosted beta uses PayPal sandbox sign-in and is not recorded.
+Target runtime: 2:30, hard limit 2:50. The recorder stops the run at 2:40, so the footage always leaves room
+for an end card. Capture only fictional demo data.
+
+Record with `npm run record:demo`. It starts the isolated demo with DEMO_VIDEO enabled, so every platform label
+is fictional, and writes one video at 1280x720 and one at 390x844 to `video/`. The sign-in shot is the local
+fake demo login. It is not PayPal authentication. The hosted beta uses PayPal sandbox sign-in and is not
+recorded.
+
+The times below follow the recorder's own pauses. Read the voice-over slowly; each line fits its window.
 
 | Time | Picture | Voice-over |
 | --- | --- | --- |
-| 0:00-0:14 | Show an unorganized set of fictional platform payouts, then cut to the OneDime console booting. | Independent work can mean income scattered across apps. OneDime gives workers one private place to keep a record, and turns the first dime into a game you can win. |
-| 0:14-0:30 | The console home screen: D-pad down to the info screen, back up, press START. Land on First Dime after the short boot overlay. Label the login as a fake, local demo. | This is a fictional local demo. The beta uses PayPal sandbox sign-in, and PayPal checks the password, not OneDime. This screen uses fake demo sign-in and never contacts PayPal. |
-| 0:30-0:50 | Add a fictional First Dime entry, save it, then show the ledger and your ladder with its next rung. | A worker logs an amount and time by hand. Money is stored as whole cents, so the record does not depend on decimal rounding. Your ladder shows the next rung and what is still pending. |
-| 0:50-1:12 | Open PayPal, import a fictional activity CSV, review the suggested workspace, route one payment to the matching record. | A worker can import their own PayPal activity CSV and review a suggested match. The import is their supplied file, not an independent payment lookup. Linking one payment to one record keeps an earning from counting twice. |
-| 1:12-1:30 | Back on First Dime: the record now shows matched, two rungs land with their XP, then the profession rank badge. | An eligible record can be matched to your PayPal activity file; PayPal does not independently confirm it. A match earns permanent ladder rungs and, in the field apps, a profession rank. Ranks grant XP; they never create money. |
-| 1:30-1:50 | Open Stats. Let the charts draw, show a table toggle. | Stats brings together monthly income, matched share, timed work rates and a streak across apps. Every chart has a table view, and the motion respects reduced-motion settings. |
-| 1:50-2:10 | Open the Vault: tiles crumble as the new match counts, Penny shows through, then the four sleeping robots. | Matched pay, work days and quests break tiles in the Vault. Nothing can be bought. Penny wakes at a hundred tiles, and four more robots wait for their own kind of work. |
-| 2:10-2:25 | Open Appearance and switch Glass, Current, Paper and Slate; show one tab on a phone-width screen. | The look is Glass by default, with the handheld Current skin, Paper and Slate one tap away. It works on a phone and respects reduced motion and reduced transparency. |
-| 2:25-2:35 | End card with project name and repo link. | OneDime: keep your record, see your progress, choose your next step. |
+| 0:00-0:18 | The demo opens on First Dime with the "Local demo, fictional data, no PayPal connection" banner and the welcome card. | Independent work can mean income scattered across apps. OneDime gives workers one private place to keep a record. This is a fictional local demo with fake sign-in, and it never contacts PayPal. |
+| 0:18-0:42 | A fictional entry is typed in and saved: 42 minutes, $3.25. It lands in the ledger. | A worker logs an amount and time by hand. Money is stored as whole cents, so the record never depends on decimal rounding. |
+| 0:42-0:56 | Spotlight: one creator income row is added. Then the Freelance and Market tabs, each with a fictional record. | The same private ledger covers creator income, freelance gigs, deliveries and sales. Each app keeps its own records. |
+| 0:56-1:04 | PayPal tab: a fictional activity CSV is imported. | A worker can import their own PayPal activity file. It is their supplied file, not an independent payment lookup. |
+| 1:04-1:22 | First Dime after the five payments are linked: the entry shows as matched, and the ladder and profession rank badge update. | Linking one payment to one record keeps an earning from counting twice. A matched record is matched to your PayPal activity; PayPal does not independently confirm it. A match moves your ladder up and, in the field apps, your profession rank. Ranks grant XP. They never create money. |
+| 1:22-1:46 | Stats: the charts draw, then "Show as a table" opens the numbers behind a chart. | Stats shows monthly income, matched share, work rates and a streak across every app. Each chart has a table view, and the motion respects reduced-motion settings. |
+| 1:46-2:04 | PayPal tab: the monthly summary of imported activity. | The PayPal tab keeps a monthly summary of the imported activity, so a worker can see what came in. |
+| 2:04-2:20 | Back to First Dime, then the Help tab. | Help explains the rules in plain words, including what matched means and what it does not. |
+| 2:20-2:30 | Stats once more, then an end card with the project name and repo link. | OneDime: keep your record, see your progress, choose your next step. |
+
+## Optional inserts
+
+The recorder does not open the landing console, the Vault or Appearance. If you want them, capture each as a
+separate clip from the local demo and cut it in. Each insert stays under 10 seconds so the total stays under
+2:50, and none is needed to match the footage above.
+
+- Landing console: press START and show the short boot overlay. "OneDime starts on a handheld console."
+- Vault: open it right after routing so the new tiles are unseen and crumble. "Matched pay, work days and
+  quests break tiles. Nothing can be bought. Penny wakes at a hundred."
+- Appearance: switch Glass, Current, Paper and Slate. "Glass is the default. Three more looks are one tap
+  away."
 
 ## Recording notes
 
-- Record at 1280x720 and 390x844. The walkthrough should stay under 2:40 so there is room for a clean
-  opening and end card while staying below 2:50.
+- Run the recorder once per size and check both files before editing. The 390x844 clip is the phone shot.
 - Use the isolated local demo and fictional records. Do not use personal account, payer, transaction or real
   financial information.
-- Show the Stats animations from a fresh tab open, and do not imply that imported CSV files are authenticated
-  evidence. Say "matched to your PayPal activity", not "verified by PayPal".
-- Never show real gig-platform names. DEMO_VIDEO mode supplies fictional labels. PayPal stays named because the
-  app uses sandbox sign-in and matches entries to an uploaded PayPal activity file.
-- Make sure the Vault shot shows tiles crumbling: open the Vault right after routing the payment so the new
-  tiles are unseen.
+- Say "matched to your PayPal activity", not "verified by PayPal". Do not imply that imported CSV files are
+  authenticated evidence.
+- Never show real gig-platform names. DEMO_VIDEO mode supplies fictional labels, and the recorder fails if a
+  real one appears on screen. PayPal stays named because the app matches entries to an uploaded PayPal
+  activity file.
 - Nothing in the script implies a deployment or live PayPal action.
