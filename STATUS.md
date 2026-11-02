@@ -2,7 +2,7 @@
 
 ## Ship prep checkpoint, November 2, 2026 (Hawaii)
 
-Branch `ship-prep` now includes main `edcb40c` (Glass skin and the paid-plan blueprint merged). It fixes the
+Branch `ship-prep` now includes main `0fc8654` (Glass skin, the paid-plan blueprint and the D-pad pane merged). It fixes the
 two bot findings on `89cf8a7`: the README, judge guide and Devpost draft tell judges to pick the existing
 Prolific entry under Create or link, and `docs/ship/video-script.md` now follows what `npm run record:demo`
 captures (2:30 target, 2:50 limit) with the landing console, Vault and Appearance as optional separate clips.
@@ -17,6 +17,18 @@ because `RENDER_DEPLOY_HOOK` is not set, so Glass and the paid-plan blueprint ar
 dry run (303 of 354 files) has the README and LICENSE, no handoffs, reviews, STATUS or employer name, and no
 remote; a few exported docs still link to files the export leaves out. `docs/ship/devpost-checklist.md` lists
 every submission field. Next: set the deploy hook, then re-run the judge path signed in.
+
+## D-pad pane checkpoint, November 2, 2026 (Hawaii)
+
+Branch `dpad-pane` is cut from main `edcb40c`. The pad is now `public/pad.ts`. It docks where it was, detaches
+into a floating pane (drag by the grip, arrow keys on the grip, position kept per device, bad saved positions
+fall back to docked), and drives the whole app: Left/Right cycle the seven top tabs, Up/Down move focus through
+reachable controls, A presses the focused control and B closes a dialog or goes to the current top tab. A modal
+dialog makes the page inert, so the pad rides inside the open dialog and returns afterward. The old A and B
+shortcuts (log a session, clock in or out) and `currentApp` are removed. `protectFocus` now covers the floating
+pane at every width. Build, 306 tests, `test:beta`, all contrast audits (floating pane included, four skins) and
+the browser audit (4,920 tab steps) pass locally; CI pending. No deploy or merge. `DEMO_VIDEO` mode still hides
+the pad, so the recorded walkthrough does not show it.
 
 ## Personal ladder checkpoint, October 31, 2026 (Hawaii)
 
