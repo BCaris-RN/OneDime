@@ -111,6 +111,17 @@ try {
     await page.setViewportSize({ width: 1440, height: 900 });
   }
 
+  await page.getByRole("tab", { name: "First Dime", exact: true }).click();
+  await page.getByRole("button", { name: "Detach the pad", exact: true }).click();
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
+    const results = await measureText(page, { skip: ".sr-only,.skip-link,.glass-shapes,#post-login-boot", hide: "" });
+    problems.push(...results.filter(result => result.ratio < result.required)
+      .map(result => `floating pad at ${width}px: ${result.label} ${result.ratio.toFixed(2)} < ${result.required}`));
+    console.log(`glass checked: floating pad; width=${width}; text runs=${results.length}`);
+  }
+  await page.getByRole("button", { name: "Dock the pad", exact: true }).click();
+  await page.setViewportSize({ width: 1440, height: 900 });
   assert.equal(await page.locator("#glass-shapes > svg[viewBox]").first().evaluate(node => getComputedStyle(node).transitionDuration), "0s",
     "reduced motion drops the shape transition");
   await page.evaluate(() => { (window as unknown as { glassMarker: number }).glassMarker = 1; });

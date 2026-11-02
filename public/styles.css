@@ -54,6 +54,8 @@ header{display:flex;justify-content:space-between;align-items:center;gap:14px;fl
 .dpad .right{right:0;top:18px;border-radius:0 4px 4px 0}
 .dpad .center{position:absolute;left:19px;top:19px;width:16px;height:16px;background:var(--pad-center);outline:1px solid var(--pad-center-ring)}
 .dpad button:hover{background:var(--pad-hover)}
+.pad-info{display:grid;justify-items:center;gap:4px;min-width:0}.pad-info .status{margin:0;max-width:2.8em;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pad-tools{display:flex;gap:6px}.pad-tools .ghost-button{min-height:28px;min-width:28px;padding:0;display:inline-grid;place-items:center}.pad-float svg{width:14px;height:14px}.pad-grip{width:44px;cursor:grab;touch-action:none}.pad-grip[hidden]{display:none}.pad-grip::before{content:"";display:block;width:20px;height:14px;margin:auto;background:radial-gradient(currentColor 1.6px,transparent 2px) 0 0/7px 7px}.pad-grip:active{cursor:grabbing}.controls :is(.pad-grip,.pad-float){border:0;background:var(--pad-bg);color:var(--pad-text)}:root[data-skin] .controls :is(.pad-grip,.pad-float){background:var(--skin-pad-bg);color:var(--skin-pad-text)}.controls.is-floating{position:fixed;z-index:60;right:auto;bottom:auto;width:max-content;max-width:calc(100vw - 16px);box-sizing:border-box;flex-wrap:wrap;justify-content:center;gap:10px 14px;padding:10px 12px;background:var(--shell);border:3px solid var(--divider);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.35)}.controls.is-floating .status,.controls.in-dialog .status{max-width:12em;text-align:center}
+:root[data-skin] .controls.in-dialog,.controls.in-dialog{position:static;width:auto;max-width:none;justify-content:center;margin-top:14px;padding:0;border:0;box-shadow:none;background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none}.controls.in-dialog .pad-tools{display:none}
 .facebtns{display:flex;gap:8px;align-items:center}
 .facebtns button{width:30px;height:30px;border-radius:50%;padding:0;border:2px solid var(--btn-edge);background:var(--btn);color:var(--action-text);font:800 14px var(--code);cursor:pointer;position:relative}
 .facebtns button:nth-child(1){transform:translateY(6px)}
@@ -101,7 +103,7 @@ nav.apps button[aria-selected="true"]{background:var(--btn);color:var(--action-t
     padding:10px 18px calc(10px + env(safe-area-inset-bottom,0px));
     background:var(--shell);border-top:3px solid var(--divider);box-shadow:0 -4px 12px rgba(0,0,0,.18)}
   .controls .dpad{order:1;width:96px;height:96px}
-  .controls .status{order:2;flex:1;text-align:center;font-size:.75rem;margin:0}
+  .controls .pad-info{order:2;flex:1}.controls .status{max-width:none;text-align:center;font-size:.75rem}
   .controls .facebtns{order:3;gap:14px}
   .dpad button{width:32px;height:32px}
   .dpad button svg{width:16px;height:16px}
@@ -508,6 +510,7 @@ caption{text-align:left;font-weight:700;padding:8px 0;color:var(--head)}
 :root[data-skin="glass"] .vault-bot .l{fill:var(--skin-screen-hi)}
 :root[data-skin="glass"] :is(.vault-awake-title,.vault-door){color:var(--skin-screen-text);border-color:var(--skin-frame)}
 :root[data-skin="glass"] .controls{-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+:root[data-skin="glass"] .controls.is-floating{background:rgba(10,12,28,.92);border:1px solid var(--skin-border);border-radius:14px}
 @media(max-width:520px){:root[data-skin="glass"] .controls{background:rgba(10,12,28,.78);border-top:1px solid var(--skin-border)}}
 :root[data-skin="glass"] :is(.dpad button,.dpad .center){-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 @media(prefers-reduced-transparency:reduce){

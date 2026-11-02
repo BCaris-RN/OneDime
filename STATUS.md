@@ -1,15 +1,16 @@
 # OneDime status
 
-## Vault pilot parity checkpoint, November 2, 2026 (Hawaii)
+## D-pad pane checkpoint, November 2, 2026 (Hawaii)
 
-Branch `vault-pilot-parity` is cut from main `edcb40c`. Main already has the pilot Vault; the hosted beta does
-not, because every Deploy run skips with `RENDER_DEPLOY_HOOK` unset. I compared the Vault with
-`reference/pilot.html` at 390 and 1280 px in Glass, Current, Paper and Slate (light and dark where the skin has
-both). Penny, the side panel and the roster silhouettes match in all of them. Two gaps are fixed: the tile
-count now sits under the board in bold, and Glass meters use the pilot's bright outline and fill.
-`check-browser-smart` checks the count's position and weight; `check-glass` checks silhouette and meter contrast
-in all four skins. Build, 306 tests, contrast typecheck, the Glass audit and the browser audit (4,804 tab steps)
-pass locally. No deploy or merge.
+Branch `dpad-pane` is cut from main `edcb40c`. The pad is now `public/pad.ts`. It docks where it was, detaches
+into a floating pane (drag by the grip, arrow keys on the grip, position kept per device, bad saved positions
+fall back to docked), and drives the whole app: Left/Right cycle the seven top tabs, Up/Down move focus through
+reachable controls, A presses the focused control and B closes a dialog or goes to the current top tab. A modal
+dialog makes the page inert, so the pad rides inside the open dialog and returns afterward. The old A and B
+shortcuts (log a session, clock in or out) and `currentApp` are removed. `protectFocus` now covers the floating
+pane at every width. Build, 306 tests, `test:beta`, all contrast audits (floating pane included, four skins) and
+the browser audit (4,920 tab steps) pass locally; CI pending. No deploy or merge. `DEMO_VIDEO` mode still hides
+the pad, so the recorded walkthrough does not show it.
 
 ## Personal ladder checkpoint, October 31, 2026 (Hawaii)
 
