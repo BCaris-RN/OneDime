@@ -1,5 +1,19 @@
 # OneDime status
 
+## Template guardrails checkpoint, November 2, 2026 (Hawaii)
+
+Branch `template-guardrails` is cut from `origin/main` at
+`edcb40cf163170f7008ed5307c73f455e3ad02d3`. Applied the authorized patch as
+commit `141c7ff031fec942776336a310f314149c011a34`. It adds secret/key ignore
+patterns, the pull request template, Claude Code permission rules, and the
+handoff documentation; no app code, workflow, Render, or ship-prep files changed.
+
+Local validation passed: all requested secret/key paths are ignored,
+`.env.example` is not ignored, no tracked files are ignored, settings JSON parses,
+`npm ci` completed with 0 vulnerabilities, and `npm run build` passed. The full
+application suite was not run locally per the handoff; CI is pending on the
+pushed head. No merge, deploy, repository settings, rulesets, or secrets changed.
+
 ## Personal ladder checkpoint, October 31, 2026 (Hawaii)
 
 Branch `personal-ladder` is cut from main `f3b9b1d`. The rung claim migration
