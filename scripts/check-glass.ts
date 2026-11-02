@@ -120,6 +120,19 @@ try {
     await dialog.getByRole("radio", { name: new RegExp(`^${label}`) }).check();
     assert.equal(await page.locator("html").getAttribute("data-skin"), skin, `${label} applies without a reload`);
     assert.equal(await shapeLayer(page), skin === "glass" ? "block" : "none", `${label} shows shapes only in Glass`);
+    const vaultColors = await page.evaluate(() => {
+      const color = (selector: string, property: string) => getComputedStyle(document.querySelector(selector)!).getPropertyValue(property);
+      return { page: color("body", "background-color"), bot: color(".vault-bot", "background-color"), sil: color(".vault-bot .sil", "fill"),
+        panel: color("#app-vault .stats-lcd", "background-color"), meter: color(".vault-rule-bar", "border-top-color") };
+    });
+    const channels = (value: string) => (value.match(/[\d.]+/g) ?? []).map(Number);
+    const flatten = (layers: string[]) => layers.reduce<Rgb>((below, layer) => {
+      const [r, g, b, a = 1] = channels(layer);
+      return over([r, g, b], a, below);
+    }, channels(vaultColors.page).slice(0, 3) as Rgb);
+    const panelBelow = flatten([vaultColors.panel]), botBelow = flatten([vaultColors.panel, vaultColors.bot]);
+    assert.ok(ratio(flatten([vaultColors.panel, vaultColors.sil]), botBelow) >= 3, `${label}: sleeping robot silhouettes stand out from their cards`);
+    assert.ok(ratio(flatten([vaultColors.panel, vaultColors.meter]), panelBelow) >= 3, `${label}: the Vault meter outline stands out from its panel`);
     assert.equal(await page.locator("#theme-toggle").isHidden(), skin === "glass", `${label} shows the mode toggle outside Glass`);
   }
   assert.equal(await page.evaluate(() => (window as unknown as { glassMarker?: number }).glassMarker), 1, "switching skins never reloads");
