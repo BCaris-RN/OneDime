@@ -10,6 +10,34 @@
 
 # OneDime
 
+## Try it
+
+The beta is live at **https://onedime-web.onrender.com**. It runs on PayPal sandbox only, so no real
+money moves and nothing here touches a real PayPal account.
+
+**Sign in with the judge sandbox login.** Email `<judge sandbox email>`, password `<judge sandbox
+password>`. I put the real values in the Devpost submission, not in Git. Use only that login, never your
+own PayPal password.
+
+**What to click first**
+
+1. On the landing console, press **START** (or choose **Log in with PayPal**). PayPal's sandbox page asks
+   for the judge login above. OneDime never sees the password.
+2. In **First Dime**, log a session: platform Prolific, amount `1.99`, any minutes.
+3. Open **PayPal**, import [tests/fixtures/paypal-activity.csv](tests/fixtures/paypal-activity.csv), and
+   route the Hyperwallet payment to First Dime. Under **Create or link**, pick your existing Prolific
+   entry before you confirm; leaving it on "Create a new record" adds a second $1.99 entry. The record is
+   now matched to your PayPal activity, and two rungs of your ladder, with their XP, land.
+4. Open **Stats**, then **Vault**, to see the matched pay turn into tiles. Open **Appearance** to try the
+   skins. Glass is the default once the beta runs the newest build, and the local demo always has it.
+
+**Cold start.** The beta sleeps when nobody is using it, so the first visit after a quiet spell can take up
+to a minute. Wait for the console to load; refreshing does not make it faster.
+
+**If the beta is down, run the demo.** `npm run demo` starts an isolated copy with fictional data and fake
+sign-in, with no provider keys. It needs Node 24 and Docker Desktop; see
+[Isolated fictional demo](#isolated-fictional-demo). It does not show real PayPal sign-in.
+
 I built OneDime to make the first dime of independent income feel achievable, then
 make the next step visible. It is a private TypeScript/Express app with PostgreSQL,
 PayPal sandbox login and a plain HTML/CSS/TypeScript interface based on my handheld pilot.
