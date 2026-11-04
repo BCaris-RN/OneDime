@@ -1,25 +1,5 @@
 # OneDime status
 
-## Ship prep checkpoint, November 2, 2026 (Hawaii)
-
-Branch `ship-prep` now includes main `0fc8654` (Glass skin, the paid-plan blueprint and the D-pad pane merged). It fixes the
-two bot findings on `89cf8a7`: the README, judge guide and Devpost draft tell judges to pick the existing
-Prolific entry under Create or link, and `docs/ship/video-script.md` now follows what `npm run record:demo`
-captures (2:30 target, 2:50 limit) with the landing console, Vault and Appearance as optional separate clips.
-Docs only; no merge or deploy is done. CI passed on `5ef1e2b` (both Test runs); the bot's remaining notes on that
-head (recorder note, voice-over length, this entry) are fixed in the next commit. Local tests were not run
-because only docs changed; the PR head moves with each fix, so the latest CI run is the check of record. The bot's notes on `f81a7f9` (Glass gated on the newest build, a
-combined 20-second budget for the video inserts, the 4,920-step audit count after the D-pad merge) are fixed
-in the next commit.
-
-Judge path against the hosted beta: `/health`, the landing page and the sandbox PayPal handoff (redirect URI
-`/auth/paypal/callback`) work. Signing in, logging an entry and importing the CSV were not run because they
-need the judge login. The beta is not running main: the Deploy workflow finishes green but skips the deploy
-because `RENDER_DEPLOY_HOOK` is not set, so Glass and the paid-plan blueprint are not live. The public export
-dry run (303 of 354 files) has the README and LICENSE, no handoffs, reviews, STATUS or employer name, and no
-remote; a few exported docs still link to files the export leaves out. `docs/ship/devpost-checklist.md` lists
-every submission field. Next: set the deploy hook, then re-run the judge path signed in.
-
 ## D-pad pane checkpoint, November 2, 2026 (Hawaii)
 
 Branch `dpad-pane` is cut from main `edcb40c`. The pad is now `public/pad.ts`. It docks where it was, detaches
