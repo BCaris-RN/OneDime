@@ -360,10 +360,12 @@ I keep the tester tasks in [the beta guide](docs/beta-guide.md) and the operator
 step-by-step setup in [the Render deploy guide](docs/deploy-render.md). Brandon sends
 sandbox logins privately and performs each approved deployment himself.
 
-I prepared `render.yaml` with a free web service and free Postgres for beta testing,
-with automatic deploys disabled. I have not created or deployed Render resources.
-[Render's free services](https://render.com/docs/free) sleep after 15 minutes without
-inbound traffic, and free databases expire 30 days after creation. Payouts, Google Sheets
+The `render.yaml` blueprint declares the paid Starter web service and a Basic Postgres 16 database, with
+automatic deploys off. Secrets are set in Render and never in the repo. The beta at
+https://onedime-web.onrender.com is live and deployed from main by the deploy hook, as described in
+[Deploying on Render](#deploying-on-render). I upgrade the services separately, so until then
+[Render's free-tier limits](https://render.com/docs/free) still apply: services sleep after 15 minutes
+without traffic and free databases expire 30 days after creation. Payouts, Google Sheets
 and seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
 Brandon accepted clean rewritten main `9953600` and owns GitHub Support cleanup of old PR refs.
 Do not merge old pre-cleanup history into this branch. The repository license is recorded in LICENSE.

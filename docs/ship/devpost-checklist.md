@@ -39,8 +39,8 @@ Paste the "Testing instructions" section of devpost.md, then add:
 
 ## Before you submit
 
-- [ ] Claim the $50 Render credits for Best Use of Render (Brandon claims them in his own Render account; check the
-      hackathon page for the exact steps and deadline).
+- [ ] Claim the $50 Render credits for Best Use of Render: "Start building with $50 of Render credits" on
+      https://paypalaihackathon.devpost.com/details/render.
 
 - [ ] Render deploy hook set, so the beta runs the code the docs describe: Glass skin, personal ladder, Vault.
 - [ ] Judge sandbox email added to `BETA_ALLOWLIST` on Render, and the change deployed, so the judge login is
