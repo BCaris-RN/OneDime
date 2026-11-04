@@ -37,10 +37,17 @@ works with reduced motion and reduced transparency, and is checked for contrast 
 ## How we built it
 
 OneDime uses TypeScript, Express, PostgreSQL and a plain HTML/CSS/TypeScript client. Money is integer cents.
-"AI reads, the server decides": the optional suggestion model runs on the device and only proposes a
-workspace, and the server decides what counts as matched. Each phase starts from an approved handoff, gets
+"AI reads, the server decides". Each phase starts from an approved handoff, gets
 implemented on its own branch, and goes through local tests, GitHub Actions and Claude review. A merge to
 main that passes CI deploys the beta to Render. See [how I built it](how-we-built-it.md).
+
+The AI is a small classifier, Transformers.js running MoritzLaurer/xtremedistil-l6-h256-zeroshot-v1.1-all-33
+(MIT, quantized ONNX), and it runs in the player's browser. When a player imports a PayPal payment from a
+payer OneDime does not know, the model suggests which workspace it belongs to. It runs on the device, so
+payment details stay private and it costs players nothing. It is off until the player turns on Smart
+suggestions. The player confirms each suggestion, and the server decides what counts.
+
+I started on Oct 13, 2026 and had 38 pull requests merged by Nov 3, 2026.
 
 PayPal is used in sandbox mode for sign-in. Entries are matched to your PayPal activity file. A CSV
 import is user-provided evidence and is not an authenticated PayPal transaction lookup. The isolated local
@@ -84,16 +91,20 @@ otherwise.
 
 ## Built with
 
-TypeScript, Express, PostgreSQL, Prisma, HTML, CSS, Playwright, GitHub Actions, Render and the PayPal
-Developer Platform (sandbox).
+TypeScript, Express, PostgreSQL, Prisma, HTML, CSS, Playwright, GitHub Actions, Render, the PayPal
+Developer Platform (sandbox), Transformers.js, MoritzLaurer/xtremedistil-l6-h256-zeroshot-v1.1-all-33 (MIT,
+quantized ONNX, runs in the browser), Claude and Codex.
 
 ## Testing instructions
 
 **Hosted beta:** https://onedime-web.onrender.com. Sign in with the judge sandbox login: email `<judge
 sandbox email>`, password `<judge sandbox password>`. Use only that login. The first visit after a quiet
 spell can take up to a minute. Then follow the steps in [Try OneDime](judges-try-it.md): log a $1.99 Prolific
-entry, import `tests/fixtures/paypal-activity.csv` on the PayPal tab, and route the Hyperwallet payment to First
-Dime, choosing the existing Prolific entry under Create or link.
+entry, turn on Smart suggestions on the PayPal tab, import `tests/fixtures/paypal-activity.csv`, and route the
+Hyperwallet payment to First Dime, choosing the existing Prolific entry under Create or link. After the
+toggle, press Download and suggest: this sample file has no unknown payer, so you should see "No unknown
+unrouted payments to suggest. Using the fixed payer map." A payment from a payer OneDime does not know gets
+"Suggested: <workspace> / Other. Confirm or change it." and nothing is routed until you confirm.
 
 **Local demo:** with Node 24 and Docker Desktop, run `npm ci` then `npm run demo`, and open
 `http://127.0.0.1:3403/demo-login`. It uses fake sign-in and fictional data.

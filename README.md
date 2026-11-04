@@ -32,7 +32,7 @@ own PayPal password.
 1. On the landing console, press **START** (or choose **Log in with PayPal**). PayPal's sandbox page asks
    for the judge login above. OneDime never sees the password.
 2. In **First Dime**, log a session: platform Prolific, amount `1.99`, any minutes.
-3. Open **PayPal**, import [tests/fixtures/paypal-activity.csv](tests/fixtures/paypal-activity.csv), and
+3. Open **PayPal**, turn on **Smart suggestions**, import [tests/fixtures/paypal-activity.csv](tests/fixtures/paypal-activity.csv), and
    route the Hyperwallet payment to First Dime. Under **Create or link**, pick your existing Prolific
    entry before you confirm; leaving it on "Create a new record" adds a second $1.99 entry. The record is
    now matched to your PayPal activity, and two rungs of your ladder, with their XP, land.
@@ -56,6 +56,16 @@ keeps its existing XP, streak, quest and ladder rules. Matched earnings in Spotl
 Freelance and Market also add XP and advance a permanent profession rank; these ranks
 never create money or change ladder claims. Matched totals decide earnings rankings, and
 general progression XP breaks leaderboard ties.
+
+## The AI in OneDime
+
+The AI is a small classifier, Transformers.js running MoritzLaurer/xtremedistil-l6-h256-zeroshot-v1.1-all-33
+(MIT, quantized ONNX), and it runs in the player's browser. When a player imports a PayPal payment from a
+payer OneDime does not know, the model suggests which workspace it belongs to. It runs on the device, so
+payment details stay private and it costs players nothing. It is off until the player turns on Smart
+suggestions. The player confirms each suggestion, and the server decides what counts.
+
+I started on Oct 13, 2026 and had 38 pull requests merged by Nov 3, 2026.
 
 ## Run locally
 

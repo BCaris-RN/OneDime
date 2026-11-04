@@ -4,7 +4,7 @@ Every field is filled in below except the links and credentials, marked `<...>`.
 [devpost.md](devpost.md); paste each section as written. Field names follow Devpost's standard form, so check
 them against the hackathon's own rules page before submitting.
 
-Deadline: Nov 12, 2:00 PM PT (11:00 AM HST). Target: Nov 10.
+Deadline: Nov 12, 12:00 PM PST (10:00 AM HST), the earlier of the page and the rules. Target: Nov 10.
 
 ## Fields
 
@@ -19,7 +19,7 @@ Deadline: Nov 12, 2:00 PM PT (11:00 AM HST). Target: Nov 10.
 | Accomplishments that we're proud of | devpost.md, "Accomplishments" |
 | What we learned | devpost.md, "What we learned" |
 | What's next | devpost.md, "What's next" |
-| Built with | TypeScript, Express, PostgreSQL, Prisma, HTML, CSS, Playwright, GitHub Actions, Render, PayPal Developer Platform (sandbox) |
+| Built with | TypeScript, Express, PostgreSQL, Prisma, HTML, CSS, Playwright, GitHub Actions, Render, PayPal Developer Platform (sandbox), Transformers.js, MoritzLaurer/xtremedistil-l6-h256-zeroshot-v1.1-all-33 (MIT, quantized ONNX, runs in the browser), Claude, Codex |
 | Team | Brandon Caris (solo, builder and owner). Built with Claude (lead and reviewer) and Codex (implementation). |
 | Try it out link | https://onedime-web.onrender.com |
 | Code repository link | `<public repo URL>` |
@@ -40,13 +40,15 @@ Paste the "Testing instructions" section of devpost.md, then add:
 ## Before you submit
 
 - [ ] Render deploy hook set, so the beta runs the code the docs describe: Glass skin, personal ladder, Vault.
+- [ ] Judge sandbox email added to `BETA_ALLOWLIST` on Render, and the change deployed, so the judge login is
+      accepted.
 - [ ] Judge sandbox login created in the PayPal Developer dashboard, and tested once end to end on the hosted
       beta, including the Create or link step.
 - [ ] Hosted beta on the paid plan (basic-256mb) so a judge never waits on a cold start.
 - [ ] Public repo created from `scripts/export-public.ps1` output, with README and LICENSE (AGPL-3.0-only),
       and no handoffs, reviews or STATUS.
 - [ ] Repo link added; the repo is public while judging runs.
-- [ ] Video recorded (`npm run record:demo`), voice-over added, under 2:50, uploaded, link opens when signed out.
+- [ ] Video recorded (`npm run record:demo`) plus the hosted-beta sign-in clip, voice-over added, under 2:50, uploaded, link opens when signed out.
 - [ ] Privacy policy and user agreement pages (Google Sites) match the current beta wording.
 - [ ] Draft claims re-checked: "more than 300 application tests" and "4,920-step keyboard audit" match the
       latest CI output.
