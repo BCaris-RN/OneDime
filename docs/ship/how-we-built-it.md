@@ -11,15 +11,13 @@ visibility change, secret and PayPal account action. Claude is lead and reviewer
 Codex implements the approved handoffs. That separation keeps product decisions,
 implementation and release control in different hands.
 
-The first four phases are merged across five PRs. Three supporting beta-preparation
-PRs are also merged, for eight merged PRs, followed by the dependency security fix in PR #13 on main. Phase 5 is in
-[open PR #9](https://github.com/BCaris-RN/OneDime/pull/9), which adds ranks, a Stats
-tab, first-run and install support, aggregate operator metrics and a tax-summary
-export. Its latest local checkpoint has 270 application tests across 13 files.
-Review fixes are being checked on the updated head, and a rank-persistence finding
-needs Claude review, so Phase 5 is not presented as shipped. The repository also has 24
-automated contrast regression checks and a browser audit that covers 4,288 keyboard
-focus steps across workspaces and viewport sizes.
+Everything described here is merged to main. The first four phases landed first, then the
+beta-preparation work, then Phase 5: profession ranks, a Stats tab, first-run and install
+support, aggregate operator metrics and a tax-summary export. After that came personal
+ladder rungs, the Vault, the console landing page, the Paper, Slate and Glass skins and a
+deploy that runs after green CI on main. The repository has more than 300 application tests,
+contrast checks for every skin, the landing console and the Glass backdrops, and a browser
+audit that covers 4,920 keyboard focus steps across workspaces and viewport sizes.
 
 Two code-review catches changed how the app treats edge cases. First, payout batch
 status and the individual payout item's outcome are separate facts: a successful

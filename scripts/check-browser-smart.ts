@@ -250,6 +250,130 @@ try {
       });assert.equal(issue,null,label);focusChecks++;
     }
   }
+  async function checkPad() {
+    const pad=(name:string)=>page.locator(`[data-pad="${name}"]`).click();
+    const status=()=>page.locator("#control-status").textContent();
+    const selectedTab=()=>page.locator('#app-nav [aria-selected="true"]').textContent();
+    const pane=()=>page.locator(".controls").evaluate(el=>{const r=el.getBoundingClientRect();return {left:Math.round(r.left),top:Math.round(r.top),floating:el.classList.contains("is-floating")};});
+    const stored=()=>page.evaluate(()=>localStorage.getItem("onedime-pad"));
+    await page.setViewportSize({width:1280,height:800});
+    await page.getByRole("tab",{name:"First Dime",exact:true}).click();
+    const seen:string[]=[];
+    for(let index=0;index<apps.length;index++) {await pad("right");seen.push((await selectedTab())!);}
+    assert.deepEqual(seen,[...apps.slice(1),apps[0]],"Right visits every top tab and wraps");
+    await pad("left");
+    assert.equal(await selectedTab(),apps.at(-1),"Left reverses and wraps");
+    for(const app of apps) {
+      await page.getByRole("tab",{name:app,exact:true}).click();
+      await page.getByRole("tab",{name:app,exact:true}).focus();
+      const kinds=new Set<string>();
+      for(let index=0;index<90&&kinds.size<3;index++) {
+        await pad("down");
+        kinds.add(await page.evaluate(()=>{
+          const el=document.activeElement as HTMLElement,panel=[...document.querySelectorAll<HTMLElement>('[role="tabpanel"][id^="app-"]')].find(item=>!item.hidden);
+          if(!panel?.contains(el))return "outside";
+          return el.matches("input,select,textarea")?"field":el.matches("button,a,summary")?"button":"other";
+        }));
+      }
+      if(app==="Vault")assert.ok(kinds.has("outside"),"Down moves on from the Vault, which has no controls of its own");
+      else assert.ok(kinds.has("button"),`${app}: Down reaches a button in the app`);
+      if(["First Dime","Spotlight","Freelance","Market"].includes(app))assert.ok(kinds.has("field"),`${app}: Down reaches a field in the app`);
+    }
+    await page.getByRole("tab",{name:"First Dime",exact:true}).click();
+    await page.getByRole("tab",{name:"First Dime",exact:true}).focus();
+    for(let index=0;index<80&&!(await page.evaluate(()=>document.activeElement?.matches("input[type=text],input:not([type])")??false));index++)await pad("down");
+    const field=await page.evaluate(()=>document.activeElement?.id??"");
+    await page.locator("#btnA").click();
+    assert.equal(await page.evaluate(()=>document.activeElement?.id),field,"A focuses a text field and keeps it");
+    await page.locator("#appearance-open").focus();
+    await page.locator("#btnA").click();
+    await page.locator("#appearance-dialog[open]").waitFor();
+    assert.match((await status())??"",/^Pressed /);
+    for(let index=0;index<40;index++) {
+      await pad("down");
+      assert.equal(await page.evaluate(()=>!!document.activeElement?.closest("dialog[open]")),true,"Down stays inside the open dialog");
+    }
+    for(let index=0;index<40;index++) {
+      await pad("up");
+      assert.equal(await page.evaluate(()=>!!document.activeElement?.closest("dialog[open]")),true,"Up stays inside the open dialog");
+    }
+    await page.locator("#btnB").click();
+    assert.equal(await page.locator("#appearance-dialog").evaluate(el=>(el as HTMLDialogElement).open),false,"B closes the Appearance dialog");
+    assert.equal(await page.locator(".controls").evaluate(el=>el.parentElement?.tagName),"HEADER","the pad returns to the header after the dialog");
+    await page.locator("#btnB").click();
+    assert.equal(await page.evaluate(()=>document.activeElement?.getAttribute("aria-selected")),"true","B with no dialog goes to the current top tab");
+
+    await page.locator("#pad-float").click();
+    const detached=await pane();
+    assert.equal(detached.floating,true);
+    assert.ok(detached.left>=0&&detached.top>=0&&detached.left<1280&&detached.top<800,"the floating pad starts on screen");
+    const grip=page.locator("#pad-grip"),box=(await grip.boundingBox())!;
+    await page.mouse.move(box.x+box.width/2,box.y+box.height/2);
+    await page.mouse.down();
+    await page.mouse.move(box.x-300,box.y-200,{steps:6});
+    await page.mouse.up();
+    const dragged=await pane();
+    assert.ok(dragged.left<detached.left-100&&dragged.top<detached.top-100,"dragging the grip moves the pad");
+    await page.mouse.move(box.x-300,box.y-200);
+    await page.mouse.down();
+    await page.mouse.move(-500,-500,{steps:4});
+    await page.mouse.up();
+    const cornered=await pane();
+    assert.ok(cornered.left>=0&&cornered.top>=0,"dragging past the edge keeps the pad on screen");
+    await grip.focus();
+    for(let index=0;index<3;index++)await page.keyboard.press("ArrowRight");
+    const nudged=await pane();
+    assert.equal(nudged.left-cornered.left,48,"arrow keys on the grip move the pad without a pointer");
+    await page.keyboard.press("Shift+ArrowDown");
+    assert.equal((await pane()).top-cornered.top,64);
+    await page.reload();
+    await page.getByRole("tab",{name:"PayPal",exact:true}).waitFor();
+    const reloaded=await pane();
+    assert.equal(reloaded.floating,true,"a floating pad stays floating after a reload");
+    assert.ok(Math.abs(reloaded.left-nudged.left)<=1&&Math.abs(reloaded.top-(cornered.top+64))<=1,"the pad keeps its position after a reload");
+    for(const bad of ["{\"mode\":\"floating\",\"x\":99999,\"y\":99999}","{\"mode\":\"floating\",\"x\":\"left\",\"y\":4}","not json"]) {
+      await page.evaluate(value=>localStorage.setItem("onedime-pad",value),bad);
+      await page.reload();
+      await page.getByRole("tab",{name:"PayPal",exact:true}).waitFor();
+      assert.equal((await pane()).floating,false,`a bad saved position falls back to docked: ${bad}`);
+    }
+    await page.evaluate(()=>localStorage.removeItem("onedime-pad"));
+    await page.reload();
+    await page.getByRole("tab",{name:"PayPal",exact:true}).waitFor();
+
+    for(const width of [320,390,1280]) {
+      await page.setViewportSize({width,height:width<500?844:800});
+      await page.getByRole("tab",{name:"First Dime",exact:true}).click();
+      if(!(await pane()).floating)await page.locator("#pad-float").click();
+      for(const where of [0.15,0.5,0.85]) {
+        await page.evaluate(([w,h,at])=>{
+          const el=document.querySelector<HTMLElement>(".controls")!,r=el.getBoundingClientRect();
+          el.style.left=`${Math.max(8,Math.min(w-r.width-8,w*at-r.width/2))}px`;el.style.top=`${Math.max(8,h*at-r.height/2)}px`;
+        },[width,width<500?844:800,where]);
+        await page.getByRole("tab",{name:"First Dime",exact:true}).focus();
+        for(let index=0;index<70;index++) {
+          await pad("down");
+          await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+          const covered=await page.evaluate(()=>{
+            const a=document.activeElement!.getBoundingClientRect(),b=document.querySelector(".controls")!.getBoundingClientRect();
+            return a.height<=innerHeight/2&&a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+          });
+          assert.equal(covered,false,`the floating pad never covers the focused control at ${width}px`);
+        }
+      }
+    }
+    await page.setViewportSize({width:1280,height:800});
+    await page.emulateMedia({reducedMotion:"reduce"});
+    await page.evaluate(()=>window.scrollTo(0,0));
+    await page.getByRole("tab",{name:"First Dime",exact:true}).focus();
+    for(let index=0;index<25;index++)await pad("down");
+    assert.ok(await page.evaluate(()=>scrollY)>0,"with reduced motion the page has already scrolled when the press returns");
+    assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).scrollBehavior),"auto");
+    await page.emulateMedia({reducedMotion:null});
+    if((await pane()).floating)await page.locator("#pad-float").click();
+    assert.equal(JSON.parse((await stored())!).mode,"docked","docking is remembered");
+    assert.equal((await pane()).floating,false);
+  }
   async function checkTabKeys(id:string,names:string[]) {
     const selected=page.locator(`#${id} [aria-selected="true"]`);await selected.focus();
     for(const [key,name] of [["Home",names[0]],["End",names.at(-1)!],["ArrowLeft",names.at(-2)!],["ArrowRight",names.at(-1)!],["Home",names[0]]]) {
@@ -258,9 +382,10 @@ try {
       assert.equal(await selected.evaluate(el=>el===document.activeElement),true);
     }
   }
-  for(const name of ["Scroll up","Scroll down","Previous tab","Next tab","B: clock in or out","A: log a session"])
+  for(const name of ["Previous control","Next control","Previous tab","Next tab","B: go back","A: press the selected control"])
     assert.equal(await page.getByRole("button",{name,exact:true}).count(),1);
   await checkTabKeys("app-nav",apps);
+  await checkPad();
   for(const width of [320,390,520,640,768,1024,1280]) {
     await page.setViewportSize({width,height:844});
     const nav=await page.locator("#app-nav").evaluate(el=>({scroll:el.scrollWidth-el.clientWidth,rows:new Set([...el.children].map(tab=>Math.round(tab.getBoundingClientRect().top))).size}));
@@ -290,6 +415,14 @@ try {
         assert.match(await vault.locator(".vault-frame").getAttribute("aria-label")??"",/^The Vault/);
         assert.match(await vault.getByRole("status").textContent()??"",/\d+ \/ 100 tiles broken|Penny is awake/);
         await vault.getByText("What breaks tiles",{exact:true}).waitFor();
+        const board=await vault.evaluate(panel=>{
+          const frame=panel.querySelector(".vault-frame")!.getBoundingClientRect(),count=panel.querySelector("#vault-count")!,
+            side=panel.querySelector(".vault-side")!.getBoundingClientRect(),box=count.getBoundingClientRect();
+          return {gap:Math.round(box.top-frame.bottom),left:Math.round(box.left-frame.left),weight:Number(getComputedStyle(count).fontWeight),
+            beforeSide:box.bottom<=side.top+1||box.right<=side.left+1};
+        });
+        assert.ok(board.gap>=0&&board.gap<=16&&board.left===0,"the tile count sits directly under the board");
+        assert.ok(board.weight>=700&&board.beforeSide,"the tile count is bold and never falls below the side panel");
         assert.deepEqual(await vault.locator(".vault-bot svg").evaluateAll(svgs=>svgs.map(svg=>svg.getAttribute("viewBox")+" "+(svg.querySelectorAll("rect").length>40))),
           Array(5).fill("0 0 16 16 true"),"each robot is a 16x16 pixel sprite");
         await page.emulateMedia({reducedMotion:"reduce"});

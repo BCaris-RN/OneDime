@@ -203,10 +203,8 @@ export function scaled(value: string, scale: number) {
     throw new Error("Use whole minutes and miles to one decimal place.");
   return Number(result / 100n);
 }
-let currentApp = "first";
 let currentMarket = "bal-drive";
 export function showApp(app: string, focus = false) {
-  currentApp = app;
   for (const tab of document.querySelectorAll<HTMLButtonElement>("[data-app]")) {
     const active = tab.dataset.app === app;
     tab.setAttribute("aria-selected", String(active));
@@ -254,40 +252,6 @@ tabKeys(el("balNav"), (tab) => {
 el("b-sell").tabIndex = -1;
 el("bal-sell").classList.remove("hide");
 el("bal-sell").hidden = true;
-for (const b of document.querySelectorAll<HTMLButtonElement>("[data-pad]"))
-  b.addEventListener("click", () => {
-    const dir = b.dataset.pad!;
-    if (dir === "up" || dir === "down") {
-      window.scrollBy({
-        top: dir === "up" ? -250 : 250,
-        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"
-      });
-      return;
-    }
-    if (!["first", "market"].includes(currentApp)) {
-      showApp("first");
-      return;
-    }
-    const nav = el(currentApp === "first" ? "secNav" : "balNav");
-    const tabs = [...nav.querySelectorAll<HTMLButtonElement>("[role=tab]")];
-    const index = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
-    tabs[(index + (dir === "left" ? -1 : 1) + tabs.length) % tabs.length].click();
-  });
-el("btnA").addEventListener("click", () => {
-  showApp("first");
-  el("tab-log").click();
-  el("platform").focus();
-  el("entry-form").scrollIntoView({ block: "center" });
-});
-el("btnB").addEventListener("click", () => {
-  showApp("first");
-  el("tab-log").click();
-  const out = el<HTMLButtonElement>("clock-out");
-  if (!out.disabled) out.click();
-  else if (control("clock-platform").value) el<HTMLFormElement>("clock-form").requestSubmit();
-  else control("clock-platform").focus();
-});
-
 for (const [formId, fieldId, stages] of [
   ["jobForm", "jStage", gigStages],
   ["sDealForm", "dStage", dealStages]

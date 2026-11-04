@@ -1,24 +1,36 @@
 # OneDime status
 
-## Template guardrails checkpoint, November 2, 2026 (Hawaii)
+## Ship prep checkpoint, November 2, 2026 (Hawaii)
 
-Branch `template-guardrails` is cut from `origin/main` at
-`edcb40cf163170f7008ed5307c73f455e3ad02d3`. Applied the authorized patch as
-commit `141c7ff031fec942776336a310f314149c011a34`. It adds secret/key ignore
-patterns, the pull request template, Claude Code permission rules, and the
-handoff documentation; no app code, workflow, Render, or ship-prep files changed.
+Branch `ship-prep` now includes main `0fc8654` (Glass skin, the paid-plan blueprint and the D-pad pane merged). It fixes the
+two bot findings on `89cf8a7`: the README, judge guide and Devpost draft tell judges to pick the existing
+Prolific entry under Create or link, and `docs/ship/video-script.md` now follows what `npm run record:demo`
+captures (2:30 target, 2:50 limit) with the landing console, Vault and Appearance as optional separate clips.
+Docs only; no merge or deploy is done. CI passed on `5ef1e2b` (both Test runs); the bot's remaining notes on that
+head (recorder note, voice-over length, this entry) are fixed in the next commit. Local tests were not run
+because only docs changed; the PR head moves with each fix, so the latest CI run is the check of record. The bot's notes on `f81a7f9` (Glass gated on the newest build, a
+combined 20-second budget for the video inserts, the 4,920-step audit count after the D-pad merge) are fixed
+in the next commit.
 
-Local validation passed: all requested secret/key paths are ignored,
-`.env.example` is not ignored, no tracked files are ignored, settings JSON parses,
-`npm ci` completed with 0 vulnerabilities, and `npm run build` passed. The full
-application suite was not run locally per the handoff. Exact-head CI run
-[41522058669](https://github.com/BCaris-RN/OneDime/actions/runs/41522058669)
-passed on `b3f147e6c594c8d4912e2033aa0b1b72ed2d88a1`: build, contrast typecheck,
-15 test files / 306 tests, beta checks (18 combinations / 22 pairs, zero failures
-or uncovered pairs), contrast checks (24 regressions passed), and browser checks
-(4,804 accessibility tab steps and smart checks). PR #35 is open for Claude's
-review and Brandon's merge approval. No merge, deploy, repository settings,
-rulesets, or secrets changed.
+Judge path against the hosted beta: `/health`, the landing page and the sandbox PayPal handoff (redirect URI
+`/auth/paypal/callback`) work. Signing in, logging an entry and importing the CSV were not run because they
+need the judge login. The beta is not running main: the Deploy workflow finishes green but skips the deploy
+because `RENDER_DEPLOY_HOOK` is not set, so Glass and the paid-plan blueprint are not live. The public export
+dry run (303 of 354 files) has the README and LICENSE, no handoffs, reviews, STATUS or employer name, and no
+remote; a few exported docs still link to files the export leaves out. `docs/ship/devpost-checklist.md` lists
+every submission field. Next: set the deploy hook, then re-run the judge path signed in.
+
+## D-pad pane checkpoint, November 2, 2026 (Hawaii)
+
+Branch `dpad-pane` is cut from main `edcb40c`. The pad is now `public/pad.ts`. It docks where it was, detaches
+into a floating pane (drag by the grip, arrow keys on the grip, position kept per device, bad saved positions
+fall back to docked), and drives the whole app: Left/Right cycle the seven top tabs, Up/Down move focus through
+reachable controls, A presses the focused control and B closes a dialog or goes to the current top tab. A modal
+dialog makes the page inert, so the pad rides inside the open dialog and returns afterward. The old A and B
+shortcuts (log a session, clock in or out) and `currentApp` are removed. `protectFocus` now covers the floating
+pane at every width. Build, 306 tests, `test:beta`, all contrast audits (floating pane included, four skins) and
+the browser audit (4,920 tab steps) pass locally; CI pending. No deploy or merge. `DEMO_VIDEO` mode still hides
+the pad, so the recorded walkthrough does not show it.
 
 ## Personal ladder checkpoint, October 31, 2026 (Hawaii)
 

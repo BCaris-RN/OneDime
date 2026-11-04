@@ -274,7 +274,9 @@ function renderVault(vault: Vault) {
       node("p", `So far: ${money(vault.matchedCents)} paid, ${vault.distinctWorkDays} work day${vault.distinctWorkDays === 1 ? "" : "s"}, ${vault.completedQuests} quest${vault.completedQuests === 1 ? "" : "s"}. Only pay matched to your PayPal activity counts.`, "vault-so-far"),
       node("p", `${100 - visible} tiles to go. No shortcuts, no purchases, no luck.`, "vault-so-far"));
   }
-  element("vault-grid").querySelector(".vault-layout")!.replaceChildren(frame, side);
+  const board = node("div", undefined, "vault-board");
+  board.append(frame, element("vault-count"));
+  element("vault-grid").querySelector(".vault-layout")!.replaceChildren(board, side);
   element("vault-count").textContent = awake ? "100 / 100 tiles. Penny is awake." : `${visible} / 100 tiles broken`;
   element("vault-roster").replaceChildren(...BOTS.map((bot, index) => {
     const open = index === 0 && awake;

@@ -29,3 +29,4 @@ public/smart-model.json
 *.key
 credentials.json
 .claude/settings.local.json
+reviews/claude-week5/
