@@ -49,6 +49,13 @@ suggestions. The player confirms each suggestion, and the server decides what co
 
 I started on Oct 13, 2026 and had 38 pull requests merged by Nov 3, 2026.
 
+The beta runs on Render. `render.yaml` is a blueprint for one web service and one Postgres 16 database, with
+secrets left unset (`sync: false`) so they are entered in Render and never committed. Render's own
+auto-deploy is off. Instead a merge to main that passes CI triggers the deploy hook from GitHub Actions, so
+nothing deploys on red. The app's `/health` route reports the live commit, and the workflow waits until it
+matches the commit just merged. Then the Playwright smoke test (`npm run smoke:beta`) runs against the live
+URL, so a deploy only counts once the real site answers.
+
 PayPal is used in sandbox mode for sign-in. Entries are matched to your PayPal activity file. A CSV
 import is user-provided evidence and is not an authenticated PayPal transaction lookup. The isolated local
 demo uses fake sign-in and fictional data and makes no provider calls.

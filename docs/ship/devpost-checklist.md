@@ -19,7 +19,7 @@ Deadline: Nov 12, 12:00 PM PST (10:00 AM HST), the earlier of the page and the r
 | Accomplishments that we're proud of | devpost.md, "Accomplishments" |
 | What we learned | devpost.md, "What we learned" |
 | What's next | devpost.md, "What's next" |
-| Built with | TypeScript, Express, PostgreSQL, Prisma, HTML, CSS, Playwright, GitHub Actions, Render, PayPal Developer Platform (sandbox), Transformers.js, MoritzLaurer/xtremedistil-l6-h256-zeroshot-v1.1-all-33 (MIT, quantized ONNX, runs in the browser), Claude, Codex |
+| Built with | TypeScript, Express, PostgreSQL, Prisma, HTML, CSS, Playwright, GitHub Actions, Render (blueprint, Postgres 16, deploy hook), PayPal Developer Platform (sandbox), Transformers.js, MoritzLaurer/xtremedistil-l6-h256-zeroshot-v1.1-all-33 (MIT, quantized ONNX, runs in the browser), Claude, Codex |
 | Team | Brandon Caris (solo, builder and owner). Built with Claude (lead and reviewer) and Codex (implementation). |
 | Try it out link | https://onedime-web.onrender.com |
 | Code repository link | `<public repo URL>` |
@@ -38,6 +38,9 @@ Paste the "Testing instructions" section of devpost.md, then add:
 > `npm ci`, then `npm run demo`.
 
 ## Before you submit
+
+- [ ] Claim the $50 Render credits for Best Use of Render (Brandon claims them in his own Render account; check the
+      hackathon page for the exact steps and deadline).
 
 - [ ] Render deploy hook set, so the beta runs the code the docs describe: Glass skin, personal ladder, Vault.
 - [ ] Judge sandbox email added to `BETA_ALLOWLIST` on Render, and the change deployed, so the judge login is

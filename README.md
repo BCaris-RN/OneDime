@@ -110,6 +110,15 @@ outside production and run `npm run db:seed:demo`. The seed is repeatable, creat
 only the named fictional demo player and its fixed records, and does not clear other
 players. It refuses non-local database hosts. Use the isolated demo to sign into fake data.
 
+## Deploying on Render
+
+The beta runs on Render. `render.yaml` is a blueprint for one web service and one Postgres 16 database, with
+secrets left unset (`sync: false`) so they are entered in Render and never committed. Render's own
+auto-deploy is off. Instead a merge to main that passes CI triggers the deploy hook from GitHub Actions, so
+nothing deploys on red. The app's `/health` route reports the live commit, and the workflow waits until it
+matches the commit just merged. Then the Playwright smoke test (`npm run smoke:beta`) runs against the live
+URL, so a deploy only counts once the real site answers.
+
 ## Test and check
 
 ```powershell
