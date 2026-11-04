@@ -1,5 +1,12 @@
 # OneDime status
 
+## Banner checkpoint, November 3, 2026 (Hawaii)
+
+Branch `banner` is cut from main `0fc8654`. The README and both AGENTS.md copies now carry the Render-style
+ONEDIME banner instead of the coin. `src/banner.ts` exports it and `npm run demo` prints it before the URL.
+`tests/banner.test.ts` checks 13 lines, 100 columns or fewer, ASCII only and a README match. Build and the
+suite pass locally except `server.test.ts` and `payout-migration.test.ts`, which need Docker (unavailable
+here). CI pending. No merge or deploy. Next: Brandon reviews the PR; PR #32 also edits README.md.
 ## D-pad pane checkpoint, November 2, 2026 (Hawaii)
 
 Branch `dpad-pane` is cut from main `edcb40c`. The pad is now `public/pad.ts`. It docks where it was, detaches
@@ -285,12 +292,12 @@ assumes five tabs and conflicts with retaining PayPal as a top-level workspace. 
 navigation behavior was removed to resolve that conflict.
 No merge or deployment was performed.
 
-## M4 checkpoint, F2–F6 plus review fixes, October 26, 2026 (Hawaii)
+## M4 checkpoint, F2â€“F6 plus review fixes, October 26, 2026 (Hawaii)
 
 First-run welcome is backed by `welcome_completed_at`. Migration 000012 marks existing
 players as already welcomed, so only accounts created after rollout see it. The
 multi-select choice is used to open the first selected workspace and is not retained;
-only the completion timestamp is stored. A zero-XP “Start your record” quest completes
+only the completion timestamp is stored. A zero-XP â€œStart your recordâ€ quest completes
 automatically after the first logged entry or newly imported PayPal activity. Repeated
 imports do not create duplicate quest progress.
 
@@ -314,7 +321,7 @@ zero failing pairs and zero uncovered pairs. Exact-head CI passed on
 `0a0c6cdbb9c033e86510a1ab2afdaec21f0eadc7`, run
 [40451790082](https://github.com/BCaris-RN/OneDime/actions/runs/40451790082): build,
 contrast typing, unit tests, beta, full contrast audit and browser suite all passed.
-Full suite, contrast, browser and npm audit are required again at the final F2–F6
+Full suite, contrast, browser and npm audit are required again at the final F2â€“F6
 checkpoint. No merge or deployment was performed.
 
 F4 adds `npm run metrics:report`. It runs in a read-only repeatable snapshot and writes
@@ -332,18 +339,18 @@ build and focused strict TypeScript check passed. Exact-head CI passed on F4 cod
 [40455059177](https://github.com/BCaris-RN/OneDime/actions/runs/40455059177): build,
 contrast typing, unit tests, beta, full contrast and browser checks all succeeded.
 
-Open question: the F4 handoff references a separate “metrics doc,” which is absent from
-the repository. F4 uses its explicit KPI list. “First-entry rate” means accounts with
-any First Dime entry divided by all accounts; “first-dime rate” means accounts with a
+Open question: the F4 handoff references a separate â€œmetrics doc,â€ which is absent from
+the repository. F4 uses its explicit KPI list. â€œFirst-entry rateâ€ means accounts with
+any First Dime entry divided by all accounts; â€œfirst-dime rateâ€ means accounts with a
 verified First Dime entry divided by all accounts. Week-1/week-4 retention use current
 last-seen timestamps as a cohort proxy. Return after a seven-day gap and suggestion
-acceptance remain unmeasurable because their event histories are not stored. “Imports per
-month” is represented by transaction-row counts because file-level import events are not
+acceptance remain unmeasurable because their event histories are not stored. â€œImports per
+monthâ€ is represented by transaction-row counts because file-level import events are not
 stored.
 
-F6 adds a Tax summary sheet to “Export everything” (XLSX and ZIP/CSV), with year, month,
+F6 adds a Tax summary sheet to â€œExport everythingâ€ (XLSX and ZIP/CSV), with year, month,
 app, existing recorded-income totals, platform fees, expenses and delivery miles in
-tenths. It includes the required “For your records. Not tax advice.” note. This is derived
+tenths. It includes the required â€œFor your records. Not tax advice.â€ note. This is derived
 from the export's existing monthly summary rows; no financial calculation changed.
 Validation passed locally on Node 24: build; full suite (253 tests / 11 files); tax-sheet
 unit tests (12); focused authenticated export integration (1 passed, 151 intentionally
@@ -437,7 +444,7 @@ this beta (`PAYPAL_WEBHOOK_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
 settings are supplied by `render.yaml`.
 
 The Oct 21 long-run handoff was supplied on this branch as untracked input and defines
-M2–M8. The pilot is Git-ignored and the skins report is untracked input; both are
+M2â€“M8. The pilot is Git-ignored and the skins report is untracked input; both are
 available locally and will be included in their review materials as directed.
 
 R3 checkpoint, October 20, 2026 (Hawaii), branch `beta-allowlist`.
@@ -471,7 +478,7 @@ the assertion. The full final CI rerun passed. PR #8 remains a draft and unmerge
 stacked on PR #6; see [R3 review package](reviews/beta-allowlist/README.md).
 
 Historical Oct 20 coordinator checkpoint: the prior run stopped at the end of R3
-because the delegated operator reached its account usage limit. R4–R8 had not started
+because the delegated operator reached its account usage limit. R4â€“R8 had not started
 at that time. This checkpoint preserves
 the confirmed F1 interpretation: First Dime keeps its existing XP; rank bonuses apply
 only to Creator, Freelancer, Driver and Seller. The previously missing design sources
@@ -541,12 +548,12 @@ physical devices, screen readers and real sandbox connectivity remain operator g
 
 | Branch / PR | Head SHA | Exact-head CI | Contents |
 | --- | --- | --- | --- |
-| `week5-features` / [#9](https://github.com/BCaris-RN/OneDime/pull/9) | `fc6f5bcce37da815c57ca0dbe52649c3da857bad` | Run `40466913789` failed only at the browser assertion on PayPal selection; failed-job retry is running. Local `test:browser` passes at this code head. | M2–M4: ranks, Stats, first run/install, metrics report, tax export, review fixes. |
+| `week5-features` / [#9](https://github.com/BCaris-RN/OneDime/pull/9) | `fc6f5bcce37da815c57ca0dbe52649c3da857bad` | Run `40466913789` failed only at the browser assertion on PayPal selection; failed-job retry is running. Local `test:browser` passes at this code head. | M2â€“M4: ranks, Stats, first run/install, metrics report, tax export, review fixes. |
 | `ship-drafts` / [#10](https://github.com/BCaris-RN/OneDime/pull/10) | `33686563421209022884856773f44253fdc8ef48` | Passed, run `40463830282`. | Four `docs/ship/` drafts: build story, video script, Devpost draft, judge guide. |
 | `demo-video` / [#11](https://github.com/BCaris-RN/OneDime/pull/11) | `6b0b51da5d105565e5b23f07d61841a91bcf31b0` | Passed, run `40470836379`. | Demo recording tooling and draft video assets; recordings remain local and ignored. |
 | `week5-skins` / [#12](https://github.com/BCaris-RN/OneDime/pull/12) | `f77a5e63dfb66c74a65c06de271e8d780597e449` | Passed, run `40475677029`. | Current/Paper/Slate appearance choice, tokenized theme styling, contrast audit/report, browser coverage. |
 
-Claude review is still outstanding for PRs #9–#12. The available automated review
+Claude review is still outstanding for PRs #9â€“#12. The available automated review
 comments on #9 cover earlier commits only, not its latest code head. Wait for Claude's
 review of the current heads before Brandon considers a merge. Brandon's merge order
 after review is `week5-features` first, then rebase `demo-video` and `week5-skins`

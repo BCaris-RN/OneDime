@@ -1,12 +1,20 @@
 ```text
-    .-'''''''-.
-  .'  .-----.  '.        ___             ____  _
- /   /  ONE  \   \      / _ \ _ __   ___|  _ \(_)_ __ ___   ___
-|   |  DIME   |   |    | | | | '_ \ / _ \ | | | | '_ ` _ \ / _ \
- \   \  10c  /   /     | |_| | | | |  __/ |_| | | | | | | |  __/
-  '.  '-----'  .'       \___/|_| |_|\___|____/|_|_| |_| |_|\___|
-    '-.......-'        earn your first dime. level up for real.
+  ||                                                                                   ||
+==++===================================================================================++==
+  ||                                                                                   ||
+  ||     ________  ________   _______   ________  ___  _____ ______   _______          ||
+  ||    |\   __  \|\   ___  \|\  ___ \ |\   ___ \|\  \|\   _ \  _   \|\  ___ \         ||
+  ||    \ \  \|\  \ \  \\ \  \ \   __/|\ \  \_|\ \ \  \ \  \\\__\ \  \ \   __/|        ||
+  ||     \ \  \\\  \ \  \\ \  \ \  \_|/_\ \  \ \\ \ \  \ \  \\|__| \  \ \  \_|/__      ||
+  ||      \ \  \\\  \ \  \\ \  \ \  \_|\ \ \  \_\\ \ \  \ \  \    \ \  \ \  \_|\ \     ||
+  ||       \ \_______\ \__\\ \__\ \_______\ \_______\ \__\ \__\    \ \__\ \_______\    ||
+  ||        \|_______|\|__| \|__|\|_______|\|_______|\|__|\|__|     \|__|\|_______|    ||
+  ||                                                                                   ||
+==++===================================================================================++==
+  ||                                                                                   ||
 ```
+
+earn your first dime. level up for real.
 
 # AGENTS.md: how to work in the OneDime repo
 
@@ -101,14 +109,22 @@ Brandon likes ASCII headers. Use them deliberately, not everywhere.
 1. README banner. Put this at the very top of README.md, inside a ```text fence so it renders in monospace:
 
 ```text
-    .-'''''''-.
-  .'  .-----.  '.        ___             ____  _
- /   /  ONE  \   \      / _ \ _ __   ___|  _ \(_)_ __ ___   ___
-|   |  DIME   |   |    | | | | '_ \ / _ \ | | | | '_ ` _ \ / _ \
- \   \  10c  /   /     | |_| | | | |  __/ |_| | | | | | | |  __/
-  '.  '-----'  .'       \___/|_| |_|\___|____/|_|_| |_| |_|\___|
-    '-.......-'        earn your first dime. level up for real.
+  ||                                                                                   ||
+==++===================================================================================++==
+  ||                                                                                   ||
+  ||     ________  ________   _______   ________  ___  _____ ______   _______          ||
+  ||    |\   __  \|\   ___  \|\  ___ \ |\   ___ \|\  \|\   _ \  _   \|\  ___ \         ||
+  ||    \ \  \|\  \ \  \\ \  \ \   __/|\ \  \_|\ \ \  \ \  \\\__\ \  \ \   __/|        ||
+  ||     \ \  \\\  \ \  \\ \  \ \  \_|/_\ \  \ \\ \ \  \ \  \\|__| \  \ \  \_|/__      ||
+  ||      \ \  \\\  \ \  \\ \  \ \  \_|\ \ \  \_\\ \ \  \ \  \    \ \  \ \  \_|\ \     ||
+  ||       \ \_______\ \__\\ \__\ \_______\ \_______\ \__\ \__\    \ \__\ \_______\    ||
+  ||        \|_______|\|__| \|__|\|_______|\|_______|\|__|\|__|     \|__|\|_______|    ||
+  ||                                                                                   ||
+==++===================================================================================++==
+  ||                                                                                   ||
 ```
+
+earn your first dime. level up for real.
 
 2. File headers. Use this exact shape, in each language's comment syntax, ONLY on the key files listed below.
    Line 1 is the tag, line 2 a rule, then one or two lines on what the file is for.
@@ -142,7 +158,7 @@ Brandon likes ASCII headers. Use them deliberately, not everywhere.
 ```
 
 4. ASCII only (no box-drawing or emoji characters), lines under 100 characters.
-   Never draw third-party logos or trademarks (PayPal, gig platforms, Anthropic). The coin and wordmark above are
+   Never draw third-party logos or trademarks (PayPal, gig platforms, Anthropic). The banner above is
    OneDime's own.
 
 ## Definition of done
