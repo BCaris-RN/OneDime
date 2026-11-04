@@ -367,7 +367,6 @@ https://onedime-web.onrender.com is live and deployed from main by the deploy ho
 [Render's free-tier limits](https://render.com/docs/free) still apply: services sleep after 15 minutes
 without traffic and free databases expire 30 days after creation. Payouts, Google Sheets
 and seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
-Brandon accepted clean rewritten main `9953600` and owns GitHub Support cleanup of old PR refs.
 Do not merge old pre-cleanup history into this branch. The repository license is recorded in LICENSE.
 
 For the public release I run `scripts/export-public.ps1` from a clean checkout of main. It
