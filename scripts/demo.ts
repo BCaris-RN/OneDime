@@ -7,6 +7,7 @@ import { loadConfig } from "../src/config.js";
 import { SessionStore } from "../src/auth/session.js";
 import { localDay } from "../src/game/rules.js";
 import { seedDemo } from "../src/demo/seed.js";
+import { ONEDIME_BANNER } from "../src/banner.js";
 const container = await new PostgreSqlContainer("postgres:16").start();
 const port = Number(process.env.PORT ?? 3403);
 let prisma: PrismaClient | undefined;
@@ -44,9 +45,10 @@ try {
     await sessions.createSession(player.id, res);
     res.redirect("/app");
   });
-  const server = app.listen(port, "127.0.0.1", () =>
-    console.log(`fictional demo: http://127.0.0.1:${port}/demo-login`)
-  );
+  const server = app.listen(port, "127.0.0.1", () => {
+    console.log(ONEDIME_BANNER);
+    console.log(`fictional demo: http://127.0.0.1:${port}/demo-login`);
+  });
   const close = async () => {
     server.close();
     await prisma?.$disconnect();
