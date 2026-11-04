@@ -285,6 +285,10 @@ try {
     const field=await page.evaluate(()=>document.activeElement?.id??"");
     await page.locator("#btnA").click();
     assert.equal(await page.evaluate(()=>document.activeElement?.id),field,"A focuses a text field and keeps it");
+    await page.evaluate(()=>{(window as unknown as {pickerOpened:number}).pickerOpened=0;HTMLInputElement.prototype.showPicker=function(){(window as unknown as {pickerOpened:number}).pickerOpened++;};});
+    await page.locator("input[type=date]:visible,input[type=month]:visible").first().focus();
+    await page.locator("#btnA").click();
+    assert.equal(await page.evaluate(()=>(window as unknown as {pickerOpened:number}).pickerOpened),1,"A opens the native picker on a date field");
     await page.locator("#appearance-open").focus();
     await page.locator("#btnA").click();
     await page.locator("#appearance-dialog[open]").waitFor();
