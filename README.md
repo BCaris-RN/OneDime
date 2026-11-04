@@ -14,7 +14,7 @@
   ||                                                                                   ||
 ```
 
-earn your first dime. level up for real.
+Earn your first dime. Level up for real.
 
 # OneDime
 
