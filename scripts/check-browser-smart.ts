@@ -415,6 +415,14 @@ try {
         assert.match(await vault.locator(".vault-frame").getAttribute("aria-label")??"",/^The Vault/);
         assert.match(await vault.getByRole("status").textContent()??"",/\d+ \/ 100 tiles broken|Penny is awake/);
         await vault.getByText("What breaks tiles",{exact:true}).waitFor();
+        const board=await vault.evaluate(panel=>{
+          const frame=panel.querySelector(".vault-frame")!.getBoundingClientRect(),count=panel.querySelector("#vault-count")!,
+            side=panel.querySelector(".vault-side")!.getBoundingClientRect(),box=count.getBoundingClientRect();
+          return {gap:Math.round(box.top-frame.bottom),left:Math.round(box.left-frame.left),weight:Number(getComputedStyle(count).fontWeight),
+            beforeSide:box.bottom<=side.top+1||box.right<=side.left+1};
+        });
+        assert.ok(board.gap>=0&&board.gap<=16&&board.left===0,"the tile count sits directly under the board");
+        assert.ok(board.weight>=700&&board.beforeSide,"the tile count is bold and never falls below the side panel");
         assert.deepEqual(await vault.locator(".vault-bot svg").evaluateAll(svgs=>svgs.map(svg=>svg.getAttribute("viewBox")+" "+(svg.querySelectorAll("rect").length>40))),
           Array(5).fill("0 0 16 16 true"),"each robot is a 16x16 pixel sprite");
         await page.emulateMedia({reducedMotion:"reduce"});
