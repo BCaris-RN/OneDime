@@ -145,7 +145,7 @@ try {
           order:title.right<=xp.left&&xp.right<=menu.left,menuHeight:menu.height,xpHeight:xp.height};
       });
       assert.ok(header.height<=90&&header.overflow<=1&&header.aligned&&header.order,`${skin} header stays on one row at ${width}px: ${JSON.stringify(header)}`);
-      assert.ok(Math.abs(header.menuHeight-header.xpHeight)<=1,`${skin} Menu matches the XP control at ${width}px`);
+      assert.ok(Math.abs(header.menuHeight-header.xpHeight)<=1,`${skin} Menu matches the XP control at ${width}px: ${JSON.stringify(header)}`);
       assert.equal(await headerMenu.locator("#player-name").count(),1,`${skin} player name moves into Menu at ${width}px`);
       const tabs=await page.locator("#app-nav button").evaluateAll(nodes=>nodes.map(node=>{const rect=node.getBoundingClientRect();return {height:rect.height,top:Math.round(rect.top)};}));
       assert.ok(tabs.every(tab=>tab.height>=44),`${skin} app tabs meet the 44px target at ${width}px`);
