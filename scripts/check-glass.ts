@@ -146,7 +146,6 @@ try {
   await page.getByRole("button", { name: "Detach the pad", exact: true }).click();
   for (const width of [320, 390, 1440]) {
     await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
-    await settleLayout(page);
     const results = await measureText(page, { skip: ".sr-only,.skip-link,.glass-shapes,#post-login-boot", hide: "" });
     problems.push(...results.filter(result => result.ratio < result.required)
       .map(result => `floating pad at ${width}px: ${result.label} ${result.ratio.toFixed(2)} < ${result.required}`));
