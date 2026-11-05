@@ -31,7 +31,8 @@ has seven tabs.
   sleep, each waiting for its own kind of work.
 
 The app looks like Glass by default: frosted panels over a quiet nebula with one accent color per tab. Current
-(the handheld screen), Paper and Slate are one tap away in Appearance. It installs to a phone's home screen,
+(the handheld screen), Paper and Slate are one tap away in **Appearance** (inside **Menu** on a phone). It
+installs to a phone's home screen,
 works with reduced motion and reduced transparency, and is checked for contrast and keyboard use.
 
 ## How we built it
@@ -154,12 +155,17 @@ quantized ONNX, runs in the browser), Claude and Codex.
 
 **Hosted beta:** https://onedime-web.onrender.com. Sign in with the judge sandbox login: email `<judge
 sandbox email>`, password `<judge sandbox password>`. Use only that login. The first visit after a quiet
-spell can take up to a minute. Then follow the steps in [Try OneDime](judges-try-it.md): log a $1.99 Prolific
-entry, turn on Smart suggestions on the PayPal tab, import `tests/fixtures/paypal-activity.csv`, and route the
-Hyperwallet payment to First Dime, choosing the existing Prolific entry under Create or link. After the
-toggle, press Download and suggest: this sample file has no unknown payer, so you should see "No unknown
-unrouted payments to suggest. Using the fixed payer map." A payment from a payer OneDime does not know gets
-"Suggested: <workspace> / Other. Confirm or change it." and nothing is routed until you confirm.
+spell can take up to a minute. Follow [Try OneDime](judges-try-it.md): log a $1.99 Prolific entry, turn on
+Smart suggestions (off by default; it downloads a one-time model, about 41 MB, that runs on your device),
+and import the [sample PayPal activity](sample-paypal-activity.csv). Choose **Download and suggest**. The
+logo, creator sponsorship and store orders suggest Freelance, Spotlight, and Market: selling. Avery Ellis
+gets no suggestion. Nothing moves until you confirm. Route Hyperwallet to First Dime and select the existing
+Prolific entry under **Create or link**. Otherwise, "Create a new record" adds another $1.99 entry. Matching
+it gives two ladder rungs and their XP. The euro payment cannot be routed, on purpose. A payment from an
+unknown payer gets "Suggested: <workspace> / Other. Confirm or change it." with the workspace picked by the
+on-device model; nothing is routed until you confirm. The separate browser-test fixture,
+`tests/fixtures/paypal-activity.csv`, has no unknown payer, so it shows "No unknown unrouted payments to
+suggest. Using the fixed payer map."
 
 **Local demo:** with Node 24 and Docker Desktop, run `npm ci` then `npm run demo`, and open
 `http://127.0.0.1:3403/demo-login`. It uses fake sign-in and fictional data.

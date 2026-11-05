@@ -2350,7 +2350,7 @@ describe("Phase 2 game API", () => {
     const rows = await prisma.$queryRaw<
       { count: bigint }[]
     >`SELECT count(*) AS count FROM paypal_transactions WHERE player_id=${demo.id}::uuid`;
-    expect(Number(rows[0].count)).toBe(2);
+    expect(Number(rows[0].count)).toBe(6);
   });
   it("keeps missing-name PayPal emails private and records account verification only when returned", async () => {
     vi.mocked(paypalClient.fetchUserInfo).mockResolvedValueOnce({

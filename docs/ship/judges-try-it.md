@@ -14,16 +14,17 @@ The beta sleeps when nobody is using it, so the first visit after a quiet spell 
 
 1. On the console, press **START** (or choose **Log in with PayPal**) and sign in with the judge login.
 2. In **First Dime**, log a session: platform Prolific, amount `1.99`, any minutes.
-3. Open **PayPal** and turn on **Smart suggestions** (off by default; the notice states the one-time model
-   download, about 41 MB, which runs on your device). Then import `tests/fixtures/paypal-activity.csv` from
-   the repository. Press **Download and suggest**. In this sample file Hyperwallet is a known payer and the
-   euro payment cannot be routed, so you should see "No unknown unrouted payments to suggest. Using the fixed
-   payer map." A payment from an unknown payer would instead show "Suggested: <workspace> / Other. Confirm
-   or change it." with the workspace picked by the on-device model; nothing moves until you confirm. Now route the Hyperwallet
-   payment to First Dime. Under **Create or link**, pick your existing Prolific entry before you confirm;
-   leaving it on "Create a new record" adds a second $1.99 entry. The record is now matched to your PayPal
-   activity, and two rungs of your ladder land with their XP. The second payment in that file is in euros and cannot be routed, on purpose.
-4. Open **Stats** and **Vault** to see the matched pay become tiles. Open **Appearance** to try the skins.
+3. Open **PayPal**, turn on **Smart suggestions** (off by default; it downloads a
+   one-time model, about 41 MB, that runs on your device), and import the
+   [sample PayPal activity](sample-paypal-activity.csv).
+   Choose **Download and suggest**. The logo, creator sponsorship and store orders
+   suggest Freelance, Spotlight, and Market: selling. Avery Ellis gets no
+   suggestion. Nothing moves until you confirm. Route Hyperwallet to First Dime.
+   Under **Create or link**, pick your existing Prolific entry before confirming.
+   Otherwise, "Create a new record" adds another $1.99 entry. Matching it gives
+   two ladder rungs and their XP. The euro payment cannot be routed, on purpose.
+4. Open **Stats** and **Vault** to see the matched pay become tiles. Open
+   **Appearance** (inside **Menu** on a phone) to try the skins.
    Glass is the default once the beta runs the newest build, and the local demo always has it.
 
 ## Local demo

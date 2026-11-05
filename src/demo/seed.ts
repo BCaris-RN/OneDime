@@ -110,12 +110,33 @@ export async function seedDemo(prisma: PrismaClient, day: string) {
           day
         );
     }
-    for (const [number, currency, payer, gross, fee, net] of [
-      [30, "USD", "Hyperwallet", 199, 0, 199],
-      [31, "EUR", "Fictional payer", 1000, 25, 975]
+    for (const [number, txnId, currency, payer, gross, fee, net] of [
+      [30, "FAKE-DEMO-USD-1", "USD", "Hyperwallet", 199, 0, 199],
+      [31, "FAKE-DEMO-EUR-1", "EUR", "Fictional payer", 1000, 25, 975],
+      [
+        32, "FAKE-DEMO-SAMPLE-FREELANCE-1", "USD",
+        "Fictional Logo Design Studio Selling Freelance Services to a Client", 7500, 247, 7253
+      ],
+      [
+        33, "FAKE-DEMO-SAMPLE-SPOTLIGHT-1", "USD",
+        "Fictional Creator Audience Income Advertisements and Sponsorships", 12500, 363, 12137
+      ],
+      [
+        34, "FAKE-DEMO-SAMPLE-MARKET-1", "USD",
+        "Fictional Marketplace Selling Goods Through a Store", 4200, 122, 4078
+      ],
+      [35, "FAKE-DEMO-SAMPLE-PERSON-1", "USD", "Avery Ellis", 2500, 0, 2500]
     ] as const) {
-      await tx.$executeRaw(Prisma.sql`INSERT INTO paypal_transactions(id,player_id,txn_id,occurred_on,payer,gross_cents,fee_cents,net_cents,currency,kind)
-        VALUES(${id(number)}::uuid,${player.id}::uuid,${`FAKE-DEMO-${currency}-1`},${day}::date,${payer},${gross},${fee},${net},${currency},'General Payment') ON CONFLICT(player_id,txn_id) DO NOTHING`);
+      await tx.$executeRaw(Prisma.sql`
+        INSERT INTO paypal_transactions(
+          id, player_id, txn_id, occurred_on, payer, gross_cents, fee_cents,
+          net_cents, currency, kind
+        )
+        VALUES (
+          ${id(number)}::uuid, ${player.id}::uuid, ${txnId}, ${day}::date, ${payer},
+          ${gross}, ${fee}, ${net}, ${currency}, 'General Payment'
+        )
+        ON CONFLICT(player_id, txn_id) DO NOTHING`);
     }
     return player;
   });

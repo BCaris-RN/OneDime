@@ -21,6 +21,9 @@ try {
     env: { ...process.env, DATABASE_URL: container.getConnectionUri() }, stdio: "ignore"
   });
   const player = await seedDemo(prisma, "2026-10-18");
+  // Import the same rows shown to judges so the browser check covers CSV handling.
+  await prisma.$executeRaw`DELETE FROM paypal_transactions
+    WHERE player_id=${player.id}::uuid AND txn_id LIKE 'FAKE-DEMO-SAMPLE-%'`;
   await prisma.payout.createMany({ data: [
     {playerId:player.id,rungCents:10,amountCents:10,status:"BLOCKED",batchStatus:"SUCCESS"},
     {playerId:player.id,rungCents:100,amountCents:10,status:"HELD",batchStatus:"SUCCESS"}
@@ -34,7 +37,9 @@ try {
   const sessions = new SessionStore(prisma, config);
   const app = createApp({ config, prisma, paypalClient: {
     exchangeCodeForToken: async () => ({ access_token: "browser-fixture-token" }),
-    fetchUserInfo: async () => ({ user_id: "BROWSER-OAUTH-FIXTURE", name: "Login fixture" })
+    fetchUserInfo: async () => ({
+      user_id: "BROWSER-OAUTH-FIXTURE", name: "Login fixture", email: "login@example.test"
+    })
   } });
   app.get("/browser-login", async (_req, res) => { await sessions.createSession(player.id, res); res.redirect("/app"); });
   server = await new Promise(resolve => { const value = app.listen(port, "127.0.0.1", () => resolve(value)); });
@@ -233,6 +238,13 @@ try {
   await page.locator("summary").filter({hasText:"Export everything"}).click();
   const toggle = page.getByRole("checkbox", { name: "Smart suggestions", exact: true });
   await toggle.waitFor();
+  await page.locator("#paypal-csv").setInputFiles("docs/ship/sample-paypal-activity.csv");
+  const imported = page.waitForResponse(response =>
+    response.url().includes("/paypal/import") && response.status() === 200
+  );
+  await page.getByRole("button", { name: "Import activity CSV", exact: true }).click();
+  await imported;
+  await page.getByText("Imported 4; skipped 2 duplicates.", { exact: true }).waitFor();
   await page.waitForFunction(() => !(document.querySelector('#paypal-ai input[type="checkbox"]') as HTMLInputElement)?.disabled);
   assert.equal(await toggle.isChecked(), false);
   assert.equal(requests.some(req => req.url.includes("/models/")), false);
@@ -245,7 +257,34 @@ try {
   await button.focus();
   await button.press("Enter");
   await page.getByText(/^Suggestions ready\./).waitFor({ timeout: 125000 });
-  await page.getByText("Suggested: Spotlight / Other. Confirm or change it.", { exact: true }).waitFor();
+  const sampleSuggestions = [
+    {
+      payer: "Fictional Logo Design Studio Selling Freelance " + "Services to a Client",
+      recordType: "gigs",
+      text: "Suggested: Freelance / Other. Confirm or change it."
+    },
+    {
+      payer: "Fictional Creator Audience Income Advertisements and Sponsorships",
+      recordType: "income",
+      text: "Suggested: Spotlight / Other. Confirm or change it."
+    },
+    {
+      payer: "Fictional Marketplace Selling Goods Through a Store",
+      recordType: "sales",
+      text: "Suggested: Market: selling / Other. Confirm or change it."
+    }
+  ] as const;
+  for (const sample of sampleSuggestions) {
+    const heading = page.getByRole("heading", { name: sample.payer, exact: false });
+    const payment = heading.locator("xpath=..");
+    await payment.getByText(sample.text, { exact: true }).waitFor();
+    assert.equal(await payment.locator("select").nth(0).inputValue(), sample.recordType);
+    assert.equal(await payment.locator("select").nth(1).inputValue(), "Other");
+  }
+  const personHeading = page.getByRole("heading", { name: "Avery Ellis", exact: false });
+  const personPayment = personHeading.locator("xpath=..");
+  const noSuggestion = "No suggestion. Choose the workspace and platform.";
+  await personPayment.getByText(noSuggestion, { exact: true }).waitFor();
   const firstRequests = requests.slice(begin);
   assert(firstRequests.some(req => req.url.endsWith("model_quantized.onnx")));
   assert(firstRequests.every(req => !`${req.url}${req.body}`.includes("CANARY-DEVICE")));
