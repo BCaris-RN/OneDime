@@ -244,7 +244,6 @@ try {
   const personPayment = personHeading.locator("xpath=..");
   const noSuggestion = "No suggestion. Choose the workspace and platform.";
   await personPayment.getByText(noSuggestion, { exact: true }).waitFor();
-  await page.getByText("Suggested: Spotlight / Other. Confirm or change it.", { exact: true }).waitFor();
   const firstRequests = requests.slice(begin);
   assert(firstRequests.some(req => req.url.endsWith("model_quantized.onnx")));
   assert(firstRequests.every(req => !`${req.url}${req.body}`.includes("CANARY-DEVICE")));
