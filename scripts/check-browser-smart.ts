@@ -439,10 +439,14 @@ try {
   }
   for(const width of [320,390,1280]) for(const theme of ["light","dark"]) {
     await page.setViewportSize({width,height:844});
+    const headerMenu=page.locator("#header-menu"),headerSummary=headerMenu.locator("summary");
+    await headerSummary.focus();
+    if(!(await headerMenu.evaluate(el=>(el as HTMLDetailsElement).open)))await headerSummary.press("Enter");
     if(await page.locator("html").getAttribute("data-theme")!==theme) {
       const toggleTheme=page.getByRole("button",{name:theme==="dark"?"Switch to dark mode":"Switch to light mode",exact:true});
       await toggleTheme.focus();await toggleTheme.press("Enter");
     }
+    if(await headerMenu.evaluate(el=>(el as HTMLDetailsElement).open))await headerSummary.press("Enter");
     for(const appName of apps) {
       if(width===1280&&appName!=="Stats")continue;
       const tab=page.getByRole("tab",{name:appName,exact:true});await tab.focus();await tab.press("Enter");
