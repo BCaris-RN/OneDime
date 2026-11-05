@@ -527,8 +527,8 @@ caption{text-align:left;font-weight:700;padding:8px 0;color:var(--head)}
   .topbar{flex-wrap:nowrap;align-items:center;gap:8px;padding-top:10px;padding-bottom:10px}
   .brand{font-size:clamp(1.05rem,5vw,1.35rem);line-height:1;white-space:nowrap}
   .player-strip.is-compact{margin-left:auto;flex-wrap:nowrap;gap:6px;min-width:0}
-  .player-strip.is-compact>#xp-chip{min-height:40px;padding:8px 10px;font-size:.8rem;white-space:nowrap}
-  .player-strip.is-compact>.header-menu summary{min-height:40px;padding:6px 10px}
+  .player-strip.is-compact>#xp-chip{height:40px;padding:8px 10px;font-size:.8rem;white-space:nowrap}
+  .player-strip.is-compact>.header-menu summary{height:40px;padding:6px 10px}
   #app-nav button{min-height:50px;padding:9px 4px;font-size:.84rem;font-weight:800;line-height:1.15;overflow-wrap:anywhere}
   :root[data-skin="glass"] #app-nav button{font-size:.9rem;font-weight:800}
 }
