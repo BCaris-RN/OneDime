@@ -510,7 +510,7 @@ caption{text-align:left;font-weight:700;padding:8px 0;color:var(--head)}
 :root[data-skin="glass"] .vault-bot .l{fill:var(--skin-screen-hi)}
 :root[data-skin="glass"] :is(.vault-awake-title,.vault-door){color:var(--skin-screen-text);border-color:var(--skin-frame)}
 :root[data-skin="glass"] .controls{-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
-:root[data-skin="glass"] .controls.is-floating{background:rgba(10,12,28,.92);border:1px solid var(--skin-border);border-radius:14px}
+:root[data-skin="glass"] .controls.is-floating{background:var(--glass-solid);border:1px solid var(--skin-border);border-radius:14px}
 @media(max-width:520px){:root[data-skin="glass"] .controls{background:rgba(10,12,28,.78);border-top:1px solid var(--skin-border)}}
 :root[data-skin="glass"] :is(.dpad button,.dpad .center){-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 @media(prefers-reduced-transparency:reduce){
