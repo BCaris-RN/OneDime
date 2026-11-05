@@ -522,6 +522,7 @@ caption{text-align:left;font-weight:700;padding:8px 0;color:var(--head)}
 
 /* Scrollable tables get a short, high-contrast hint only while more columns are clipped. */
 .table-scroll-cue{margin:4px 0 0;color:var(--muted);font-size:.8rem;font-weight:700}
+:root[data-skin="glass"] .controls.is-floating .status{color:var(--skin-text)}
 @media(max-width:520px){
   .topbar{flex-wrap:nowrap;align-items:center;gap:8px;padding-top:10px;padding-bottom:10px}
   .brand{font-size:clamp(1.05rem,5vw,1.35rem);line-height:1;white-space:nowrap}
