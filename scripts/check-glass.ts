@@ -81,6 +81,8 @@ try {
     return page;
   };
   const shapeLayer = (page: Page) => page.locator("#glass-shapes").evaluate(node => getComputedStyle(node).display);
+  const settleLayout = (page: Page) => page.evaluate(() => new Promise<void>(resolve =>
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
 
   const page = await open({ colorScheme: "light", reducedMotion: "reduce" });
   assert.equal(await page.locator("html").getAttribute("data-skin"), "glass", "Glass is the default skin");
@@ -100,6 +102,10 @@ try {
     assert.ok(opacities.every(value => value >= .4 && value <= .6), `${name} shapes stay between .4 and .6 opacity`);
     for (const width of [320, 390, 1440]) {
       await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
+      await settleLayout(page);
+      if (key === "paypal" && width < 500) {
+        await page.waitForFunction(() => !!document.querySelector("#app-paypal .tablewrap[data-scrollable='true']"));
+      }
       if (width < 500) assert.equal(await page.evaluate(() => {
         const box = document.querySelector(".controls")!.getBoundingClientRect();
         return !!document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)?.closest(".controls");
@@ -110,18 +116,25 @@ try {
       problems.push(...results.filter(result => result.ratio < result.required)
         .map(result => `${name} at ${width}px: ${result.label} ${result.ratio.toFixed(2)} < ${result.required}`));
       if (key === "paypal" && width < 500) {
-        await page.waitForFunction(() => !!document.querySelector("#app-paypal .tablewrap[data-scrollable='true']"));
         const cue = page.locator("#app-paypal .table-scroll-cue:visible").first();
         await cue.waitFor();
         assert.match(await cue.textContent() ?? "", /Swipe horizontally/);
+        const cueResults = await measureText(page, { skip: ".sr-only,.skip-link,.glass-shapes,#post-login-boot", hide: "", include: "#app-paypal .table-scroll-cue" });
+        problems.push(...cueResults.filter(result => result.ratio < result.required)
+          .map(result => `table scroll cue at ${width}px: ${result.label} ${result.ratio.toFixed(2)} < ${result.required}`));
+        const originalTheme = await page.locator("html").getAttribute("data-theme");
         for (const mode of ["light", "dark"] as const) {
           await page.locator("#header-menu summary").click();
           await page.evaluate(mode => { document.documentElement.dataset.theme = mode; }, mode);
-          const menuResults = await measureText(page, { skip: ".sr-only,.skip-link,.glass-shapes,#post-login-boot", hide: "" });
+          await settleLayout(page);
+          const menuResults = await measureText(page, { skip: ".sr-only,.skip-link,.glass-shapes,#post-login-boot", hide: "", include: "#header-menu *" });
           problems.push(...menuResults.filter(result => result.ratio < result.required)
             .map(result => `phone menu ${mode} at ${width}px: ${result.label} ${result.ratio.toFixed(2)} < ${result.required}`));
           await page.locator("#header-menu summary").click();
+          await settleLayout(page);
         }
+        await page.evaluate(theme => { if (theme === null) delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = theme; }, originalTheme);
+        await settleLayout(page);
       }
       if (screenshotDirectory && width !== 320) await page.screenshot({ path: resolve(screenshotDirectory, `glass-${key}-${width}.png`) });
       console.log(`glass checked: ${name}; width=${width}; text runs=${results.length}`);
@@ -133,6 +146,7 @@ try {
   await page.getByRole("button", { name: "Detach the pad", exact: true }).click();
   for (const width of [320, 390, 1440]) {
     await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
+    await settleLayout(page);
     const results = await measureText(page, { skip: ".sr-only,.skip-link,.glass-shapes,#post-login-boot", hide: "" });
     problems.push(...results.filter(result => result.ratio < result.required)
       .map(result => `floating pad at ${width}px: ${result.label} ${result.ratio.toFixed(2)} < ${result.required}`));
