@@ -22,15 +22,9 @@ The beta sleeps when nobody is using it, so the first visit after a quiet spell 
    suggestion. Nothing moves until you confirm. Route Hyperwallet to First Dime.
    Under **Create or link**, pick your existing Prolific entry before confirming.
    Otherwise, "Create a new record" adds another $1.99 entry. Matching it gives
-   two ladder rungs and their XP. The record is now matched to your PayPal activity.
-   The euro payment cannot be routed, on purpose.
-   The separate browser-test fixture at `tests/fixtures/paypal-activity.csv` has no
-   unknown payer, so it shows "No unknown unrouted payments to suggest. Using the fixed
-   payer map." An unknown payer instead gets "Suggested: <workspace> / Other. Confirm or
-   change it." with the workspace picked by the on-device model; nothing moves until you
-   confirm.
-4. Open **Stats** and **Vault** to see the matched pay become tiles. Open **Menu > Appearance** to try
-   the skins.
+   two ladder rungs and their XP. The euro payment cannot be routed, on purpose.
+4. Open **Stats** and **Vault** to see the matched pay become tiles. Open
+   **Appearance** (inside **Menu** on a phone) to try the skins.
    Glass is the default once the beta runs the newest build, and the local demo always has it.
 
 ## Local demo

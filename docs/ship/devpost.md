@@ -31,8 +31,8 @@ has seven tabs.
   sleep, each waiting for its own kind of work.
 
 The app looks like Glass by default: frosted panels over a quiet nebula with one accent color per tab. Current
-(the handheld screen), Paper and Slate are one tap away under Menu > Appearance. It installs to a phone's
-home screen,
+(the handheld screen), Paper and Slate are one tap away in **Appearance** (inside **Menu** on a phone). It
+installs to a phone's home screen,
 works with reduced motion and reduced transparency, and is checked for contrast and keyboard use.
 
 ## How we built it

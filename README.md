@@ -40,13 +40,13 @@ own PayPal password.
    suggestion. Nothing moves until you confirm. Route Hyperwallet to First Dime.
    Under **Create or link**, pick your existing Prolific entry before confirming.
    Otherwise, "Create a new record" adds another $1.99 entry. Matching it gives
-   two ladder rungs and their XP. The record is now matched to your PayPal activity.
-   The euro payment cannot be routed, on purpose.
-   The browser tests use the separate fixture at
-   [tests/fixtures/paypal-activity.csv](tests/fixtures/paypal-activity.csv).
-4. Open **Stats**, then **Vault**, to see the matched pay turn into tiles. Open
-   **Menu > Appearance** to try the
-   skins. Glass is the default once the beta runs the newest build, and the local demo always has it.
+   two ladder rungs and their XP. The euro payment cannot be routed, on purpose.
+4. Open **Stats** and **Vault** to see the matched pay become tiles. Open
+   **Appearance** (inside **Menu** on a phone) to try the skins. Glass is the
+   default once the beta runs the newest build, and the local demo always has it.
+
+The browser tests use the separate fixture at
+[tests/fixtures/paypal-activity.csv](tests/fixtures/paypal-activity.csv).
 
 **Cold start.** The beta sleeps when nobody is using it, so the first visit after a quiet spell can take up
 to a minute. Wait for the console to load; refreshing does not make it faster.
