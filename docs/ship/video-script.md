@@ -5,8 +5,8 @@ for an end card. Capture only fictional demo data.
 
 Record with `npm run record:demo`. It starts the isolated demo with DEMO_VIDEO enabled, so every platform label
 is fictional, and writes one video at 1280x720 and one at 390x844 to `video/`. The sign-in shot is the local
-fake demo login. It is not PayPal authentication. The hosted beta uses PayPal sandbox sign-in and is not
-recorded.
+fake demo login. It is not PayPal authentication. The recorder does not capture the hosted beta; the two
+required inserts below are separate clips.
 
 The times below follow the recorder's own pauses. Read the voice-over slowly; each line fits its window.
 
@@ -22,12 +22,26 @@ The times below follow the recorder's own pauses. Read the voice-over slowly; ea
 | 2:04-2:20 | Back to First Dime, then the Help tab. | Help explains the rules in plain words, including what matched means and what it does not. |
 | 2:20-2:30 | Stats once more, then an end card with the project name and repo link. | OneDime: keep your record, see your progress, choose your next step. |
 
+## Required inserts
+
+Cut these two into the 2:30 timeline. Together they add 15 seconds, so the video runs 2:45 and stays under
+the 2:50 limit.
+
+| Length | Picture | Voice-over |
+| --- | --- | --- |
+| 10 s, after the 1:04 import beat | PayPal tab with Smart suggestions on. A payment from a payer OneDime does not know shows "Suggested: <workspace> / Other. Confirm or change it." The cursor confirms it. | A small model on this device suggests which workspace an imported payment belongs to. Nothing leaves the device. I confirm it, and the server decides. |
+| 5 s, at the end before the end card | Clip of the real sandbox Log in with PayPal on the hosted beta (https://onedime-web.onrender.com): press the button, show PayPal's sandbox page, land back on First Dime. Blur or cut before the email and password are typed. | The hosted beta signs in through PayPal's sandbox. No real money moves. |
+
+Capture the suggestion from a local demo with a payment from an unknown payer. The sample CSV
+(`tests/fixtures/paypal-activity.csv`) has only a known payer, so it shows no suggestion. If the demo data does
+not include an unknown payer, add one fictional payer to a throwaway CSV for the recording.
+
 ## Optional inserts
 
 The recorder does not open the landing console, the Vault or Appearance. If you want them, capture each as a
-separate clip from the local demo and cut it in. All the inserts together get a 20-second budget (for example
-6, 8 and 6 seconds), which takes the 2:30 cut to at most 2:50. Anything longer needs matching cuts from the
-main timeline. None is needed to match the footage above.
+separate clip from the local demo and cut it in. With the required inserts the cut is 2:45, so all the optional
+ones together get 5 seconds at most. Anything longer needs matching cuts from the main timeline. None is
+needed to match the footage above.
 
 - Landing console: press START and show the short boot overlay. "OneDime starts on a handheld console."
 - Vault: open it right after routing so the new tiles are unseen and crumble. "Matched pay, work days and

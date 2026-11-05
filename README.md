@@ -32,7 +32,7 @@ own PayPal password.
 1. On the landing console, press **START** (or choose **Log in with PayPal**). PayPal's sandbox page asks
    for the judge login above. OneDime never sees the password.
 2. In **First Dime**, log a session: platform Prolific, amount `1.99`, any minutes.
-3. Open **PayPal**, import [tests/fixtures/paypal-activity.csv](tests/fixtures/paypal-activity.csv), and
+3. Open **PayPal**, turn on **Smart suggestions**, import [tests/fixtures/paypal-activity.csv](tests/fixtures/paypal-activity.csv), and
    route the Hyperwallet payment to First Dime. Under **Create or link**, pick your existing Prolific
    entry before you confirm; leaving it on "Create a new record" adds a second $1.99 entry. The record is
    now matched to your PayPal activity, and two rungs of your ladder, with their XP, land.
@@ -56,6 +56,16 @@ keeps its existing XP, streak, quest and ladder rules. Matched earnings in Spotl
 Freelance and Market also add XP and advance a permanent profession rank; these ranks
 never create money or change ladder claims. Matched totals decide earnings rankings, and
 general progression XP breaks leaderboard ties.
+
+## The AI in OneDime
+
+The AI is a small classifier, Transformers.js running MoritzLaurer/xtremedistil-l6-h256-zeroshot-v1.1-all-33
+(MIT, quantized ONNX), and it runs in the player's browser. When a player imports a PayPal payment from a
+payer OneDime does not know, the model suggests which workspace it belongs to. It runs on the device, so
+payment details stay private and it costs players nothing. It is off until the player turns on Smart
+suggestions. The player confirms each suggestion, and the server decides what counts.
+
+I started on Oct 13, 2026 and had 38 pull requests merged by Nov 3, 2026.
 
 ## Run locally
 
@@ -99,6 +109,15 @@ To seed a separate existing local database, explicitly set `DEMO_SEED_ENABLED=tr
 outside production and run `npm run db:seed:demo`. The seed is repeatable, creates
 only the named fictional demo player and its fixed records, and does not clear other
 players. It refuses non-local database hosts. Use the isolated demo to sign into fake data.
+
+## Deploying on Render
+
+The beta runs on Render. `render.yaml` is a blueprint for one web service and one Postgres 16 database, with
+secrets left unset (`sync: false`) so they are entered in Render and never committed. Render's own
+auto-deploy is off. Instead a merge to main that passes CI triggers the deploy hook from GitHub Actions, so
+nothing deploys on red. The app's `/health` route reports the live commit, and the workflow waits until it
+matches the commit just merged. Then the Playwright smoke test (`npm run smoke:beta`) runs against the live
+URL, so a deploy only counts once the real site answers.
 
 ## Test and check
 
@@ -341,12 +360,13 @@ I keep the tester tasks in [the beta guide](docs/beta-guide.md) and the operator
 step-by-step setup in [the Render deploy guide](docs/deploy-render.md). Brandon sends
 sandbox logins privately and performs each approved deployment himself.
 
-I prepared `render.yaml` with a free web service and free Postgres for beta testing,
-with automatic deploys disabled. I have not created or deployed Render resources.
-[Render's free services](https://render.com/docs/free) sleep after 15 minutes without
-inbound traffic, and free databases expire 30 days after creation. Payouts, Google Sheets
+The `render.yaml` blueprint declares the paid Starter web service and a Basic Postgres 16 database, with
+automatic deploys off. Secrets are set in Render and never in the repo. The beta at
+https://onedime-web.onrender.com is live and deployed from main by the deploy hook, as described in
+[Deploying on Render](#deploying-on-render). I upgrade the services separately, so until then
+[Render's free-tier limits](https://render.com/docs/free) still apply: services sleep after 15 minutes
+without traffic and free databases expire 30 days after creation. Payouts, Google Sheets
 and seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
-Brandon accepted clean rewritten main `9953600` and owns GitHub Support cleanup of old PR refs.
 Do not merge old pre-cleanup history into this branch. The repository license is recorded in LICENSE.
 
 For the public release I run `scripts/export-public.ps1` from a clean checkout of main. It

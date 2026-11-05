@@ -20,8 +20,8 @@ Main's UI is five workspaces: First Dime, Spotlight, Freelance, Market, and PayP
 Settings is generated within PayPal. The existing theme toggle persists `onedime-theme`
 and resolves OS preference at startup. The controller is in the header on desktop and
 fixed at the bottom on narrow screens. These mechanisms are unchanged.
-The earlier phase/status discrepancies are recorded in
-[the approved direct-instruction brief](../../handoffs/fix-current-contrast.md).
+The earlier phase/status discrepancies are recorded in the approved direct-instruction brief, which stays in the
+private working repository.
 
 ## Results
 
