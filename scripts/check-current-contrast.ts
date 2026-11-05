@@ -156,12 +156,31 @@ try {
       if (os === theme) for (const width of [375, 1280]) {
         await page.setViewportSize({ width, height: width === 375 ? 844 : 900 });
         await inspect(page, `${label}; width=${width}`);
+        if (appName === "PayPal" && width < 500) {
+          await page.waitForFunction(() => !!document.querySelector("#app-paypal .tablewrap[data-scrollable='true']"));
+          const cue = page.locator("#app-paypal .table-scroll-cue:visible").first();
+          await cue.waitFor();
+          assert.match(await cue.textContent() ?? "", /Swipe horizontally/);
+          await page.locator("#header-menu summary").click();
+          await inspect(page, `${label}; phone menu open; width=${width}`);
+          await states(page, `${label}; phone menu open; width=${width}`);
+          await page.locator("#header-menu summary").click();
+        }
         await screenshot(page, `${appName.toLowerCase().replaceAll(" ", "-")}-${theme}-${width}.png`);
       }
       if (skinMatrix) for (const width of [320, 390]) {
         await page.setViewportSize({ width, height: 844 });
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), skin + " " + theme + " must not overflow at " + width + "px");
         await inspect(page, label + "; width=" + width);
+        if (appName === "PayPal") {
+          await page.waitForFunction(() => !!document.querySelector("#app-paypal .tablewrap[data-scrollable='true']"));
+          const cue = page.locator("#app-paypal .table-scroll-cue:visible").first();
+          await cue.waitFor();
+          assert.match(await cue.textContent() ?? "", /Swipe horizontally/);
+          await page.locator("#header-menu summary").click();
+          await inspect(page, `${label}; phone menu open; width=${width}`);
+          await page.locator("#header-menu summary").click();
+        }
       }
       await page.setViewportSize({ width: 1280, height: 900 });
       console.log(`contrast workspace collected: ${label}`);

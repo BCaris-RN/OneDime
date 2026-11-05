@@ -175,7 +175,7 @@ td.r,th.r{text-align:right}
 .shell,.topbar{max-width:880px;margin:auto;padding:18px 16px;display:grid;gap:18px}
 .topbar{display:flex}.brand{font:800 1.6rem var(--pixel);color:var(--head);text-decoration:none}.brand-dot{display:none}
 .player-strip{position:relative;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.85rem}
-.header-menu summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700;padding:8px 12px;border:2px solid var(--divider);border-radius:12px}.header-menu>div{position:absolute;right:0;top:calc(100% + 6px);z-index:70;min-width:180px;padding:10px;background:var(--shell);border:2px solid var(--divider);border-radius:6px}.header-menu button{width:100%;white-space:nowrap}
+.header-menu summary{cursor:pointer;min-height:40px;display:flex;align-items:center;font-weight:700;padding:6px 12px;border:2px solid var(--divider);border-radius:12px}.header-menu>div{position:absolute;right:0;top:calc(100% + 6px);z-index:70;min-width:200px;padding:10px;display:grid;gap:8px;background:var(--shell);border:2px solid var(--divider);border-radius:6px}.header-menu #player-name{padding:4px 8px 8px;border-bottom:1px solid var(--divider);font-weight:700}.header-menu button{width:100%;white-space:nowrap}
 .feedback-dialog{width:min(520px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto;border:2px solid var(--divider);border-radius:8px;padding:20px;background:var(--shell);color:var(--text)}.feedback-dialog::backdrop{background:rgb(0 0 0 / .6)}.feedback-dialog .section-heading{margin-bottom:18px}.feedback-blocking{display:flex;align-items:center;gap:10px}.feedback-dialog textarea{resize:vertical}.feedback-dialog #feedback-thanks{padding:12px 0}.feedback-dialog input,.feedback-dialog select,.feedback-dialog textarea,.feedback-dialog button{scroll-margin:12px}
 dialog.welcome-dialog[open]{display:grid;gap:16px}.welcome-dialog::backdrop{background:rgb(0 0 0 / .6)}.welcome-choices{display:grid;gap:8px;border:1px solid var(--divider);padding:12px}.welcome-choices label{display:flex;align-items:center;gap:10px}.welcome-actions{display:flex;flex-wrap:wrap;gap:10px}.welcome-guide{display:flex;justify-content:space-between;align-items:center;gap:16px;border:2px solid var(--selected-border);border-radius:8px;padding:14px;background:var(--card);max-width:880px;width:calc(100% - 32px);margin:0 auto}.welcome-guide h2{margin-bottom:6px}.welcome-guide p{max-width:52ch}
 #app-first,#app-spotlight,#app-freelance,#app-market,#app-paypal,#app-stats{display:grid;gap:18px}
@@ -519,3 +519,15 @@ caption{text-align:left;font-weight:700;padding:8px 0;color:var(--head)}
   :root[data-skin="glass"] .stats-lcd{--stats-screen:var(--glass-solid)}
   :root[data-skin="glass"] .glass-shapes{display:none}}
 @media(prefers-reduced-motion:reduce){.glass-shapes svg{transition:none}}
+
+/* Scrollable tables get a short, high-contrast hint only while more columns are clipped. */
+.table-scroll-cue{margin:4px 0 0;color:var(--muted);font-size:.8rem;font-weight:700}
+@media(max-width:520px){
+  .topbar{flex-wrap:nowrap;align-items:center;gap:8px;padding-top:10px;padding-bottom:10px}
+  .brand{font-size:clamp(1.05rem,5vw,1.35rem);line-height:1;white-space:nowrap}
+  .player-strip.is-compact{margin-left:auto;flex-wrap:nowrap;gap:6px;min-width:0}
+  .player-strip.is-compact>#xp-chip{min-height:40px;padding:8px 10px;font-size:.8rem;white-space:nowrap}
+  .player-strip.is-compact>.header-menu summary{min-height:40px;padding:6px 10px}
+  #app-nav button{min-height:50px;padding:9px 4px;font-size:.84rem;font-weight:800;line-height:1.15;overflow-wrap:anywhere}
+  :root[data-skin="glass"] #app-nav button{font-size:.9rem;font-weight:800}
+}

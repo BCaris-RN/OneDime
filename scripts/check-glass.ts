@@ -91,6 +91,10 @@ try {
     if (key === "stats") await page.waitForFunction(() => document.querySelectorAll("#app-stats svg[role='img']").length === 3);
     assert.equal(await page.locator("html").getAttribute("data-tab"), key, `${name} sets its accent`);
     await page.waitForFunction(() => !document.querySelector("#glass-shapes .in"));
+    if (key === "paypal") {
+      assert.equal(await page.locator(".paypal-matching").evaluate(node => (node as HTMLDetailsElement).open), false,
+        "the monthly matching explanation starts collapsed");
+    }
     const opacities = await page.locator("#glass-shapes > svg[viewBox]").evaluateAll(nodes => nodes.map(node => Number(getComputedStyle(node).opacity)));
     assert.ok(opacities.length >= 2 && opacities.length <= 3, `${name} draws two or three shapes`);
     assert.ok(opacities.every(value => value >= .4 && value <= .6), `${name} shapes stay between .4 and .6 opacity`);
@@ -105,6 +109,20 @@ try {
       const results = await measureText(page, { skip: ".sr-only,.skip-link,.glass-shapes,#post-login-boot", hide: "" });
       problems.push(...results.filter(result => result.ratio < result.required)
         .map(result => `${name} at ${width}px: ${result.label} ${result.ratio.toFixed(2)} < ${result.required}`));
+      if (key === "paypal" && width < 500) {
+        await page.waitForFunction(() => !!document.querySelector("#app-paypal .tablewrap[data-scrollable='true']"));
+        const cue = page.locator("#app-paypal .table-scroll-cue:visible").first();
+        await cue.waitFor();
+        assert.match(await cue.textContent() ?? "", /Swipe horizontally/);
+        for (const mode of ["light", "dark"] as const) {
+          await page.locator("#header-menu summary").click();
+          await page.evaluate(mode => { document.documentElement.dataset.theme = mode; }, mode);
+          const menuResults = await measureText(page, { skip: ".sr-only,.skip-link,.glass-shapes,#post-login-boot", hide: "" });
+          problems.push(...menuResults.filter(result => result.ratio < result.required)
+            .map(result => `phone menu ${mode} at ${width}px: ${result.label} ${result.ratio.toFixed(2)} < ${result.required}`));
+          await page.locator("#header-menu summary").click();
+        }
+      }
       if (screenshotDirectory && width !== 320) await page.screenshot({ path: resolve(screenshotDirectory, `glass-${key}-${width}.png`) });
       console.log(`glass checked: ${name}; width=${width}; text runs=${results.length}`);
     }
