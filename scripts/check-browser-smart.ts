@@ -95,6 +95,7 @@ try {
   assert.equal(await page.locator("#paypal-csv").evaluate(node=>document.activeElement===node),true);
   const welcomeData=await (await page.request.get(`${baseUrl}/api/onboarding`)).json();
   assert.deepEqual(welcomeData,{complete:true});
+  await page.locator("#header-menu summary").click();
   await page.getByRole("button",{name:"Appearance",exact:true}).click();
   const appearance=page.getByRole("dialog",{name:"Appearance",exact:true});
   await appearance.getByRole("radio",{name:/Paper/}).check();
@@ -115,6 +116,7 @@ try {
   await page.reload();
   await page.getByRole("tab",{name:"Freelance",exact:true}).waitFor();
   assert.equal(await page.locator("html").getAttribute("data-theme"),"dark","a migrated theme survives a second load");
+  await page.locator("#header-menu summary").click();
   await page.getByRole("button",{name:"Appearance",exact:true}).click();
   await page.getByRole("dialog",{name:"Appearance",exact:true}).getByRole("radio",{name:/Slate/}).check();
   await page.getByRole("dialog",{name:"Appearance",exact:true}).getByRole("radio",{name:/System/}).check();
@@ -124,6 +126,45 @@ try {
   assert.equal(await page.locator("html").getAttribute("data-skin"),null);
   await page.getByRole("dialog",{name:"Appearance",exact:true}).getByRole("radio",{name:"Light",exact:true}).check();
   await page.getByRole("dialog",{name:"Appearance",exact:true}).getByRole("button",{name:"Close",exact:true}).click();
+  const headerMenu=page.locator("#header-menu"),headerSummary=headerMenu.locator("summary");
+  for(const [index,skin] of ["Glass","Current","Paper","Slate"].entries()) {
+    await headerSummary.focus();
+    if(!(await headerMenu.evaluate(el=>(el as HTMLDetailsElement).open)))await headerSummary.press("Enter");
+    await page.getByRole("button",{name:"Appearance",exact:true}).click();
+    const settings=page.getByRole("dialog",{name:"Appearance",exact:true});
+    await settings.getByRole("radio",{name:new RegExp(`^${skin}`)}).check();
+    await settings.getByRole("radio",{name:index%2?"Dark":"Light",exact:true}).check();
+    await settings.getByRole("button",{name:"Close",exact:true}).click();
+    if(await headerMenu.evaluate(el=>(el as HTMLDetailsElement).open))await headerSummary.click();
+    for(const width of [320,390]) {
+      await page.setViewportSize({width,height:844});
+      const header=await page.evaluate(()=>{
+        const top=document.querySelector<HTMLElement>(".topbar")!,brand=document.querySelector<HTMLElement>(".brand")!,xp=document.getElementById("xp-chip")!.getBoundingClientRect(),menu=document.querySelector<HTMLElement>("#header-menu summary")!.getBoundingClientRect(),title=brand.getBoundingClientRect();
+        return {height:top.getBoundingClientRect().height,overflow:document.documentElement.scrollWidth-innerWidth,
+          aligned:Math.abs((title.top+title.bottom-xp.top-xp.bottom)/2)<2&&Math.abs((xp.top+xp.bottom-menu.top-menu.bottom)/2)<1,
+          order:title.right<=xp.left&&xp.right<=menu.left,menuHeight:menu.height,xpHeight:xp.height};
+      });
+      assert.ok(header.height<=90&&header.overflow<=1&&header.aligned&&header.order,`${skin} header stays on one row at ${width}px: ${JSON.stringify(header)}`);
+      assert.ok(Math.abs(header.menuHeight-header.xpHeight)<=1,`${skin} Menu matches the XP control at ${width}px: ${JSON.stringify(header)}`);
+      assert.equal(await headerMenu.locator("#player-name").count(),1,`${skin} player name moves into Menu at ${width}px`);
+      const tabs=await page.locator("#app-nav button").evaluateAll(nodes=>nodes.map(node=>{const rect=node.getBoundingClientRect();return {height:rect.height,top:Math.round(rect.top)};}));
+      assert.ok(tabs.every(tab=>tab.height>=44),`${skin} app tabs meet the 44px target at ${width}px`);
+      assert.equal(new Set(tabs.map(tab=>tab.top)).size,2,`${skin} app tabs remain in two rows at ${width}px`);
+
+      await headerSummary.focus();await headerSummary.press("Enter");
+      for(let step=0;step<4&&await page.evaluate(()=>document.activeElement?.id!=="appearance-open");step++)await page.keyboard.press("Tab");
+      assert.equal(await page.evaluate(()=>document.activeElement?.id),"appearance-open",`${skin} Appearance is reachable by keyboard at ${width}px`);
+      await page.keyboard.press("Tab");
+      assert.equal(await page.evaluate(()=>document.activeElement?.id),"logout",`${skin} Log out follows Appearance by keyboard at ${width}px`);
+      await headerSummary.focus();
+      for(let step=0;step<5&&await page.evaluate(()=>document.activeElement?.id!=="appearance-open");step++)await page.locator('[data-pad="down"]').click();
+      assert.equal(await page.evaluate(()=>document.activeElement?.id),"appearance-open",`${skin} Appearance is reachable by D-pad at ${width}px`);
+      for(let step=0;step<5&&await page.evaluate(()=>document.activeElement?.id!=="logout");step++)await page.locator('[data-pad="down"]').click();
+      assert.equal(await page.evaluate(()=>document.activeElement?.id),"logout",`${skin} Log out is reachable by D-pad at ${width}px`);
+      await headerSummary.click();
+    }
+  }
+  await page.setViewportSize({width:390,height:844});
   await page.getByRole("tab", { name: "Market", exact: true }).click();
   const menu = page.locator("#header-menu summary");
   await menu.focus();
@@ -398,10 +439,14 @@ try {
   }
   for(const width of [320,390,1280]) for(const theme of ["light","dark"]) {
     await page.setViewportSize({width,height:844});
+    const headerMenu=page.locator("#header-menu"),headerSummary=headerMenu.locator("summary");
+    await headerSummary.focus();
+    if(!(await headerMenu.evaluate(el=>(el as HTMLDetailsElement).open)))await headerSummary.press("Enter");
     if(await page.locator("html").getAttribute("data-theme")!==theme) {
       const toggleTheme=page.getByRole("button",{name:theme==="dark"?"Switch to dark mode":"Switch to light mode",exact:true});
       await toggleTheme.focus();await toggleTheme.press("Enter");
     }
+    if(await headerMenu.evaluate(el=>(el as HTMLDetailsElement).open))await headerSummary.press("Enter");
     for(const appName of apps) {
       if(width===1280&&appName!=="Stats")continue;
       const tab=page.getByRole("tab",{name:appName,exact:true});await tab.focus();await tab.press("Enter");
@@ -412,6 +457,21 @@ try {
         await page.locator("#app-stats svg[role=img]").first().waitFor();
         assert.equal(await page.locator("#app-stats svg[role=img]").count(),3);
         assert.equal(await page.locator("#app-stats details summary",{hasText:"Show as a table"}).count(),3);
+      }
+      if(appName==="PayPal") {
+        const matching=page.locator(".paypal-matching");
+        assert.equal(await matching.locator("summary").textContent(),"How matching works");
+        assert.equal(await matching.evaluate(el=>(el as HTMLDetailsElement).open),false,"matching explanation starts collapsed");
+        if(width<500) {
+          await page.waitForFunction(()=>!!document.querySelector("#app-paypal .tablewrap[data-scrollable='true']"));
+          const cue=page.locator("#app-paypal .table-scroll-cue:visible").first();
+          await cue.waitFor();
+          assert.match(await cue.textContent()??"",/Swipe horizontally/);
+          await page.evaluate(()=>new Promise<void>(resolve=>{document.activeElement instanceof HTMLElement&&document.activeElement.blur();window.scrollTo({top:0,behavior:"instant"});requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()));}));
+          assert.equal(await page.evaluate(()=>scrollY),0,"PayPal remains at the top when the importer is first on screen");
+          const importer=await page.locator("#paypal-csv").evaluate(el=>({top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom}));
+          assert.ok(importer.top>=0&&importer.bottom<=844,`PayPal importer appears above the fold at ${width}px: ${JSON.stringify(importer)}`);
+        }
       }
       if(appName==="Vault") {
         const vault=page.getByRole("tabpanel",{name:"Vault",exact:true});

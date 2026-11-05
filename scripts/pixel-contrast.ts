@@ -6,12 +6,13 @@ type Target = { index: number; label: string; color: string; relaxed: boolean; r
 // glyph, screenshot the viewport as it scrolls (fixed layers stay put), then compare each text color with
 // the worst pixel under its line boxes. Large text and aria-hidden decorative print only need 3:1. Tilted
 // labels are sampled at the center of their box, since the box overlaps whatever sits beside them.
-export async function measureText(page: Page, { skip, hide: hideCss }: { skip: string; hide: string }) {
-  const targets = await page.evaluate((skip): Target[] => {
+export async function measureText(page: Page, { skip, hide: hideCss, include }: { skip: string; hide: string; include?: string }) {
+  const targets = await page.evaluate(({ skip, include }: { skip: string; include?: string }): Target[] => {
     const found: Target[] = [];
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
     for (let node = walker.nextNode() as HTMLElement | null; node; node = walker.nextNode() as HTMLElement | null) {
       if (node.closest(`[hidden],script,style,svg,${skip}`)) continue;
+      if (include && !node.matches(include)) continue;
       const own = [...node.childNodes].filter(child => child.nodeType === Node.TEXT_NODE && child.textContent?.trim());
       if (!own.length) continue;
       const style = getComputedStyle(node);
@@ -31,7 +32,7 @@ export async function measureText(page: Page, { skip, hide: hideCss }: { skip: s
       found.push({ index: found.length, label: `${name} "${own[0].textContent!.trim().slice(0, 24)}"`, color: style.color, relaxed: size >= 24 || (bold && size >= 18.66) || !!node.closest("[aria-hidden=true]"), rects });
     }
     return found;
-  }, skip);
+  }, { skip, include });
   const hide = await page.addStyleTag({ content: "*{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important}" + hideCss });
   const { height, total } = await page.evaluate(() => ({ height: innerHeight, total: document.documentElement.scrollHeight }));
   const worst = new Map<string, { ratio: number; required: number }>();
