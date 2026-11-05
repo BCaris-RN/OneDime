@@ -388,6 +388,61 @@ I still require review and explicit approval for each merge, deploy and visibili
 The app does not scrape, automate or log into gig platforms, implement receipt-image
 verification or use live PayPal.
 
+## Roadmap
+
+### v1.0 "First Dime" (this release)
+
+One private record across five kinds of online work: Log in with PayPal,
+PayPal activity matching, private on-device AI suggestions, the ladder,
+profession ranks, the Vault, Stats and exports.
+
+### v1.1 "Proof"
+
+Apply for PayPal partner access. If approved, connect PayPal directly so
+payments arrive and match with the player's permission, without CSV. Add
+certifications that count toward a profession rank after they're checked.
+Keep AI private; let it learn from the player's own confirmations and
+account for fees and expenses.
+
+### v1.2 "Your Lot"
+
+Build a walkable Mint and Your Lot. Lumen, Quill, Axle and Barter wake in
+their own apps after real matched work, each with a short story. The Vault
+shows Grit, Shine, Range and Craft from the player's real record.
+
+### v1.3 "Everywhere"
+
+Build an iPhone app on the same server and rules, a desktop sidebar layout
+and more Stats charts, and opt-in guilds of players in the same profession.
+Add portable proof: a verifiable badge for milestones a player can show anyone.
+
+### v2.0 "Plus"
+
+"Level your way to master your craft with the ultimate bot." Plus turns
+five robots into helpers for their professions, for subscribers paid through
+PayPal Subscriptions:
+
+- Penny finds which starter gigs pay this player best per hour.
+- Lumen plans content and prices sponsorships.
+- Quill drafts proposals, sets rates from the player's own hourly data and
+  sends client invoices through PayPal Invoicing.
+- Axle finds the player's best hours and tracks miles and expenses.
+- Barter writes listings and prices items.
+
+Robots still wake only from real matched work. Plus adds their help, never
+XP, ranks or tiles.
+
+### Later
+
+Hyperwallet as a payout source and live PayPal come later, only with care.
+Payouts stay off until both are approved.
+
+### What won't change
+
+The core stays free. XP bonuses are only bonuses, never money. Nothing that
+counts can be bought. The bots help you do the work; they never do it for you
+or log in to gig platforms. AI suggests; the server decides.
+
 ## License
 
 The source is licensed under the GNU Affero General Public License v3.0 only
