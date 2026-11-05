@@ -1,0 +1,7 @@
+Date,Name,Gross,Fee,Net,Currency,Transaction ID,Type,Email,IP Address
+10/14/2026,Hyperwallet,1.99,0.00,1.99,USD,FAKE-DEMO-USD-1,General Payment,discard@example.test,192.0.2.1
+10/14/2026,Fictional payer,10.00,-0.25,9.75,EUR,FAKE-DEMO-EUR-1,General Payment,discard@example.test,192.0.2.1
+10/15/2026,Fictional Logo Design Studio Selling Freelance Services to a Client,75.00,-2.47,72.53,USD,FAKE-DEMO-SAMPLE-FREELANCE-1,General Payment,discard@example.test,192.0.2.2
+10/15/2026,Fictional Creator Audience Income Advertisements and Sponsorships,125.00,-3.63,121.37,USD,FAKE-DEMO-SAMPLE-SPOTLIGHT-1,General Payment,discard@example.test,192.0.2.3
+10/15/2026,Fictional Marketplace Selling Goods Through a Store,42.00,-1.22,40.78,USD,FAKE-DEMO-SAMPLE-MARKET-1,General Payment,discard@example.test,192.0.2.4
+10/15/2026,Avery Ellis,25.00,0.00,25.00,USD,FAKE-DEMO-SAMPLE-PERSON-1,General Payment,discard@example.test,192.0.2.5

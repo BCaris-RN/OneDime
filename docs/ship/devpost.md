@@ -91,9 +91,13 @@ Developer Platform (sandbox).
 
 **Hosted beta:** https://onedime-web.onrender.com. Sign in with the judge sandbox login: email `<judge
 sandbox email>`, password `<judge sandbox password>`. Use only that login. The first visit after a quiet
-spell can take up to a minute. Then follow the steps in [Try OneDime](judges-try-it.md): log a $1.99 Prolific
-entry, import `tests/fixtures/paypal-activity.csv` on the PayPal tab, and route the Hyperwallet payment to First
-Dime, choosing the existing Prolific entry under Create or link.
+spell can take up to a minute. Follow [Try OneDime](judges-try-it.md) to
+log a $1.99 Prolific entry, turn on Smart suggestions, and import the
+[sample PayPal activity](sample-paypal-activity.csv).
+Choose **Download and suggest**. The logo, creator, and store-order payments
+suggest Freelance, Spotlight, and Market: selling. Avery Ellis gets no
+suggestion. Route Hyperwallet to First Dime and select the existing Prolific
+entry under Create or link.
 
 **Local demo:** with Node 24 and Docker Desktop, run `npm ci` then `npm run demo`, and open
 `http://127.0.0.1:3403/demo-login`. It uses fake sign-in and fictional data.
