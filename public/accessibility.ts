@@ -9,6 +9,39 @@ const captions: Record<string,string> = {
   sIncBody:"Spotlight income",sDealBody:"Brand deals",jBody:"Freelance gigs",dBody:"Delivery and service shifts",
   xBody:"Sales",sExpBody:"Spotlight expenses"
 };
+const scrollCues = new WeakMap<HTMLElement,HTMLElement>();
+const observedTables = new WeakSet<HTMLTableElement>();
+const resizeObserver = new ResizeObserver(entries => {
+  for(const entry of entries) if(entry.target instanceof HTMLElement) {
+    const wrap=entry.target.matches(".tablewrap,.table-scroll")?entry.target:entry.target.closest<HTMLElement>(".tablewrap,.table-scroll");
+    if(wrap)updateScrollCue(wrap);
+  }
+});
+function updateScrollCue(wrap:HTMLElement) {
+  const cue=scrollCues.get(wrap);
+  if(!cue)return;
+  const clipped=wrap.scrollWidth>wrap.clientWidth+1;
+  if(!clipped) { cue.hidden=true;wrap.removeAttribute("data-scrollable");return; }
+  wrap.dataset.scrollable="true";
+  const left=wrap.scrollLeft>1,right=wrap.scrollLeft+wrap.clientWidth<wrap.scrollWidth-1;
+  const text=left&&right?"← Swipe horizontally to see more columns →":left?"← Swipe back to see the first columns":"Swipe horizontally to see more columns →";
+  if(cue.textContent!==text)cue.textContent=text;
+  cue.hidden=false;
+}
+function attachScrollCue(wrap:HTMLElement,table:HTMLTableElement) {
+  let cue=scrollCues.get(wrap);
+  if(!cue) {
+    const previous=wrap.previousElementSibling;
+    cue=previous instanceof HTMLElement&&previous.classList.contains("table-scroll-cue")?previous:document.createElement("p");
+    cue.className="table-scroll-cue";cue.setAttribute("role","note");cue.hidden=true;
+    if(cue.parentElement!==wrap.parentElement)wrap.before(cue);
+    scrollCues.set(wrap,cue);
+    wrap.addEventListener("scroll",()=>updateScrollCue(wrap),{passive:true});
+    resizeObserver.observe(wrap);
+  }
+  if(!observedTables.has(table)) { observedTables.add(table);resizeObserver.observe(table); }
+  updateScrollCue(wrap);
+}
 function tables() {
   for(const table of document.querySelectorAll("table")) {
     if(!table.caption) {
@@ -23,6 +56,7 @@ function tables() {
     if(!wrap) { wrap=document.createElement("div");wrap.className="tablewrap";table.before(wrap);wrap.append(table); }
     if(!wrap.hasAttribute("tabindex"))wrap.tabIndex=0;
     wrap.setAttribute("role","region");wrap.setAttribute("aria-label",`${table.caption!.textContent} table`);
+    attachScrollCue(wrap,table);
   }
 }
 function clearPane(target:HTMLElement,pane:HTMLElement,offsetTop:number,height:number) {

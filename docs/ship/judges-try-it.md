@@ -14,15 +14,23 @@ The beta sleeps when nobody is using it, so the first visit after a quiet spell 
 
 1. On the console, press **START** (or choose **Log in with PayPal**) and sign in with the judge login.
 2. In **First Dime**, log a session: platform Prolific, amount `1.99`, any minutes.
-3. Open **PayPal**, turn on **Smart suggestions**, and import the
+3. Open **PayPal**, turn on **Smart suggestions** (off by default; it downloads a
+   one-time model, about 41 MB, that runs on your device), and import the
    [sample PayPal activity](sample-paypal-activity.csv).
    Choose **Download and suggest**. The logo, creator sponsorship and store orders
    suggest Freelance, Spotlight, and Market: selling. Avery Ellis gets no
-   suggestion. Route Hyperwallet to First Dime. Under **Create or link**, pick
-   your existing Prolific entry before confirming. Otherwise, "Create a new
-   record" adds another $1.99 entry. Matching it gives two ladder rungs and
-   their XP. The euro payment cannot be routed, on purpose.
-4. Open **Stats** and **Vault** to see the matched pay become tiles. Open **Appearance** to try the skins.
+   suggestion. Nothing moves until you confirm. Route Hyperwallet to First Dime.
+   Under **Create or link**, pick your existing Prolific entry before confirming.
+   Otherwise, "Create a new record" adds another $1.99 entry. Matching it gives
+   two ladder rungs and their XP. The record is now matched to your PayPal activity.
+   The euro payment cannot be routed, on purpose.
+   The separate browser-test fixture at `tests/fixtures/paypal-activity.csv` has no
+   unknown payer, so it shows "No unknown unrouted payments to suggest. Using the fixed
+   payer map." An unknown payer instead gets "Suggested: <workspace> / Other. Confirm or
+   change it." with the workspace picked by the on-device model; nothing moves until you
+   confirm.
+4. Open **Stats** and **Vault** to see the matched pay become tiles. Open **Menu > Appearance** to try
+   the skins.
    Glass is the default once the beta runs the newest build, and the local demo always has it.
 
 ## Local demo

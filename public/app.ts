@@ -1,4 +1,5 @@
 import "./glass.js";
+import "./header.js";
 import "./demo-video-labels.js";
 import "./paypal.js";
 import "./exports.js";

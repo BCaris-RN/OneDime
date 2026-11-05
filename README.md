@@ -32,14 +32,20 @@ own PayPal password.
 1. On the landing console, press **START** (or choose **Log in with PayPal**). PayPal's sandbox page asks
    for the judge login above. OneDime never sees the password.
 2. In **First Dime**, log a session: platform Prolific, amount `1.99`, any minutes.
-3. Open **PayPal**, turn on **Smart suggestions**, import the
-   [sample PayPal activity](docs/ship/sample-paypal-activity.csv), then choose
-   **Download and suggest**. The logo, creator and store-order payments suggest
-   Freelance, Spotlight, and Market: selling. Avery Ellis gets no suggestion.
-   Route Hyperwallet to First Dime. Under **Create or link**, pick your existing
-   Prolific entry before confirming. Otherwise, "Create a new record" adds
-   another $1.99 entry. Matching it gives two ladder rungs and their XP.
-4. Open **Stats**, then **Vault**, to see the matched pay turn into tiles. Open **Appearance** to try the
+3. Open **PayPal**, turn on **Smart suggestions** (off by default; it downloads a
+   one-time model, about 41 MB, that runs on your device), and import the
+   [sample PayPal activity](docs/ship/sample-paypal-activity.csv).
+   Choose **Download and suggest**. The logo, creator sponsorship and store orders
+   suggest Freelance, Spotlight, and Market: selling. Avery Ellis gets no
+   suggestion. Nothing moves until you confirm. Route Hyperwallet to First Dime.
+   Under **Create or link**, pick your existing Prolific entry before confirming.
+   Otherwise, "Create a new record" adds another $1.99 entry. Matching it gives
+   two ladder rungs and their XP. The record is now matched to your PayPal activity.
+   The euro payment cannot be routed, on purpose.
+   The browser tests use the separate fixture at
+   [tests/fixtures/paypal-activity.csv](tests/fixtures/paypal-activity.csv).
+4. Open **Stats**, then **Vault**, to see the matched pay turn into tiles. Open
+   **Menu > Appearance** to try the
    skins. Glass is the default once the beta runs the newest build, and the local demo always has it.
 
 **Cold start.** The beta sleeps when nobody is using it, so the first visit after a quiet spell can take up
@@ -59,6 +65,16 @@ keeps its existing XP, streak, quest and ladder rules. Matched earnings in Spotl
 Freelance and Market also add XP and advance a permanent profession rank; these ranks
 never create money or change ladder claims. Matched totals decide earnings rankings, and
 general progression XP breaks leaderboard ties.
+
+## The AI in OneDime
+
+The AI is a small classifier, Transformers.js running MoritzLaurer/xtremedistil-l6-h256-zeroshot-v1.1-all-33
+(MIT, quantized ONNX), and it runs in the player's browser. When a player imports a PayPal payment from a
+payer OneDime does not know, the model suggests which workspace it belongs to. It runs on the device, so
+payment details stay private and it costs players nothing. It is off until the player turns on Smart
+suggestions. The player confirms each suggestion, and the server decides what counts.
+
+I started on Oct 13, 2026 and had 38 pull requests merged by Nov 3, 2026.
 
 ## Run locally
 
@@ -102,6 +118,15 @@ To seed a separate existing local database, explicitly set `DEMO_SEED_ENABLED=tr
 outside production and run `npm run db:seed:demo`. The seed is repeatable, creates
 only the named fictional demo player and its fixed records, and does not clear other
 players. It refuses non-local database hosts. Use the isolated demo to sign into fake data.
+
+## Deploying on Render
+
+The beta runs on Render. `render.yaml` is a blueprint for one web service and one Postgres 16 database, with
+secrets left unset (`sync: false`) so they are entered in Render and never committed. Render's own
+auto-deploy is off. Instead a merge to main that passes CI triggers the deploy hook from GitHub Actions, so
+nothing deploys on red. The app's `/health` route reports the live commit, and the workflow waits until it
+matches the commit just merged. Then the Playwright smoke test (`npm run smoke:beta`) runs against the live
+URL, so a deploy only counts once the real site answers.
 
 ## Test and check
 
@@ -344,12 +369,13 @@ I keep the tester tasks in [the beta guide](docs/beta-guide.md) and the operator
 step-by-step setup in [the Render deploy guide](docs/deploy-render.md). Brandon sends
 sandbox logins privately and performs each approved deployment himself.
 
-I prepared `render.yaml` with a free web service and free Postgres for beta testing,
-with automatic deploys disabled. I have not created or deployed Render resources.
-[Render's free services](https://render.com/docs/free) sleep after 15 minutes without
-inbound traffic, and free databases expire 30 days after creation. Payouts, Google Sheets
+The `render.yaml` blueprint declares the paid Starter web service and a Basic Postgres 16 database, with
+automatic deploys off. Secrets are set in Render and never in the repo. The beta at
+https://onedime-web.onrender.com is live and deployed from main by the deploy hook, as described in
+[Deploying on Render](#deploying-on-render). I upgrade the services separately, so until then
+[Render's free-tier limits](https://render.com/docs/free) still apply: services sleep after 15 minutes
+without traffic and free databases expire 30 days after creation. Payouts, Google Sheets
 and seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
-Brandon accepted clean rewritten main `9953600` and owns GitHub Support cleanup of old PR refs.
 Do not merge old pre-cleanup history into this branch. The repository license is recorded in LICENSE.
 
 For the public release I run `scripts/export-public.ps1` from a clean checkout of main. It
@@ -370,6 +396,61 @@ use fictional data.
 I still require review and explicit approval for each merge, deploy and visibility change.
 The app does not scrape, automate or log into gig platforms, implement receipt-image
 verification or use live PayPal.
+
+## Roadmap
+
+### v1.0 "First Dime" (this release)
+
+One private record across five kinds of online work: Log in with PayPal,
+PayPal activity matching, private on-device AI suggestions, the ladder,
+profession ranks, the Vault, Stats and exports.
+
+### v1.1 "Proof"
+
+Apply for PayPal partner access. If approved, connect PayPal directly so
+payments arrive and match with the player's permission, without CSV. Add
+certifications that count toward a profession rank after they're checked.
+Keep AI private; let it learn from the player's own confirmations and
+account for fees and expenses.
+
+### v1.2 "Your Lot"
+
+Build a walkable Mint and Your Lot. Lumen, Quill, Axle and Barter wake in
+their own apps after real matched work, each with a short story. The Vault
+shows Grit, Shine, Range and Craft from the player's real record.
+
+### v1.3 "Everywhere"
+
+Build an iPhone app on the same server and rules, a desktop sidebar layout
+and more Stats charts, and opt-in guilds of players in the same profession.
+Add portable proof: a verifiable badge for milestones a player can show anyone.
+
+### v2.0 "Plus"
+
+"Level your way to master your craft with the ultimate bot." Plus turns
+five robots into helpers for their professions, for subscribers paid through
+PayPal Subscriptions:
+
+- Penny finds which starter gigs pay this player best per hour.
+- Lumen plans content and prices sponsorships.
+- Quill drafts proposals, sets rates from the player's own hourly data and
+  sends client invoices through PayPal Invoicing.
+- Axle finds the player's best hours and tracks miles and expenses.
+- Barter writes listings and prices items.
+
+Robots still wake only from real matched work. Plus adds their help, never
+XP, ranks or tiles.
+
+### Later
+
+Hyperwallet as a payout source and live PayPal come later, only with care.
+Payouts stay off until both are approved.
+
+### What won't change
+
+The core stays free. XP bonuses are only bonuses, never money. Nothing that
+counts can be bought. The bots help you do the work; they never do it for you
+or log in to gig platforms. AI suggests; the server decides.
 
 ## License
 

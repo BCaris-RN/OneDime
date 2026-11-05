@@ -91,6 +91,7 @@ function labelControl(label: string, control: HTMLElement) {
 }
 const panel = node("section");
 panel.className = "slip row";
+panel.id = "paypal-activity";
 panel.append(node("h2", "PayPal activity"));
 const connection = node("p");
 connection.id = "paypal-status";
@@ -146,15 +147,15 @@ ai.id = "paypal-ai";
 panel.append(
   connection,
   activity,
-  explain,
-  warning,
   importForm,
-  stats,
-  monthly,
   labelControl("Review workspace", filter),
   refresh,
   ai,
-  review
+  review,
+  explain,
+  warning,
+  stats,
+  monthly
 );
 el("paypal-connection").parentElement!.replaceWith(panel);
 const settings = node("section");

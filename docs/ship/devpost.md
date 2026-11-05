@@ -31,16 +31,31 @@ has seven tabs.
   sleep, each waiting for its own kind of work.
 
 The app looks like Glass by default: frosted panels over a quiet nebula with one accent color per tab. Current
-(the handheld screen), Paper and Slate are one tap away in Appearance. It installs to a phone's home screen,
+(the handheld screen), Paper and Slate are one tap away under Menu > Appearance. It installs to a phone's
+home screen,
 works with reduced motion and reduced transparency, and is checked for contrast and keyboard use.
 
 ## How we built it
 
 OneDime uses TypeScript, Express, PostgreSQL and a plain HTML/CSS/TypeScript client. Money is integer cents.
-"AI reads, the server decides": the optional suggestion model runs on the device and only proposes a
-workspace, and the server decides what counts as matched. Each phase starts from an approved handoff, gets
+"AI reads, the server decides". Each phase starts from an approved handoff, gets
 implemented on its own branch, and goes through local tests, GitHub Actions and Claude review. A merge to
 main that passes CI deploys the beta to Render. See [how I built it](how-we-built-it.md).
+
+The AI is a small classifier, Transformers.js running MoritzLaurer/xtremedistil-l6-h256-zeroshot-v1.1-all-33
+(MIT, quantized ONNX), and it runs in the player's browser. When a player imports a PayPal payment from a
+payer OneDime does not know, the model suggests which workspace it belongs to. It runs on the device, so
+payment details stay private and it costs players nothing. It is off until the player turns on Smart
+suggestions. The player confirms each suggestion, and the server decides what counts.
+
+I started on Oct 13, 2026 and had 38 pull requests merged by Nov 3, 2026.
+
+The beta runs on Render. `render.yaml` is a blueprint for one web service and one Postgres 16 database, with
+secrets left unset (`sync: false`) so they are entered in Render and never committed. Render's own
+auto-deploy is off. Instead a merge to main that passes CI triggers the deploy hook from GitHub Actions, so
+nothing deploys on red. The app's `/health` route reports the live commit, and the workflow waits until it
+matches the commit just merged. Then the Playwright smoke test (`npm run smoke:beta`) runs against the live
+URL, so a deploy only counts once the real site answers.
 
 PayPal is used in sandbox mode for sign-in. Entries are matched to your PayPal activity file. A CSV
 import is user-provided evidence and is not an authenticated PayPal transaction lookup. The isolated local
@@ -77,27 +92,80 @@ or a tile always needs a record matched to your PayPal activity.
 
 ## What's next
 
-After the hackathon: a walkable Mint and Your Lot for the robots, wake rules and story arcs for the other
-four, an iPhone app, a desktop sidebar layout and more charts. See the
-[backlog](../backlog.md). Payouts stay disabled and live PayPal use stays off until the operator decides
-otherwise.
+### v1.0 "First Dime" (this release)
+
+One private record across five kinds of online work: Log in with PayPal,
+PayPal activity matching, private on-device AI suggestions, the ladder,
+profession ranks, the Vault, Stats and exports.
+
+### v1.1 "Proof"
+
+Apply for PayPal partner access. If approved, connect PayPal directly so
+payments arrive and match with the player's permission, without CSV. Add
+certifications that count toward a profession rank after they're checked.
+Keep AI private; let it learn from the player's own confirmations and
+account for fees and expenses.
+
+### v1.2 "Your Lot"
+
+Build a walkable Mint and Your Lot. Lumen, Quill, Axle and Barter wake in
+their own apps after real matched work, each with a short story. The Vault
+shows Grit, Shine, Range and Craft from the player's real record.
+
+### v1.3 "Everywhere"
+
+Build an iPhone app on the same server and rules, a desktop sidebar layout
+and more Stats charts, and opt-in guilds of players in the same profession.
+Add portable proof: a verifiable badge for milestones a player can show anyone.
+
+### v2.0 "Plus"
+
+"Level your way to master your craft with the ultimate bot." Plus turns
+five robots into helpers for their professions, for subscribers paid through
+PayPal Subscriptions:
+
+- Penny finds which starter gigs pay this player best per hour.
+- Lumen plans content and prices sponsorships.
+- Quill drafts proposals, sets rates from the player's own hourly data and
+  sends client invoices through PayPal Invoicing.
+- Axle finds the player's best hours and tracks miles and expenses.
+- Barter writes listings and prices items.
+
+Robots still wake only from real matched work. Plus adds their help, never
+XP, ranks or tiles.
+
+### Later
+
+Hyperwallet as a payout source and live PayPal come later, only with care.
+Payouts stay off until both are approved.
+
+### What won't change
+
+The core stays free. XP bonuses are only bonuses, never money. Nothing that
+counts can be bought. The bots help you do the work; they never do it for you
+or log in to gig platforms. AI suggests; the server decides.
 
 ## Built with
 
-TypeScript, Express, PostgreSQL, Prisma, HTML, CSS, Playwright, GitHub Actions, Render and the PayPal
-Developer Platform (sandbox).
+TypeScript, Express, PostgreSQL, Prisma, HTML, CSS, Playwright, GitHub Actions, Render, the PayPal
+Developer Platform (sandbox), Transformers.js, MoritzLaurer/xtremedistil-l6-h256-zeroshot-v1.1-all-33 (MIT,
+quantized ONNX, runs in the browser), Claude and Codex.
 
 ## Testing instructions
 
 **Hosted beta:** https://onedime-web.onrender.com. Sign in with the judge sandbox login: email `<judge
 sandbox email>`, password `<judge sandbox password>`. Use only that login. The first visit after a quiet
-spell can take up to a minute. Follow [Try OneDime](judges-try-it.md) to
-log a $1.99 Prolific entry, turn on Smart suggestions, and import the
-[sample PayPal activity](sample-paypal-activity.csv).
-Choose **Download and suggest**. The logo, creator, and store-order payments
-suggest Freelance, Spotlight, and Market: selling. Avery Ellis gets no
-suggestion. Route Hyperwallet to First Dime and select the existing Prolific
-entry under Create or link.
+spell can take up to a minute. Follow [Try OneDime](judges-try-it.md): log a $1.99 Prolific entry, turn on
+Smart suggestions (off by default; it downloads a one-time model, about 41 MB, that runs on your device),
+and import the [sample PayPal activity](sample-paypal-activity.csv). Choose **Download and suggest**. The
+logo, creator sponsorship and store orders suggest Freelance, Spotlight, and Market: selling. Avery Ellis
+gets no suggestion. Nothing moves until you confirm. Route Hyperwallet to First Dime and select the existing
+Prolific entry under **Create or link**. Otherwise, "Create a new record" adds another $1.99 entry. Matching
+it gives two ladder rungs and their XP. The euro payment cannot be routed, on purpose. A payment from an
+unknown payer gets "Suggested: <workspace> / Other. Confirm or change it." with the workspace picked by the
+on-device model; nothing is routed until you confirm. The separate browser-test fixture,
+`tests/fixtures/paypal-activity.csv`, has no unknown payer, so it shows "No unknown unrouted payments to
+suggest. Using the fixed payer map."
 
 **Local demo:** with Node 24 and Docker Desktop, run `npm ci` then `npm run demo`, and open
 `http://127.0.0.1:3403/demo-login`. It uses fake sign-in and fictional data.

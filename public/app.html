@@ -26,13 +26,13 @@
       <div class="dpad"><button type="button" class="up" data-pad="up" aria-label="Previous control"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2L11 9H1z" fill="currentColor"/></svg></button><button type="button" class="down" data-pad="down" aria-label="Next control"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10L1 3h10z" fill="currentColor"/></svg></button><button type="button" class="left" data-pad="left" aria-label="Previous tab"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6L9 1v10z" fill="currentColor"/></svg></button><button type="button" class="right" data-pad="right" aria-label="Next tab"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M10 6L3 11V1z" fill="currentColor"/></svg></button><span class="center" aria-hidden="true"></span></div>
       <div class="facebtns"><button type="button" id="btnB" aria-label="B: go back" title="B: go back">B</button><button type="button" id="btnA" aria-label="A: press the selected control" title="A: press the selected control">A</button></div>
     </div>
-      <div class="player-strip">
+      <div class="player-strip" id="player-strip">
         <span id="player-name">Loading…</span>
         <button type="button" class="ghost-button" id="xp-chip" aria-label="Open your Vault">XP …</button>
         <button type="button" class="ghost-button" id="theme-toggle" aria-label="Switch to dark mode">Dark mode</button>
         <button type="button" class="ghost-button" id="appearance-open" aria-haspopup="dialog" aria-controls="appearance-dialog">Appearance</button>
         <button type="button" class="text-button" id="logout">Log out</button>
-        <details class="header-menu" id="header-menu"><summary>Menu</summary><div><button type="button" class="ghost-button" data-feedback-open>Send feedback</button></div></details>
+        <details class="header-menu" id="header-menu"><summary>Menu</summary><div id="header-menu-items"><button type="button" class="ghost-button" data-feedback-open>Send feedback</button></div></details>
       </div>
     </header>
     <dialog id="appearance-dialog" class="feedback-dialog appearance-dialog" aria-labelledby="appearance-title">

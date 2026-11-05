@@ -9,8 +9,12 @@ const section = document.createElement("section"); section.className = "slip row
 const heading = document.createElement("h2"); heading.textContent = "This month, everywhere";
 const content = document.createElement("div"); content.className = "tablewrap";
 const note = document.createElement("p"); note.textContent = "Owned ledgers only; PayPal imports are not added again. Matched First Dime payments use gross earnings, actual fees and received net here; game totals keep your logged amount. Pending follows the work month; workspace pending headlines stay all time.";
-section.append(heading, document.getElementById("stats-month-paypal")!, note, content);
-document.getElementById("app-paypal")!.prepend(section);
+const matching = document.createElement("details");
+const matchingSummary = document.createElement("summary"); matchingSummary.textContent = "How matching works";
+matching.className = "paypal-matching";
+matching.append(matchingSummary, note);
+section.append(heading, document.getElementById("stats-month-paypal")!, matching, content);
+document.getElementById("paypal-activity")!.after(section);
 const first = document.createElement("section"); first.className = "slip row";
 const firstTitle = document.createElement("h2"); firstTitle.textContent = "First Dime, selected month";
 const firstStats = document.createElement("dl"); firstStats.className = "stats";

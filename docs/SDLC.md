@@ -75,8 +75,8 @@ A phase is done only when every box is checked.
 
 ## Phase plan and current status
 
-This is the current phase table. [STATUS.md](../STATUS.md) records the active checkpoint and validation;
-it links here instead of maintaining a second phase table. Beta testing runs Nov 1-8, 2026, followed by
+This is the current phase table. Brandon keeps the active checkpoint and validation in the private working
+repository, not in the public export. Beta testing runs Nov 1-8, 2026, followed by
 shipping work on Nov 9-10, 2026. Each merge and visibility change still needs Brandon's specific
 approval; a merge that passes CI deploys.
 
