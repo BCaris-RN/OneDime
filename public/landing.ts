@@ -1,3 +1,5 @@
+import { initializeLandingSound, playLandingSound } from "./sound.js";
+
 const CONFIG = {
   LOGIN_URL: "/auth/paypal/start",
   PRIVACY: "https://sites.google.com/view/onedime-privacy-policy/home",
@@ -80,7 +82,10 @@ async function boot() { show("boot"); say("Booting OneDime"); await typeLog(byId
 function home() { show("home", "Home. Press Start to log in with PayPal, left for the tour, down for info."); }
 async function login() { if (busy) return; busy = true; show("go", "Opening PayPal"); byId("golog").innerHTML = ""; byId("gonote").textContent = ""; byId("gobar").innerHTML = Array.from({ length: 10 }, (_, i) => `<i style="animation-delay:${reduce ? 0 : i * 90}ms"></i>`).join(""); await typeLog(byId("golog"), ["Login requested ...", "Opening PayPal sandbox ...", "Secure handoff ready ..."], 320); window.location.assign(CONFIG.LOGIN_URL); }
 function press(key: string) {
-  if (screen === "boot") { home(); return; } if (busy) return;
+  if (screen === "boot") { home(); return; }
+  const sounds: Record<string, "click" | "tab" | "select" | "back"> = { left: "tab", right: "tab", up: "click", down: "click", a: "select", start: "select", b: "back", select: "back" };
+  const sound = sounds[key]; if (sound) playLandingSound(sound);
+  if (busy) return;
   if (key === "up" || key === "select") { if (screen === "info" && key === "up" && infoIndex > 0) { infoIndex -= 1; renderInfo(); return; } home(); return; }
   if (key === "start") { void login(); return; }
   switch (screen) {
@@ -94,4 +99,5 @@ document.querySelectorAll<HTMLButtonElement>(".device [data-k]").forEach(button 
 const keys: Record<string, string> = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right", Enter: "a", z: "a", Z: "a", Backspace: "b", Escape: "b", x: "b", X: "b", " ": "start", Shift: "select" };
 window.addEventListener("keydown", event => { const key = keys[event.key]; if (!key) return; const target = event.target as HTMLElement; if (target.matches("input,textarea,select,a,[contenteditable]") || (target.tagName === "BUTTON" && (event.key === "Enter" || event.key === " "))) return; event.preventDefault(); const button = document.querySelector<HTMLButtonElement>(`.device [data-k="${key}"]`); button?.classList.add("press"); window.setTimeout(() => button?.classList.remove("press"), 120); press(key); });
 document.querySelectorAll<HTMLAnchorElement>("[data-login]").forEach(link => link.href = CONFIG.LOGIN_URL);
+initializeLandingSound();
 void boot();

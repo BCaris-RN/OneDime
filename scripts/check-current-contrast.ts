@@ -139,6 +139,12 @@ try {
     await inspect(page, appearanceLabel);
     await states(page, appearanceLabel);
     await appearanceDialog.getByRole("button", { name: "Close", exact: true }).click();
+    await page.getByRole("button", { name: "Sound", exact: true }).click();
+    const soundDialog = page.getByRole("dialog", { name: "Sound", exact: true });
+    const soundLabel = `Sound settings; theme=${theme}; OS=${os}`;
+    await inspect(page, soundLabel);
+    await states(page, soundLabel);
+    await soundDialog.getByRole("button", { name: "Close", exact: true }).click();
     for (const appName of ["First Dime", "Spotlight", "Freelance", "Market", "Stats", "PayPal"]) {
       await page.getByRole("tab", { name: appName, exact: true }).click();
       if (appName === "Stats") await page.waitForFunction(() => document.querySelectorAll("#app-stats svg[role='img']").length === 3);

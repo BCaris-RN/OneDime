@@ -8,7 +8,7 @@ const menu = document.getElementById("header-menu") as HTMLDetailsElement;
 const menuItems = document.getElementById("header-menu-items")!;
 const xpChip = document.getElementById("xp-chip")!;
 const feedback = menuItems.querySelector("[data-feedback-open]")!;
-const accountItems = ["player-name", "theme-toggle", "appearance-open", "logout"]
+const accountItems = ["player-name", "theme-toggle", "appearance-open", "sound-open", "logout"]
   .map(id => document.getElementById(id)!);
 
 function placeAccountItems() {

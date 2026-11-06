@@ -130,6 +130,12 @@ try {
           const menuResults = await measureText(page, { skip: ".sr-only,.skip-link,.glass-shapes,#post-login-boot", hide: "", include: "#header-menu *" });
           problems.push(...menuResults.filter(result => result.ratio < result.required)
             .map(result => `phone menu ${mode} at ${width}px: ${result.label} ${result.ratio.toFixed(2)} < ${result.required}`));
+          await page.locator("#header-menu").getByRole("button", { name: "Sound", exact: true }).click();
+          await settleLayout(page);
+          const soundResults = await measureText(page, { skip: ".sr-only,.skip-link,.glass-shapes,#post-login-boot", hide: "", include: "#sound-dialog" });
+          problems.push(...soundResults.filter(result => result.ratio < result.required)
+            .map(result => `sound modal ${mode} at ${width}px: ${result.label} ${result.ratio.toFixed(2)} < ${result.required}`));
+          await page.getByRole("dialog", { name: "Sound", exact: true }).getByRole("button", { name: "Close", exact: true }).click();
           await page.locator("#header-menu summary").click();
           await settleLayout(page);
         }

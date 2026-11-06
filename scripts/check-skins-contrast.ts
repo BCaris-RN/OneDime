@@ -36,6 +36,7 @@ const fixture = [
   '<dl class="stats"><div><dt>Earned this month</dt><dd class="money">$12.34</dd></div><div><dt>Verified share</dt><dd>75%</dd></div></dl>',
   '<section class="stats-screen"><section class="stats-lcd"><h2>Your stats</h2><p>Fictional work across every app.</p><svg role="img" aria-label="Six months of fictional earnings"><rect class="stats-bar" width="40" height="22"/><text>October</text></svg><details><summary>Show as a table</summary><table><caption>Fictional totals</caption><tr><th>Month</th><th>Earned</th></tr><tr><td>October</td><td>$12.34</td></tr></table></details></section></section>',
   '<dialog id="appearance-dialog" class="feedback-dialog appearance-dialog" aria-label="Appearance"><h2>Appearance</h2><fieldset><legend>Skin</legend><label><input type="radio" checked> Paper <span>warm with a blue accent</span></label><label><input type="radio"> Slate</label></fieldset><fieldset><legend>Mode</legend><label><input type="radio" checked> System</label><label><input type="radio"> Light</label><label><input type="radio"> Dark</label></fieldset></dialog>',
+  '<dialog id="sound-dialog" class="feedback-dialog sound-dialog" aria-label="Sound"><div class="section-heading"><h2>Sound</h2><button class="ghost-button">Close</button></div><fieldset><legend>Interface</legend><label><input type="checkbox" checked> Clicks</label></fieldset><fieldset><legend>Music</legend><label><input type="checkbox"> Music</label><label class="sound-range">Volume <span>35%</span><input type="range" min="0" max="100" value="35"></label></fieldset><p class="field-help">Music starts after you turn it on. It pauses while this page is hidden.</p><p class="field-help">Saved on this device.</p></dialog>',
   "</main></body></html>"
 ].join("");
 
@@ -81,7 +82,13 @@ try {
       const modalFailures = modalPairs.filter(pair => pair.result === "fail" || pair.result === "uncovered");
       assert.deepEqual(modalFailures.map(pair => ({ result: pair.result, role: pair.role, fg: pair.foreground, bg: pair.background, example: pair.example })), [],
         skin + "/" + mode + "/OS-" + scheme + " Appearance modal must have no failing or uncovered color pairs");
-      console.log("skin passed: " + skin + "; mode=" + mode + "; OS=" + scheme + "; width=" + width + "; pairs=" + (pairs.length + modalPairs.length));
+      await page.locator("#appearance-dialog").evaluate(node => (node as HTMLDialogElement).close());
+      await page.locator("#sound-dialog").evaluate(node => (node as HTMLDialogElement).showModal());
+      const soundPairs = await inspectContrast(page, skin + "; sound modal; mode=" + mode + "; OS=" + scheme + "; width=" + width);
+      const soundFailures = soundPairs.filter(pair => pair.result === "fail" || pair.result === "uncovered");
+      assert.deepEqual(soundFailures.map(pair => ({ result: pair.result, role: pair.role, fg: pair.foreground, bg: pair.background, example: pair.example })), [],
+        skin + "/" + mode + "/OS-" + scheme + " Sound modal must have no failing or uncovered color pairs");
+      console.log("skin passed: " + skin + "; mode=" + mode + "; OS=" + scheme + "; width=" + width + "; pairs=" + (pairs.length + modalPairs.length + soundPairs.length));
     }
     await context.close();
   }
