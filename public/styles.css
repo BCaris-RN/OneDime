@@ -464,6 +464,7 @@ caption{text-align:left;font-weight:700;padding:8px 0;color:var(--head)}
 :root[data-skin="glass"] .stats-lcd h2{color:#fff}
 :root[data-skin="glass"] .toast{color:#fff;background:rgba(18,21,44,.92)}
 :root[data-skin="glass"] .goal-hero{color:var(--skin-text)}
+:root[data-skin="glass"] .field-help{color:var(--skin-text)}
 :root[data-skin="glass"] .goal-hero h2,:root[data-skin="glass"] #goalTitle{color:var(--skin-text2)}
 :root[data-skin="glass"] .goal-hero p{color:var(--skin-text)}
 :root[data-skin="glass"] :is(.goal-copy .big,.coin-face,.coin .face b){color:#fff}
