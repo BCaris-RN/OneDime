@@ -590,7 +590,9 @@ try {
           await pad("down");
           await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
           const covered=await page.evaluate(()=>{
-            const a=document.activeElement!.getBoundingClientRect(),b=document.querySelector(".controls")!.getBoundingClientRect();
+            const active=document.activeElement!,pane=document.querySelector<HTMLElement>(".controls")!;
+            if(pane.contains(active))return false;
+            const a=active.getBoundingClientRect(),b=pane.getBoundingClientRect();
             return a.height<=innerHeight/2&&a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
           });
           assert.equal(covered,false,`the floating pad never covers the focused control at ${width}px`);
