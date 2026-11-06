@@ -1,0 +1,3089 @@
+{
+ "title": "OneDime lobby theme (original, Brandon Caris / Claude, Nov 2026)",
+ "bpm": 100,
+ "beatsPerBar": 4,
+ "bars": 16,
+ "loopSeconds": 38.4,
+ "swing": "offbeat hats land 0.06 beat late",
+ "masterLowpassHz": 6000,
+ "instruments": {
+  "lead": {
+   "wave": "pulse",
+   "duty": 0.125,
+   "gain": 0.18,
+   "attack": 0.008,
+   "release": 0.08,
+   "vibratoHz": 5.5,
+   "vibratoDepth": 0.004,
+   "vibratoDelay": 0.15,
+   "echo": {
+    "time": 0.3,
+    "feedback": 0.25
+   }
+  },
+  "keys": {
+   "wave": "pulse",
+   "duty": 0.25,
+   "gain": 0.05,
+   "attack": 0.005,
+   "release": 0.06
+  },
+  "bass": {
+   "wave": "triangle",
+   "gain": 0.22,
+   "attack": 0.006,
+   "release": 0.05
+  },
+  "hat": {
+   "wave": "noise",
+   "highpassHz": 7000,
+   "gain": 0.14,
+   "attack": 0.001,
+   "release": 0.03
+  },
+  "rim": {
+   "wave": "noise",
+   "bandpassHz": 2200,
+   "gain": 0.22,
+   "attack": 0.001,
+   "release": 0.04
+  },
+  "kick": {
+   "wave": "sine",
+   "pitchFromHz": 120,
+   "pitchToHz": 48,
+   "gain": 0.28,
+   "attack": 0.002,
+   "release": 0.12
+  }
+ },
+ "notes": [
+  {
+   "i": "bass",
+   "start": 0,
+   "dur": 1.4,
+   "midi": 36
+  },
+  {
+   "i": "bass",
+   "start": 1.5,
+   "dur": 0.45,
+   "midi": 43
+  },
+  {
+   "i": "bass",
+   "start": 2,
+   "dur": 1.4,
+   "midi": 43
+  },
+  {
+   "i": "bass",
+   "start": 3.5,
+   "dur": 0.45,
+   "midi": 36
+  },
+  {
+   "i": "keys",
+   "start": 0,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 0,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 0,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 1.5,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 1.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 1.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 2.5,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 2.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 2.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 3.5,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 3.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 3.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "lead",
+   "start": 0,
+   "dur": 0.92,
+   "midi": 76
+  },
+  {
+   "i": "lead",
+   "start": 1,
+   "dur": 0.46,
+   "midi": 79
+  },
+  {
+   "i": "lead",
+   "start": 1.5,
+   "dur": 1.38,
+   "midi": 83
+  },
+  {
+   "i": "lead",
+   "start": 3,
+   "dur": 0.46,
+   "midi": 81
+  },
+  {
+   "i": "lead",
+   "start": 3.5,
+   "dur": 0.46,
+   "midi": 79
+  },
+  {
+   "i": "hat",
+   "start": 0.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 0.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 1.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 1.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 2.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 2.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 3.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 3.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 1,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 3,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 0,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 2.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 4,
+   "dur": 1.4,
+   "midi": 33
+  },
+  {
+   "i": "bass",
+   "start": 5.5,
+   "dur": 0.45,
+   "midi": 40
+  },
+  {
+   "i": "bass",
+   "start": 6,
+   "dur": 1.4,
+   "midi": 40
+  },
+  {
+   "i": "bass",
+   "start": 7.5,
+   "dur": 0.45,
+   "midi": 33
+  },
+  {
+   "i": "keys",
+   "start": 4.5,
+   "dur": 0.35,
+   "midi": 60
+  },
+  {
+   "i": "keys",
+   "start": 4.5,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 4.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 6,
+   "dur": 0.35,
+   "midi": 60
+  },
+  {
+   "i": "keys",
+   "start": 6,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 6,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 7,
+   "dur": 0.35,
+   "midi": 60
+  },
+  {
+   "i": "keys",
+   "start": 7,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 7,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "lead",
+   "start": 4,
+   "dur": 1.38,
+   "midi": 76
+  },
+  {
+   "i": "lead",
+   "start": 5.5,
+   "dur": 0.46,
+   "midi": 72
+  },
+  {
+   "i": "lead",
+   "start": 6,
+   "dur": 0.92,
+   "midi": 76
+  },
+  {
+   "i": "lead",
+   "start": 7,
+   "dur": 0.92,
+   "midi": 79
+  },
+  {
+   "i": "hat",
+   "start": 4.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 4.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 5.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 5.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 6.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 6.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 7.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 7.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 5,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 7,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 4,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 6.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 8,
+   "dur": 1.4,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 9.5,
+   "dur": 0.45,
+   "midi": 45
+  },
+  {
+   "i": "bass",
+   "start": 10,
+   "dur": 1.4,
+   "midi": 45
+  },
+  {
+   "i": "bass",
+   "start": 11.5,
+   "dur": 0.45,
+   "midi": 38
+  },
+  {
+   "i": "keys",
+   "start": 8,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 8,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 8,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 9.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 9.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 9.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 10.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 10.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 10.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 11.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 11.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 11.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "lead",
+   "start": 8,
+   "dur": 0.92,
+   "midi": 77
+  },
+  {
+   "i": "lead",
+   "start": 9,
+   "dur": 0.46,
+   "midi": 81
+  },
+  {
+   "i": "lead",
+   "start": 9.5,
+   "dur": 1.38,
+   "midi": 84
+  },
+  {
+   "i": "lead",
+   "start": 11,
+   "dur": 0.46,
+   "midi": 83
+  },
+  {
+   "i": "lead",
+   "start": 11.5,
+   "dur": 0.46,
+   "midi": 81
+  },
+  {
+   "i": "hat",
+   "start": 8.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 8.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 9.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 9.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 10.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 10.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 11.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 11.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 9,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 11,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 8,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 10.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 12,
+   "dur": 1.4,
+   "midi": 31
+  },
+  {
+   "i": "bass",
+   "start": 13.5,
+   "dur": 0.45,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 14,
+   "dur": 1.4,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 15.5,
+   "dur": 0.45,
+   "midi": 31
+  },
+  {
+   "i": "keys",
+   "start": 12.5,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 12.5,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 12.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 14,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 14,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 14,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 15,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 15,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 15,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "lead",
+   "start": 12,
+   "dur": 1.84,
+   "midi": 79
+  },
+  {
+   "i": "lead",
+   "start": 14,
+   "dur": 0.46,
+   "midi": 77
+  },
+  {
+   "i": "lead",
+   "start": 14.5,
+   "dur": 0.46,
+   "midi": 74
+  },
+  {
+   "i": "lead",
+   "start": 15,
+   "dur": 0.92,
+   "midi": 71
+  },
+  {
+   "i": "hat",
+   "start": 12.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 12.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 13.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 13.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 14.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 14.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 15.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 15.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 13,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 15,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 12,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 14.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 16,
+   "dur": 1.4,
+   "midi": 40
+  },
+  {
+   "i": "bass",
+   "start": 17.5,
+   "dur": 0.45,
+   "midi": 47
+  },
+  {
+   "i": "bass",
+   "start": 18,
+   "dur": 1.4,
+   "midi": 47
+  },
+  {
+   "i": "bass",
+   "start": 19.5,
+   "dur": 0.45,
+   "midi": 40
+  },
+  {
+   "i": "keys",
+   "start": 16,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 16,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 16,
+   "dur": 0.35,
+   "midi": 74
+  },
+  {
+   "i": "keys",
+   "start": 17.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 17.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 17.5,
+   "dur": 0.35,
+   "midi": 74
+  },
+  {
+   "i": "keys",
+   "start": 18.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 18.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 18.5,
+   "dur": 0.35,
+   "midi": 74
+  },
+  {
+   "i": "keys",
+   "start": 19.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 19.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 19.5,
+   "dur": 0.35,
+   "midi": 74
+  },
+  {
+   "i": "lead",
+   "start": 16,
+   "dur": 0.46,
+   "midi": 71
+  },
+  {
+   "i": "lead",
+   "start": 16.5,
+   "dur": 0.46,
+   "midi": 74
+  },
+  {
+   "i": "lead",
+   "start": 17,
+   "dur": 0.92,
+   "midi": 76
+  },
+  {
+   "i": "lead",
+   "start": 18,
+   "dur": 0.92,
+   "midi": 79
+  },
+  {
+   "i": "lead",
+   "start": 19,
+   "dur": 0.92,
+   "midi": 83
+  },
+  {
+   "i": "hat",
+   "start": 16.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 16.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 17.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 17.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 18.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 18.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 19.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 19.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 17,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 19,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 16,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 18.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 20,
+   "dur": 1.4,
+   "midi": 33
+  },
+  {
+   "i": "bass",
+   "start": 21.5,
+   "dur": 0.45,
+   "midi": 40
+  },
+  {
+   "i": "bass",
+   "start": 22,
+   "dur": 1.4,
+   "midi": 40
+  },
+  {
+   "i": "bass",
+   "start": 23.5,
+   "dur": 0.45,
+   "midi": 33
+  },
+  {
+   "i": "keys",
+   "start": 20.5,
+   "dur": 0.35,
+   "midi": 61
+  },
+  {
+   "i": "keys",
+   "start": 20.5,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 20.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 22,
+   "dur": 0.35,
+   "midi": 61
+  },
+  {
+   "i": "keys",
+   "start": 22,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 22,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 23,
+   "dur": 0.35,
+   "midi": 61
+  },
+  {
+   "i": "keys",
+   "start": 23,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 23,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "lead",
+   "start": 20,
+   "dur": 1.38,
+   "midi": 85
+  },
+  {
+   "i": "lead",
+   "start": 21.5,
+   "dur": 0.46,
+   "midi": 81
+  },
+  {
+   "i": "lead",
+   "start": 22,
+   "dur": 0.92,
+   "midi": 79
+  },
+  {
+   "i": "lead",
+   "start": 23,
+   "dur": 0.92,
+   "midi": 76
+  },
+  {
+   "i": "hat",
+   "start": 20.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 20.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 21.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 21.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 22.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 22.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 23.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 23.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 21,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 23,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 20,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 22.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 24,
+   "dur": 1.4,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 25.5,
+   "dur": 0.45,
+   "midi": 45
+  },
+  {
+   "i": "bass",
+   "start": 26,
+   "dur": 1.4,
+   "midi": 45
+  },
+  {
+   "i": "bass",
+   "start": 27.5,
+   "dur": 0.45,
+   "midi": 38
+  },
+  {
+   "i": "keys",
+   "start": 24,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 24,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 24,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 25.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 25.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 25.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 26.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 26.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 26.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 27.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 27.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 27.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "lead",
+   "start": 24,
+   "dur": 0.92,
+   "midi": 77
+  },
+  {
+   "i": "lead",
+   "start": 25,
+   "dur": 0.46,
+   "midi": 76
+  },
+  {
+   "i": "lead",
+   "start": 25.5,
+   "dur": 0.46,
+   "midi": 74
+  },
+  {
+   "i": "lead",
+   "start": 26,
+   "dur": 0.92,
+   "midi": 72
+  },
+  {
+   "i": "lead",
+   "start": 27,
+   "dur": 0.92,
+   "midi": 69
+  },
+  {
+   "i": "hat",
+   "start": 24.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 24.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 25.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 25.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 26.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 26.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 27.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 27.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 25,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 27,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 24,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 26.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 28,
+   "dur": 1.4,
+   "midi": 31
+  },
+  {
+   "i": "bass",
+   "start": 29.5,
+   "dur": 0.45,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 30,
+   "dur": 1.4,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 31.5,
+   "dur": 0.45,
+   "midi": 31
+  },
+  {
+   "i": "keys",
+   "start": 28.5,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 28.5,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 28.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 30,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 30,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 30,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 31,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 31,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 31,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "lead",
+   "start": 28,
+   "dur": 0.92,
+   "midi": 71
+  },
+  {
+   "i": "lead",
+   "start": 29,
+   "dur": 0.92,
+   "midi": 74
+  },
+  {
+   "i": "lead",
+   "start": 30,
+   "dur": 1.38,
+   "midi": 79
+  },
+  {
+   "i": "hat",
+   "start": 28.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 28.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 29.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 29.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 30.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 30.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 31.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 31.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 29,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 31,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 28,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 30.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 32,
+   "dur": 1.4,
+   "midi": 36
+  },
+  {
+   "i": "bass",
+   "start": 33.5,
+   "dur": 0.45,
+   "midi": 43
+  },
+  {
+   "i": "bass",
+   "start": 34,
+   "dur": 1.4,
+   "midi": 43
+  },
+  {
+   "i": "bass",
+   "start": 35.5,
+   "dur": 0.45,
+   "midi": 36
+  },
+  {
+   "i": "keys",
+   "start": 32,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 32,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 32,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 33.5,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 33.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 33.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 34.5,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 34.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 34.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 35.5,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 35.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 35.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "lead",
+   "start": 32,
+   "dur": 0.46,
+   "midi": 79
+  },
+  {
+   "i": "lead",
+   "start": 32.5,
+   "dur": 0.46,
+   "midi": 76
+  },
+  {
+   "i": "lead",
+   "start": 33,
+   "dur": 0.46,
+   "midi": 79
+  },
+  {
+   "i": "lead",
+   "start": 33.5,
+   "dur": 0.92,
+   "midi": 83
+  },
+  {
+   "i": "lead",
+   "start": 34.5,
+   "dur": 1.38,
+   "midi": 86
+  },
+  {
+   "i": "hat",
+   "start": 32.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 32.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 33.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 33.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 34.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 34.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 35.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 35.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 33,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 35,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 32,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 34.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 36,
+   "dur": 1.4,
+   "midi": 33
+  },
+  {
+   "i": "bass",
+   "start": 37.5,
+   "dur": 0.45,
+   "midi": 40
+  },
+  {
+   "i": "bass",
+   "start": 38,
+   "dur": 1.4,
+   "midi": 40
+  },
+  {
+   "i": "bass",
+   "start": 39.5,
+   "dur": 0.45,
+   "midi": 33
+  },
+  {
+   "i": "keys",
+   "start": 36.5,
+   "dur": 0.35,
+   "midi": 60
+  },
+  {
+   "i": "keys",
+   "start": 36.5,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 36.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 38,
+   "dur": 0.35,
+   "midi": 60
+  },
+  {
+   "i": "keys",
+   "start": 38,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 38,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 39,
+   "dur": 0.35,
+   "midi": 60
+  },
+  {
+   "i": "keys",
+   "start": 39,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 39,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "lead",
+   "start": 36,
+   "dur": 0.92,
+   "midi": 84
+  },
+  {
+   "i": "lead",
+   "start": 37,
+   "dur": 0.46,
+   "midi": 83
+  },
+  {
+   "i": "lead",
+   "start": 37.5,
+   "dur": 1.38,
+   "midi": 81
+  },
+  {
+   "i": "lead",
+   "start": 39,
+   "dur": 0.92,
+   "midi": 76
+  },
+  {
+   "i": "hat",
+   "start": 36.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 36.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 37.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 37.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 38.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 38.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 39.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 39.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 37,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 39,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 36,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 38.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 40,
+   "dur": 1.4,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 41.5,
+   "dur": 0.45,
+   "midi": 45
+  },
+  {
+   "i": "bass",
+   "start": 42,
+   "dur": 1.4,
+   "midi": 45
+  },
+  {
+   "i": "bass",
+   "start": 43.5,
+   "dur": 0.45,
+   "midi": 38
+  },
+  {
+   "i": "keys",
+   "start": 40,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 40,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 40,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 41.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 41.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 41.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 42.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 42.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 42.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 43.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 43.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 43.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "lead",
+   "start": 40,
+   "dur": 0.46,
+   "midi": 77
+  },
+  {
+   "i": "lead",
+   "start": 40.5,
+   "dur": 0.46,
+   "midi": 81
+  },
+  {
+   "i": "lead",
+   "start": 41,
+   "dur": 0.92,
+   "midi": 84
+  },
+  {
+   "i": "lead",
+   "start": 42,
+   "dur": 0.92,
+   "midi": 81
+  },
+  {
+   "i": "lead",
+   "start": 43,
+   "dur": 0.92,
+   "midi": 77
+  },
+  {
+   "i": "hat",
+   "start": 40.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 40.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 41.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 41.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 42.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 42.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 43.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 43.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 41,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 43,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 40,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 42.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 44,
+   "dur": 1.4,
+   "midi": 31
+  },
+  {
+   "i": "bass",
+   "start": 45.5,
+   "dur": 0.45,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 46,
+   "dur": 1.4,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 47.5,
+   "dur": 0.45,
+   "midi": 31
+  },
+  {
+   "i": "keys",
+   "start": 44.5,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 44.5,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 44.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 46,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 46,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 46,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 47,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 47,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 47,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "lead",
+   "start": 44,
+   "dur": 1.38,
+   "midi": 79
+  },
+  {
+   "i": "lead",
+   "start": 45.5,
+   "dur": 0.46,
+   "midi": 83
+  },
+  {
+   "i": "lead",
+   "start": 46,
+   "dur": 0.92,
+   "midi": 86
+  },
+  {
+   "i": "lead",
+   "start": 47,
+   "dur": 0.92,
+   "midi": 83
+  },
+  {
+   "i": "hat",
+   "start": 44.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 44.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 45.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 45.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 46.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 46.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 47.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 47.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 45,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 47,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 44,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 46.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 48,
+   "dur": 1.4,
+   "midi": 40
+  },
+  {
+   "i": "bass",
+   "start": 49.5,
+   "dur": 0.45,
+   "midi": 47
+  },
+  {
+   "i": "bass",
+   "start": 50,
+   "dur": 1.4,
+   "midi": 47
+  },
+  {
+   "i": "bass",
+   "start": 51.5,
+   "dur": 0.45,
+   "midi": 40
+  },
+  {
+   "i": "keys",
+   "start": 48,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 48,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 48,
+   "dur": 0.35,
+   "midi": 74
+  },
+  {
+   "i": "keys",
+   "start": 49.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 49.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 49.5,
+   "dur": 0.35,
+   "midi": 74
+  },
+  {
+   "i": "keys",
+   "start": 50.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 50.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 50.5,
+   "dur": 0.35,
+   "midi": 74
+  },
+  {
+   "i": "keys",
+   "start": 51.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 51.5,
+   "dur": 0.35,
+   "midi": 71
+  },
+  {
+   "i": "keys",
+   "start": 51.5,
+   "dur": 0.35,
+   "midi": 74
+  },
+  {
+   "i": "lead",
+   "start": 48,
+   "dur": 1.38,
+   "midi": 88
+  },
+  {
+   "i": "lead",
+   "start": 49.5,
+   "dur": 0.46,
+   "midi": 86
+  },
+  {
+   "i": "lead",
+   "start": 50,
+   "dur": 0.92,
+   "midi": 83
+  },
+  {
+   "i": "lead",
+   "start": 51,
+   "dur": 0.92,
+   "midi": 79
+  },
+  {
+   "i": "hat",
+   "start": 48.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 48.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 49.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 49.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 50.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 50.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 51.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 51.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 49,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 51,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 48,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 50.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 52,
+   "dur": 1.4,
+   "midi": 33
+  },
+  {
+   "i": "bass",
+   "start": 53.5,
+   "dur": 0.45,
+   "midi": 40
+  },
+  {
+   "i": "bass",
+   "start": 54,
+   "dur": 1.4,
+   "midi": 40
+  },
+  {
+   "i": "bass",
+   "start": 55.5,
+   "dur": 0.45,
+   "midi": 33
+  },
+  {
+   "i": "keys",
+   "start": 52.5,
+   "dur": 0.35,
+   "midi": 61
+  },
+  {
+   "i": "keys",
+   "start": 52.5,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 52.5,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 54,
+   "dur": 0.35,
+   "midi": 61
+  },
+  {
+   "i": "keys",
+   "start": 54,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 54,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "keys",
+   "start": 55,
+   "dur": 0.35,
+   "midi": 61
+  },
+  {
+   "i": "keys",
+   "start": 55,
+   "dur": 0.35,
+   "midi": 64
+  },
+  {
+   "i": "keys",
+   "start": 55,
+   "dur": 0.35,
+   "midi": 67
+  },
+  {
+   "i": "lead",
+   "start": 52,
+   "dur": 0.92,
+   "midi": 81
+  },
+  {
+   "i": "lead",
+   "start": 53,
+   "dur": 0.46,
+   "midi": 85
+  },
+  {
+   "i": "lead",
+   "start": 53.5,
+   "dur": 1.38,
+   "midi": 88
+  },
+  {
+   "i": "lead",
+   "start": 55,
+   "dur": 0.92,
+   "midi": 85
+  },
+  {
+   "i": "hat",
+   "start": 52.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 52.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 53.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 53.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 54.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 54.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 55.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 55.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 53,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 55,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 52,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 54.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 56,
+   "dur": 1.4,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 57.5,
+   "dur": 0.45,
+   "midi": 45
+  },
+  {
+   "i": "bass",
+   "start": 58,
+   "dur": 1.4,
+   "midi": 45
+  },
+  {
+   "i": "bass",
+   "start": 59.5,
+   "dur": 0.45,
+   "midi": 38
+  },
+  {
+   "i": "keys",
+   "start": 56,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 56,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 56,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 57.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 57.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 57.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 58.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 58.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 58.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "keys",
+   "start": 59.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 59.5,
+   "dur": 0.35,
+   "midi": 69
+  },
+  {
+   "i": "keys",
+   "start": 59.5,
+   "dur": 0.35,
+   "midi": 72
+  },
+  {
+   "i": "lead",
+   "start": 56,
+   "dur": 0.92,
+   "midi": 86
+  },
+  {
+   "i": "lead",
+   "start": 57,
+   "dur": 0.46,
+   "midi": 84
+  },
+  {
+   "i": "lead",
+   "start": 57.5,
+   "dur": 0.46,
+   "midi": 81
+  },
+  {
+   "i": "lead",
+   "start": 58,
+   "dur": 0.92,
+   "midi": 77
+  },
+  {
+   "i": "lead",
+   "start": 59,
+   "dur": 0.92,
+   "midi": 74
+  },
+  {
+   "i": "hat",
+   "start": 56.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 56.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 57.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 57.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 58.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 58.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 59.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 59.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 57,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 59,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 56,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 58.5,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "bass",
+   "start": 60,
+   "dur": 1.4,
+   "midi": 31
+  },
+  {
+   "i": "bass",
+   "start": 61.5,
+   "dur": 0.45,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 62,
+   "dur": 1.4,
+   "midi": 38
+  },
+  {
+   "i": "bass",
+   "start": 63.5,
+   "dur": 0.45,
+   "midi": 31
+  },
+  {
+   "i": "keys",
+   "start": 60.5,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 60.5,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 60.5,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 62,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 62,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 62,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "keys",
+   "start": 63,
+   "dur": 0.35,
+   "midi": 59
+  },
+  {
+   "i": "keys",
+   "start": 63,
+   "dur": 0.35,
+   "midi": 62
+  },
+  {
+   "i": "keys",
+   "start": 63,
+   "dur": 0.35,
+   "midi": 65
+  },
+  {
+   "i": "lead",
+   "start": 60,
+   "dur": 0.46,
+   "midi": 71
+  },
+  {
+   "i": "lead",
+   "start": 60.5,
+   "dur": 0.46,
+   "midi": 74
+  },
+  {
+   "i": "lead",
+   "start": 61,
+   "dur": 0.46,
+   "midi": 77
+  },
+  {
+   "i": "lead",
+   "start": 61.5,
+   "dur": 0.46,
+   "midi": 79
+  },
+  {
+   "i": "lead",
+   "start": 62,
+   "dur": 1.38,
+   "midi": 83
+  },
+  {
+   "i": "hat",
+   "start": 60.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 60.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 61.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 61.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 62.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 62.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 63.0,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "hat",
+   "start": 63.56,
+   "dur": 0.06,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 61,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "rim",
+   "start": 63,
+   "dur": 0.08,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 60,
+   "dur": 0.3,
+   "midi": 0
+  },
+  {
+   "i": "kick",
+   "start": 62.5,
+   "dur": 0.3,
+   "midi": 0
+  }
+ ],
+ "ui": {
+  "click": [
+   {
+    "midi": 88,
+    "dur": 0.03
+   }
+  ],
+  "tab": [
+   {
+    "midi": 81,
+    "dur": 0.04
+   },
+   {
+    "midi": 88,
+    "dur": 0.05
+   }
+  ],
+  "select": [
+   {
+    "midi": 84,
+    "dur": 0.05
+   },
+   {
+    "midi": 91,
+    "dur": 0.07
+   }
+  ],
+  "back": [
+   {
+    "midi": 79,
+    "dur": 0.05
+   },
+   {
+    "midi": 72,
+    "dur": 0.07
+   }
+  ],
+  "reward": [
+   {
+    "midi": 72,
+    "dur": 0.07
+   },
+   {
+    "midi": 76,
+    "dur": 0.07
+   },
+   {
+    "midi": 79,
+    "dur": 0.07
+   },
+   {
+    "midi": 84,
+    "dur": 0.16
+   }
+  ],
+  "tileBreak": "90 ms noise burst, lowpass 2500 Hz, fast decay"
+ }
+}

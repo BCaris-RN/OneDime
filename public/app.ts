@@ -12,6 +12,7 @@ import type { GameStats } from "../src/game/rules.js";
 import type { QuestDefinition } from "../src/game/catalog.js";
 import { dollarsToCents } from "../src/game/money.js";
 import { TILE_ORDER } from "../src/game/vault.js";
+import { initializeSound, playReward, playTileBreak } from "./sound.js";
 
 type Player = { displayName: string | null; timeZone: string | null; leaderboardOptIn: boolean; welcomeCompletedAt: string | null };
 type Entry = { id: string; platform: string; workedOn: string; minutes: number; amountCents: number; note: string | null; verified: boolean };
@@ -21,8 +22,12 @@ type ProfessionRank = { profession: "creator" | "freelancer" | "driver" | "selle
 type GameStatsWithProfessions = GameStats & { professions: ProfessionRank[]; professionClass: ProfessionRank | null; verifiedOtherCents: number; ladder: { nextRungCents: number | null; matchedCents: number; pendingCents: number; reachedRungs: number[] } };
 type Leader = { displayName: string; verifiedTotalCents: number; highestRungCents: number | null; xp: number; level: number; sites: { platform: string; verifiedCents: number }[]; professionClass: ProfessionRank | null; professions: ProfessionRank[] };
 type Vault = { tiles: number; seen: number; matchedCents: number; distinctWorkDays: number; completedQuests: number };
+type ProgressSnapshot = { rungs: Set<number>; ranks: Map<string, number>; quests: Set<string> };
 const element = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const input = (id: string) => element<HTMLInputElement>(id);
+let previousProgress: ProgressSnapshot | null = null;
+let previousVaultTiles: number | null = null;
+initializeSound();
 const money = (cents: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
 const number = (value: number) => new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 }).format(value);
 const rungCents = [10, 100, 1000, 5000, 10000, 25000, 50000, 100000];
@@ -298,6 +303,19 @@ async function refresh() {
     api<{ player: Player }>("/api/me"), api<GameStatsWithProfessions>("/api/me/stats"), api<{ entries: Entry[] }>("/api/entries"),
     api<Clock>("/api/clock"), api<QuestPayload>("/api/quests"), api<{ players: Leader[] }>("/api/leaderboard"), api<Vault>("/api/vault")
   ]);
+  const progress: ProgressSnapshot = {
+    rungs: new Set(stats.ladder.reachedRungs),
+    ranks: new Map(stats.professions.map(rank => [rank.profession, rank.rank])),
+    quests: new Set(quests.completed)
+  };
+  if (previousProgress && (
+    [...progress.rungs].some(rung => !previousProgress!.rungs.has(rung))
+    || [...progress.ranks].some(([profession, rank]) => rank > (previousProgress!.ranks.get(profession) ?? 0))
+    || [...progress.quests].some(quest => !previousProgress!.quests.has(quest))
+  )) playReward();
+  previousProgress = progress;
+  if (previousVaultTiles !== null && vault.tiles > previousVaultTiles) playTileBreak();
+  previousVaultTiles = vault.tiles;
   player = me.player;
   element("player-name").textContent = player.displayName ?? "Player";
   input("time-zone").value = player.timeZone ?? "UTC";

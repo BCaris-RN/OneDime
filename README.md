@@ -465,3 +465,5 @@ licensed for reuse, so a fork should go by its own name and mark.
 ## Built with
 
 Built by Brandon Caris with Claude (lead and reviewer) and Codex (implementation), on the PayPal Developer Platform.
+Music and sound effects are original, composed for OneDime and synthesized in the browser
+from public/audio/theme.json.

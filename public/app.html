@@ -22,7 +22,27 @@
     <header class="topbar">
       <a class="brand" href="/app">OneDime<span class="brand-dot" aria-hidden="true">.</span></a>
     <div class="controls">
-      <div class="pad-info"><p class="status" id="control-status" aria-live="polite">Ready</p><div class="pad-tools"><button type="button" class="ghost-button pad-grip" id="pad-grip" aria-label="Move the pad. Drag it, or use the arrow keys." hidden></button><button type="button" class="ghost-button pad-float" id="pad-float" aria-label="Detach the pad" title="Detach the pad"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 1h7v2H3v6h6V6h2v5H1zM6 1h5v5L9 4 6 7 5 6l3-3z" fill="currentColor"/></svg></button></div></div>
+      <div class="pad-info">
+        <p class="status" id="control-status" aria-live="polite">Ready</p>
+        <div class="pad-tools">
+          <button type="button" class="ghost-button pad-grip" id="pad-grip"
+            aria-label="Move the pad. Drag it, or use the arrow keys." hidden></button>
+          <button type="button" class="ghost-button pad-float" id="pad-float"
+            aria-label="Detach the pad" title="Detach the pad">
+            <svg viewBox="0 0 12 12" aria-hidden="true">
+              <path d="M1 1h7v2H3v6h6V6h2v5H1zM6 1h5v5L9 4 6 7 5 6l3-3z" fill="currentColor"/>
+            </svg>
+          </button>
+          <button type="button" class="ghost-button pad-sound" id="sound-cycle"
+            aria-label="Sound: Clicks" title="Sound: Clicks. Change sound mode">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M2 6h3l4-3v10l-4-3H2zM11 6a3 3 0 0 1 0 4M12.5 4a6 6 0 0 1 0 8"
+                fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
       <div class="dpad"><button type="button" class="up" data-pad="up" aria-label="Previous control"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2L11 9H1z" fill="currentColor"/></svg></button><button type="button" class="down" data-pad="down" aria-label="Next control"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10L1 3h10z" fill="currentColor"/></svg></button><button type="button" class="left" data-pad="left" aria-label="Previous tab"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6L9 1v10z" fill="currentColor"/></svg></button><button type="button" class="right" data-pad="right" aria-label="Next tab"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M10 6L3 11V1z" fill="currentColor"/></svg></button><span class="center" aria-hidden="true"></span></div>
       <div class="facebtns"><button type="button" id="btnB" aria-label="B: go back" title="B: go back">B</button><button type="button" id="btnA" aria-label="A: press the selected control" title="A: press the selected control">A</button></div>
     </div>
@@ -31,6 +51,7 @@
         <button type="button" class="ghost-button" id="xp-chip" aria-label="Open your Vault">XP …</button>
         <button type="button" class="ghost-button" id="theme-toggle" aria-label="Switch to dark mode">Dark mode</button>
         <button type="button" class="ghost-button" id="appearance-open" aria-haspopup="dialog" aria-controls="appearance-dialog">Appearance</button>
+        <button type="button" class="ghost-button" id="sound-open" aria-haspopup="dialog" aria-controls="sound-dialog">Sound</button>
         <button type="button" class="text-button" id="logout">Log out</button>
         <details class="header-menu" id="header-menu"><summary>Menu</summary><div id="header-menu-items"><button type="button" class="ghost-button" data-feedback-open>Send feedback</button></div></details>
       </div>
@@ -49,7 +70,28 @@
         <label><input type="radio" name="mode" value="dark"> Dark</label>
       </fieldset>
       <p class="field-help">Glass stays dark in every mode. Mode changes the other skins.</p>
-      <p class="field-help">Saved on this device. Only your appearance choice is stored here.</p>
+      <p class="field-help">Your appearance and sound choices are saved on this device.</p>
+    </dialog>
+    <dialog id="sound-dialog" class="feedback-dialog sound-dialog" aria-labelledby="sound-title">
+      <div class="section-heading">
+        <h2 id="sound-title">Sound</h2>
+        <button type="button" class="ghost-button" id="sound-close">Close</button>
+      </div>
+      <fieldset>
+        <legend>Interface</legend>
+        <label><input type="checkbox" id="sound-clicks"> Clicks</label>
+      </fieldset>
+      <fieldset>
+        <legend>Music</legend>
+        <label><input type="checkbox" id="sound-music"> Music</label>
+        <label class="sound-range" for="sound-volume">
+          Volume <span id="sound-volume-value">35%</span>
+          <input type="range" id="sound-volume" aria-label="Music volume"
+            min="0" max="100" step="1" value="35">
+        </label>
+      </fieldset>
+      <p class="field-help">Music starts after you turn it on. It pauses while this page is hidden.</p>
+      <p class="field-help">Saved on this device.</p>
     </dialog>
     <dialog id="welcome-dialog" class="feedback-dialog welcome-dialog" aria-labelledby="welcome-title">
       <h1 id="welcome-title">What kind of work do you do?</h1>

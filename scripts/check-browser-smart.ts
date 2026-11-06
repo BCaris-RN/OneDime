@@ -9,9 +9,46 @@ import { createApp } from "../src/server.js";
 import { loadConfig } from "../src/config.js";
 import { SessionStore } from "../src/auth/session.js";
 import { seedDemo } from "../src/demo/seed.js";
+declare global {
+  interface Window {
+    __onedimeSoundProbe: {
+      contexts: number;
+      starts: number;
+      stops: number;
+      context: AudioContext;
+      setHidden(value: boolean): void;
+    };
+  }
+}
 const port = Number(process.env.BROWSER_TEST_PORT ?? 3404);
 assert(Number.isInteger(port) && port > 0 && port <= 65535, "Invalid BROWSER_TEST_PORT");
 const baseUrl = `http://127.0.0.1:${port}`;
+const soundProbeScript = `
+  (() => {
+    const probe = { contexts: 0, starts: 0, stops: 0, context: null, hidden: false, setHidden(value) {
+      this.hidden = value;
+      document.dispatchEvent(new Event("visibilitychange"));
+    } };
+    window.__onedimeSoundProbe = probe;
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => probe.hidden });
+    const NativeAudioContext = window.AudioContext;
+    window.AudioContext = new Proxy(NativeAudioContext, { construct(target, args) {
+      const context = Reflect.construct(target, args, target);
+      probe.contexts++;
+      probe.context = context;
+      return context;
+    } });
+    for (const constructor of [window.OscillatorNode, window.AudioBufferSourceNode]) {
+      for (const method of ["start", "stop"]) {
+        const original = constructor.prototype[method];
+        constructor.prototype[method] = function (...args) {
+          probe[method === "start" ? "starts" : "stops"]++;
+          return original.apply(this, args);
+        };
+      }
+    }
+  })();
+`;
 const container = await new PostgreSqlContainer("postgres:16").withDatabase(process.env.TEST_DATABASE_NAME ?? "onedime_browser_test").start();
 const prisma = new PrismaClient({ datasources: { db: { url: container.getConnectionUri() } } });
 let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
@@ -69,6 +106,7 @@ try {
     console.log("OAuth cross-site return and session cookie passed (mocked provider)");
   } finally { await loginContext.close(); }
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await context.addInitScript({ content: soundProbeScript });
   const page = await context.newPage();
   const errors: string[] = [], requests: { url: string; body: string }[] = [];
   let expectedFeedback429 = false;
@@ -86,8 +124,12 @@ try {
   await page.goto(`${baseUrl}/browser-login`);
   const welcome=page.getByRole("dialog",{name:"What kind of work do you do?",exact:true});
   await welcome.waitFor();
+  assert.equal(await page.evaluate(()=>(window as Window & {__onedimeSoundProbe:{contexts:number}}).__onedimeSoundProbe.contexts),0,
+    "AudioContext is not created before the first user gesture");
   assert.equal(await welcome.getByRole("checkbox").count(),4);
   await welcome.getByRole("checkbox",{name:"Freelance",exact:true}).check();
+  assert.equal(await page.evaluate(()=>(window as Window & {__onedimeSoundProbe:{contexts:number}}).__onedimeSoundProbe.contexts),1,
+    "the first trusted press unlocks browser audio");
   await welcome.getByRole("checkbox",{name:"Market",exact:true}).check();
   await welcome.getByRole("button",{name:"Continue",exact:true}).click();
   await welcome.waitFor({ state: "hidden" });
@@ -160,15 +202,123 @@ try {
       for(let step=0;step<4&&await page.evaluate(()=>document.activeElement?.id!=="appearance-open");step++)await page.keyboard.press("Tab");
       assert.equal(await page.evaluate(()=>document.activeElement?.id),"appearance-open",`${skin} Appearance is reachable by keyboard at ${width}px`);
       await page.keyboard.press("Tab");
-      assert.equal(await page.evaluate(()=>document.activeElement?.id),"logout",`${skin} Log out follows Appearance by keyboard at ${width}px`);
+      assert.equal(await page.evaluate(()=>document.activeElement?.id),"sound-open",`${skin} Sound is next to Appearance in the keyboard order at ${width}px`);
+      await page.keyboard.press("Tab");
+      assert.equal(await page.evaluate(()=>document.activeElement?.id),"logout",`${skin} Log out follows Sound by keyboard at ${width}px`);
       await headerSummary.focus();
       for(let step=0;step<5&&await page.evaluate(()=>document.activeElement?.id!=="appearance-open");step++)await page.locator('[data-pad="down"]').click();
       assert.equal(await page.evaluate(()=>document.activeElement?.id),"appearance-open",`${skin} Appearance is reachable by D-pad at ${width}px`);
+      for(let step=0;step<5&&await page.evaluate(()=>document.activeElement?.id!=="sound-open");step++)await page.locator('[data-pad="down"]').click();
+      assert.equal(await page.evaluate(()=>document.activeElement?.id),"sound-open",`${skin} Sound is next to Appearance for D-pad navigation at ${width}px`);
       for(let step=0;step<5&&await page.evaluate(()=>document.activeElement?.id!=="logout");step++)await page.locator('[data-pad="down"]').click();
       assert.equal(await page.evaluate(()=>document.activeElement?.id),"logout",`${skin} Log out is reachable by D-pad at ${width}px`);
       await headerSummary.click();
     }
   }
+  await page.setViewportSize({width:390,height:844});
+  await headerSummary.click();
+  await headerMenu.getByRole("button",{name:"Sound",exact:true}).click();
+  const soundDialog=page.getByRole("dialog",{name:"Sound",exact:true});
+  const clicksSetting=soundDialog.getByRole("checkbox",{name:"Clicks",exact:true});
+  const musicSetting=soundDialog.getByRole("checkbox",{name:"Music",exact:true});
+  const volumeSetting=soundDialog.getByRole("slider",{name:"Music volume",exact:true});
+  assert.equal(await clicksSetting.isChecked(),true,"interface sounds are on by default");
+  assert.equal(await musicSetting.isChecked(),false,"music is off by default");
+  assert.equal(await volumeSetting.inputValue(),"35","music volume defaults to 35 percent");
+  await soundDialog.getByRole("button",{name:"Close",exact:true}).focus();
+  await page.keyboard.press("Tab");
+  assert.equal(await page.evaluate(()=>document.activeElement?.id),"sound-clicks","Clicks is keyboard reachable");
+  await page.keyboard.press("Tab");
+  assert.equal(await page.evaluate(()=>document.activeElement?.id),"sound-music","Music is keyboard reachable");
+  await page.keyboard.press("Tab");
+  assert.equal(await page.evaluate(()=>document.activeElement?.id),"sound-volume","Volume is keyboard reachable");
+  for(const id of ["sound-clicks","sound-music","sound-volume"]) {
+    for(let step=0;step<12&&await page.evaluate(()=>document.activeElement?.id)!==id;step++)
+      await page.locator('[data-pad="down"]').click();
+    assert.equal(await page.evaluate(()=>document.activeElement?.id),id,`${id} is reachable by D-pad`);
+  }
+  const startsBeforeMusic=await page.evaluate(()=>(window as Window & {__onedimeSoundProbe:{starts:number}}).__onedimeSoundProbe.starts);
+  await musicSetting.check();
+  await page.waitForTimeout(180);
+  const startsWithMusic=await page.evaluate(()=>(window as Window & {__onedimeSoundProbe:{starts:number}}).__onedimeSoundProbe.starts);
+  assert.ok(startsWithMusic-startsBeforeMusic>=5,"turning music on schedules score voices");
+  await page.evaluate(()=>(window as Window & {__onedimeSoundProbe:{setHidden(value:boolean):void}}).__onedimeSoundProbe.setHidden(true));
+  await page.waitForFunction(()=>(window as Window & {__onedimeSoundProbe:{context:AudioContext}}).__onedimeSoundProbe.context.state==="suspended");
+  await page.evaluate(()=>(window as Window & {__onedimeSoundProbe:{setHidden(value:boolean):void}}).__onedimeSoundProbe.setHidden(false));
+  await page.waitForFunction(()=>(window as Window & {__onedimeSoundProbe:{context:AudioContext}}).__onedimeSoundProbe.context.state==="running");
+  const stopsBeforeMusicOff=await page.evaluate(()=>(window as Window & {__onedimeSoundProbe:{stops:number}}).__onedimeSoundProbe.stops);
+  await musicSetting.uncheck();
+  await page.waitForTimeout(120);
+  const startsAfterMusicOff=await page.evaluate(()=>(window as Window & {__onedimeSoundProbe:{starts:number}}).__onedimeSoundProbe.starts);
+  await page.waitForTimeout(180);
+  assert.equal(await page.evaluate(()=>(window as Window & {__onedimeSoundProbe:{starts:number}}).__onedimeSoundProbe.starts),startsAfterMusicOff,
+    "turning music off stops scheduling more score voices");
+  assert.ok(await page.evaluate(()=>(window as Window & {__onedimeSoundProbe:{stops:number}}).__onedimeSoundProbe.stops)>stopsBeforeMusicOff,
+    "turning music off stops active score voices");
+  await clicksSetting.uncheck();
+  await volumeSetting.evaluate(node=>{(node as HTMLInputElement).value="42";node.dispatchEvent(new Event("input",{bubbles:true}));});
+  await soundDialog.getByRole("button",{name:"Close",exact:true}).click();
+  await page.reload();
+  await page.getByRole("tab",{name:"Freelance",exact:true}).waitFor();
+  await page.locator("#header-menu summary").click();
+  await page.locator("#header-menu").getByRole("button",{name:"Sound",exact:true}).click();
+  const savedSound=page.getByRole("dialog",{name:"Sound",exact:true});
+  assert.equal(await savedSound.getByRole("checkbox",{name:"Clicks",exact:true}).isChecked(),false,"click preference persists across reload");
+  assert.equal(await savedSound.getByRole("checkbox",{name:"Music",exact:true}).isChecked(),false,"music preference persists across reload");
+  assert.equal(await savedSound.getByRole("slider",{name:"Music volume",exact:true}).inputValue(),"42","volume persists across reload");
+  await page.evaluate(()=>localStorage.setItem("onedime-sound","not-json"));
+  await page.reload();
+  await page.getByRole("tab",{name:"Freelance",exact:true}).waitFor();
+  await page.locator("#header-menu summary").click();
+  await page.locator("#header-menu").getByRole("button",{name:"Sound",exact:true}).click();
+  const fallbackSound=page.getByRole("dialog",{name:"Sound",exact:true});
+  assert.equal(await fallbackSound.getByRole("checkbox",{name:"Clicks",exact:true}).isChecked(),true,"bad saved values restore click defaults");
+  assert.equal(await fallbackSound.getByRole("checkbox",{name:"Music",exact:true}).isChecked(),false,"bad saved values restore music defaults");
+  assert.equal(await fallbackSound.getByRole("slider",{name:"Music volume",exact:true}).inputValue(),"35","bad saved values restore volume defaults");
+  await page.evaluate(()=>localStorage.removeItem("onedime-sound"));
+  await fallbackSound.getByRole("button",{name:"Close",exact:true}).click();
+  await page.reload();
+  await page.getByRole("tab",{name:"Freelance",exact:true}).waitFor();
+  await page.locator("#pad-float").focus();
+  await page.keyboard.press("Tab");
+  assert.equal(await page.evaluate(()=>document.activeElement?.id),"sound-cycle","speaker mode is keyboard reachable");
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator("#sound-cycle").getAttribute("aria-label"),"Sound: Clicks and music");
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator("#sound-cycle").getAttribute("aria-label"),"Sound: Off");
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator("#sound-cycle").getAttribute("aria-label"),"Sound: Clicks");
+  await page.reload();
+  await page.getByRole("tab",{name:"Freelance",exact:true}).waitFor();
+  await page.locator('[data-pad="down"]').click();
+  assert.equal(await page.evaluate(()=>document.activeElement?.id),"sound-cycle","speaker mode is reachable by D-pad");
+
+  const videoContext=await browser.newContext({viewport:{width:390,height:844}});
+  await videoContext.addInitScript({content:soundProbeScript});
+  await videoContext.addCookies(await context.cookies(baseUrl));
+  await videoContext.route("**/demo-video-mode.js",route=>route.fulfill({contentType:"application/javascript",body:"window.__ONEDIME_DEMO_VIDEO__=true;"}));
+  const videoPage=await videoContext.newPage();
+  const videoRequests:string[]=[];
+  videoContext.on("request",request=>videoRequests.push(request.url()));
+  await videoPage.goto(`${baseUrl}/app`);
+  await videoPage.getByRole("tab",{name:"Stats",exact:true}).click();
+  assert.equal(await videoPage.evaluate(()=>(window as Window & {__onedimeSoundProbe:{contexts:number}}).__onedimeSoundProbe.contexts),0,
+    "demo-video mode stays silent after a page interaction");
+  assert.equal(videoRequests.some(url=>url.endsWith("/audio/theme.json")),false,"demo-video mode does not load the score");
+  await videoContext.close();
+  const landingContext=await browser.newContext();
+  await landingContext.addInitScript({content:soundProbeScript});
+  const landingRequests:string[]=[];
+  landingContext.on("request",request=>landingRequests.push(request.url()));
+  const landingPage=await landingContext.newPage();
+  await landingPage.goto(`${baseUrl}/`);
+  await landingPage.locator("#s-home").waitFor();
+  await landingPage.keyboard.press("ArrowLeft");
+  await landingPage.locator("#s-tour").waitFor();
+  assert.equal(await landingPage.evaluate(()=>(window as Window & {__onedimeSoundProbe:{contexts:number}}).__onedimeSoundProbe.contexts),0,
+    "the landing console stays silent");
+  assert.equal(landingRequests.some(url=>url.endsWith("/audio/theme.json")),false,"the landing console does not load the score");
+  await landingContext.close();
   await page.setViewportSize({width:390,height:844});
   await page.getByRole("tab", { name: "Market", exact: true }).click();
   const menu = page.locator("#header-menu summary");

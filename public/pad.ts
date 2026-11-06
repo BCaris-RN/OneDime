@@ -156,7 +156,7 @@ export function movePaneAway() {
 // --- moving through the app ----------------------------------------------------------------------
 document.addEventListener("focusin", (event) => {
   const target = event.target;
-  if (target instanceof HTMLElement && !controls.contains(target)) cursor = target;
+  if (target instanceof HTMLElement && (!controls.contains(target) || target.id === "sound-cycle")) cursor = target;
 });
 for (const button of controls.querySelectorAll<HTMLElement>("[data-pad],#btnA,#btnB")) {
   // Keep focus where it is: the pad acts on the control you were on, not on itself.
@@ -171,7 +171,7 @@ function nameOf(element: HTMLElement) {
 
 function reachable(scope: ParentNode) {
   return [...scope.querySelectorAll<HTMLElement>(focusSelector)].filter((element) =>
-    element.tabIndex >= 0 && !controls.contains(element) && !element.matches(":disabled,.skip-link,.sr-only") &&
+    element.tabIndex >= 0 && (!controls.contains(element) || element.id === "sound-cycle") && !element.matches(":disabled,.skip-link,.sr-only") &&
     !element.closest("[inert],[aria-hidden='true']") && element.checkVisibility());
 }
 
