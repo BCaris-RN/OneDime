@@ -57,6 +57,7 @@ let lastUiSoundAt = -Infinity;
 let queuedSounds: SoundName[] = [];
 let queueTimer: number | null = null;
 let userGestureSeen = false;
+let loginRewardPending = false;
 const activeMusicSources = new Set<AudioScheduledSourceNode>();
 const periodicWaves = new Map<number, PeriodicWave>();
 
@@ -103,6 +104,16 @@ function applySettings() {
     cycle.setAttribute("aria-label", `Sound: ${modeName()}`);
     cycle.title = `Sound: ${modeName()}. Change sound mode`;
     cycle.dataset.mode = modeName().toLowerCase().replaceAll(" ", "-");
+  }
+  const landingCycle = document.getElementById("landing-sound-cycle") as HTMLButtonElement | null;
+  if (landingCycle) {
+    const visibleLabel = settings.clicks && settings.music ? "Clicks and music. Tap to mute"
+      : settings.clicks ? "Clicks on. Tap for music"
+        : settings.music ? "Music on. Tap for clicks" : "Sound off. Tap for clicks";
+    landingCycle.textContent = visibleLabel;
+    landingCycle.setAttribute("aria-label", `Sound: ${modeName()}. Press to change.`);
+    landingCycle.title = `Sound: ${modeName()}. Press to change sound mode`;
+    landingCycle.dataset.mode = modeName().toLowerCase().replaceAll(" ", "-");
   }
   if (musicBus && audioContext) {
     musicBus.gain.setTargetAtTime(
@@ -382,6 +393,10 @@ function playUserSound(name: SoundName) {
 
 function unlockForAudio() {
   userGestureSeen = true;
+  if (loginRewardPending && settings.clicks && !demoVideo) {
+    loginRewardPending = false;
+    queueProgressSound("reward");
+  }
   if ((!settings.clicks && !settings.music) || demoVideo || document.hidden) return;
   try {
     const context = createAudioContext();
@@ -423,7 +438,28 @@ function cycleMode() {
 }
 
 export function playReward() { queueProgressSound("reward"); }
+export function playLoginRewardAfterGesture() {
+  if (demoVideo || !settings.clicks) return;
+  if (!userGestureSeen) { loginRewardPending = true; return; }
+  queueProgressSound("reward");
+}
 export function playTileBreak() { queueProgressSound("tileBreak"); }
+export function playLandingSound(name: SoundName) { playUserSound(name); }
+
+function initializeVisibilityHandling() {
+  document.addEventListener("visibilitychange", () => {
+    if (!audioContext) return;
+    if (document.hidden) {
+      if (scheduler !== null) window.clearInterval(scheduler);
+      scheduler = null;
+      void audioContext.suspend().catch(() => {});
+      return;
+    }
+    void audioContext.resume().then(() => {
+      if (settings.music && musicStarted) startScheduler();
+    }).catch(() => {});
+  });
+}
 
 export function initializeSound() {
   if (demoVideo) return;
@@ -471,16 +507,17 @@ export function initializeSound() {
     cycleMode();
     if (event.isTrusted) unlockForAudio();
   });
-  document.addEventListener("visibilitychange", () => {
-    if (!audioContext) return;
-    if (document.hidden) {
-      if (scheduler !== null) window.clearInterval(scheduler);
-      scheduler = null;
-      void audioContext.suspend().catch(() => {});
-      return;
-    }
-    void audioContext.resume().then(() => {
-      if (settings.music && musicStarted) startScheduler();
-    }).catch(() => {});
+  initializeVisibilityHandling();
+}
+
+export function initializeLandingSound() {
+  if (demoVideo) return;
+  applySettings();
+  initializeVisibilityHandling();
+  document.getElementById("landing-sound-cycle")?.addEventListener("click", event => {
+    cycleMode();
+    applySettings();
+    if (event.isTrusted) unlockForAudio();
+    if (event.isTrusted) playUserSound("select");
   });
 }

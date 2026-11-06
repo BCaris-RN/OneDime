@@ -12,7 +12,7 @@ import type { GameStats } from "../src/game/rules.js";
 import type { QuestDefinition } from "../src/game/catalog.js";
 import { dollarsToCents } from "../src/game/money.js";
 import { TILE_ORDER } from "../src/game/vault.js";
-import { initializeSound, playReward, playTileBreak } from "./sound.js";
+import { initializeSound, playLoginRewardAfterGesture, playReward, playTileBreak } from "./sound.js";
 
 type Player = { displayName: string | null; timeZone: string | null; leaderboardOptIn: boolean; welcomeCompletedAt: string | null };
 type Entry = { id: string; platform: string; workedOn: string; minutes: number; amountCents: number; note: string | null; verified: boolean };
@@ -507,7 +507,7 @@ function showPostLoginBoot() {
   let index = 0;
   let timer = 0;
   const close = () => { window.clearInterval(timer); overlay.hidden = true; overlay.removeEventListener("click", close); window.removeEventListener("keydown", close); };
-  const append = () => { if (index >= lines.length) { close(); return; } const item = document.createElement("li"); item.textContent = lines[index++]; list.append(item); };
+  const append = () => { if (index >= lines.length) { close(); return; } const item = document.createElement("li"); item.textContent = lines[index++]; list.append(item); if (index === lines.length) playLoginRewardAfterGesture(); };
   append(); timer = window.setInterval(append, 420); window.setTimeout(close, 2500);
   overlay.addEventListener("click", close); window.addEventListener("keydown", close, { once: true });
 }

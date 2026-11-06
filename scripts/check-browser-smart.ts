@@ -294,6 +294,8 @@ try {
     await page.locator('[data-pad="down"]').click();
   assert.equal(await page.evaluate(()=>document.activeElement?.id),"sound-cycle","speaker mode is reachable by D-pad");
 
+  const sharedSoundSetting=await page.evaluate(()=>localStorage.getItem("onedime-sound"));
+  assert.ok(sharedSoundSetting,"app sound setting is saved before checking the landing console");
   const videoContext=await browser.newContext({viewport:{width:390,height:844}});
   await videoContext.addInitScript({content:soundProbeScript});
   await videoContext.addCookies(await context.cookies(baseUrl));
@@ -306,19 +308,45 @@ try {
   assert.equal(await videoPage.evaluate(()=>(window as Window & {__onedimeSoundProbe:{contexts:number}}).__onedimeSoundProbe.contexts),0,
     "demo-video mode stays silent after a page interaction");
   assert.equal(videoRequests.some(url=>url.endsWith("/audio/theme.json")),false,"demo-video mode does not load the score");
+  await videoPage.goto(`${baseUrl}/`);
+  await videoPage.locator("#s-home").waitFor();
+  await videoPage.locator("#landing-sound-cycle").click();
+  await videoPage.keyboard.press("ArrowLeft");
+  await videoPage.locator("#s-tour").waitFor();
+  assert.equal(await videoPage.evaluate(()=>(window as Window & {__onedimeSoundProbe:{contexts:number}}).__onedimeSoundProbe.contexts),0,
+    "demo-video mode stays silent on the landing console");
+  assert.equal(videoRequests.some(url=>url.endsWith("/audio/theme.json")),false,
+    "demo-video landing does not load the score");
   await videoContext.close();
   const landingContext=await browser.newContext();
+  await landingContext.addInitScript(value=>{if(typeof value==="string")localStorage.setItem("onedime-sound",value)},sharedSoundSetting);
   await landingContext.addInitScript({content:soundProbeScript});
-  const landingRequests:string[]=[];
-  landingContext.on("request",request=>landingRequests.push(request.url()));
   const landingPage=await landingContext.newPage();
   await landingPage.goto(`${baseUrl}/`);
   await landingPage.locator("#s-home").waitFor();
+  assert.equal(await landingPage.evaluate(()=>(window as Window & {__onedimeSoundProbe:{contexts:number;starts:number}}).__onedimeSoundProbe.contexts),0,
+    "the landing console creates no audio context on load");
+  assert.equal(await landingPage.evaluate(()=>(window as Window & {__onedimeSoundProbe:{contexts:number;starts:number}}).__onedimeSoundProbe.starts),0,
+    "the landing console plays nothing on load");
+  const landingSound=landingPage.locator("#landing-sound-cycle");
+  assert.equal(await landingSound.getAttribute("aria-label"),"Sound: Clicks. Press to change.","landing sound defaults to the shared clicks setting");
+  await landingSound.click();
+  assert.equal(await landingSound.getAttribute("aria-label"),"Sound: Clicks and music. Press to change.","landing Sound button enables music");
+  assert.deepEqual(await landingPage.evaluate(()=>JSON.parse(localStorage.getItem("onedime-sound")??"null")),
+    {clicks:true,music:true,volume:0.35},"landing Sound button uses the app's saved sound setting");
+  await landingPage.waitForFunction(()=>(window as Window & {__onedimeSoundProbe:{contexts:number;starts:number}}).__onedimeSoundProbe.contexts===1
+    &&(window as Window & {__onedimeSoundProbe:{contexts:number;starts:number}}).__onedimeSoundProbe.starts>0);
+  await landingSound.click();
+  assert.equal(await landingSound.getAttribute("aria-label"),"Sound: Off. Press to change.","landing Sound button cycles to off");
+  await landingSound.click();
+  assert.equal(await landingSound.getAttribute("aria-label"),"Sound: Clicks. Press to change.","landing Sound button cycles back to clicks");
+  await landingPage.waitForTimeout(50);
+  const landingStarts=await landingPage.evaluate(()=>(window as Window & {__onedimeSoundProbe:{starts:number}}).__onedimeSoundProbe.starts);
   await landingPage.keyboard.press("ArrowLeft");
   await landingPage.locator("#s-tour").waitFor();
-  assert.equal(await landingPage.evaluate(()=>(window as Window & {__onedimeSoundProbe:{contexts:number}}).__onedimeSoundProbe.contexts),0,
-    "the landing console stays silent");
-  assert.equal(landingRequests.some(url=>url.endsWith("/audio/theme.json")),false,"the landing console does not load the score");
+  await landingPage.waitForFunction(starts=>(window as Window & {__onedimeSoundProbe:{starts:number}}).__onedimeSoundProbe.starts>starts,landingStarts);
+  assert.equal(await landingPage.evaluate(()=>(window as Window & {__onedimeSoundProbe:{contexts:number}}).__onedimeSoundProbe.contexts),1,
+    "a landing console press plays through the shared synth");
   await landingContext.close();
   await page.setViewportSize({width:390,height:844});
   await page.getByRole("tab", { name: "Market", exact: true }).click();
