@@ -50,7 +50,7 @@
     "@testcontainers/postgresql": "^12.2.1",
     "@types/express": "^5.0.5",
     "@types/node": "^24.19.2",
-    "@types/supertest": "^6.0.3",
+    "@types/supertest": "^7.2.1",
     "esbuild": "^0.28.2",
     "playwright": "1.64.1",
     "prisma": "6.12.0",
