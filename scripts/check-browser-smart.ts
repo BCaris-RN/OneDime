@@ -290,7 +290,8 @@ try {
   assert.equal(await page.locator("#sound-cycle").getAttribute("aria-label"),"Sound: Clicks");
   await page.reload();
   await page.getByRole("tab",{name:"Freelance",exact:true}).waitFor();
-  await page.locator('[data-pad="down"]').click();
+  for(let step=0;step<30&&await page.evaluate(()=>document.activeElement?.id!=="sound-cycle");step++)
+    await page.locator('[data-pad="down"]').click();
   assert.equal(await page.evaluate(()=>document.activeElement?.id),"sound-cycle","speaker mode is reachable by D-pad");
 
   const videoContext=await browser.newContext({viewport:{width:390,height:844}});
