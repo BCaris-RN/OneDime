@@ -308,6 +308,7 @@ try {
   assert.equal(await videoPage.evaluate(()=>(window as Window & {__onedimeSoundProbe:{contexts:number}}).__onedimeSoundProbe.contexts),0,
     "demo-video mode stays silent after a page interaction");
   assert.equal(videoRequests.some(url=>url.endsWith("/audio/theme.json")),false,"demo-video mode does not load the score");
+  await videoContext.clearCookies();
   await videoPage.goto(`${baseUrl}/`);
   await videoPage.locator("#s-home").waitFor();
   await videoPage.locator("#landing-sound-cycle").click();
