@@ -77,7 +77,7 @@ quantized ONNX, runs in the browser), Claude and Codex.
 
 ## Testing instructions
 
-**Hosted beta:** https://onedime-web.onrender.com. Sign in with one of the three judge sandbox logins: email `<judge sandbox email>`, password `<judge sandbox password>`. Use only a judge sandbox login. The beta stays awake on Render's paid plan; if it is slow to load, wait a moment. Refreshing does not make it faster. Follow [Try OneDime](judges-try-it.md): log a $1.99 Prolific entry, turn on
+**Hosted beta:** <https://onedime-web.onrender.com> (PayPal sandbox). Sign in with one of the three judge sandbox logins: email `<judge sandbox email>`, password `<judge sandbox password>`. Use only a judge sandbox login. The beta stays awake on Render's paid plan; if it is slow to load, wait a moment. Refreshing does not make it faster. Follow [Try OneDime](judges-try-it.md): log a $1.99 Prolific entry, turn on
 Smart suggestions (off by default; it downloads a one-time model, about 41 MB, that runs on your device),
 and import the [sample PayPal activity](sample-paypal-activity.csv). Choose **Download and suggest**. The
 logo, creator sponsorship and store orders suggest Freelance, Spotlight, and Market: selling. Avery Ellis
