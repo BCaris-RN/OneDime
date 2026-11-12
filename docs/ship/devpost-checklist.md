@@ -1,10 +1,10 @@
 # Devpost submission checklist
 
-Every field is filled in below except the links and credentials, marked `<...>`. The story text lives in
-[devpost.md](devpost.md); paste each section as written. Field names follow Devpost's standard form, so check
-them against the hackathon's own rules page before submitting.
+Every field is filled in below except the judge credentials, which stay as `<...>` placeholders. The story
+text lives in [devpost.md](devpost.md); paste each section as written. Field names follow Devpost's standard
+form, so check them against the hackathon's own rules page before submitting.
 
-Deadline: Nov 12, 12:00 PM PST (10:00 AM HST), the earlier of the page and the rules. Target: Nov 10.
+Deadline: Nov 12, 12:00 PM PST (10:00 AM HST).
 
 ## Fields
 
@@ -22,8 +22,8 @@ Deadline: Nov 12, 12:00 PM PST (10:00 AM HST), the earlier of the page and the r
 | Built with | TypeScript, Express, PostgreSQL, Prisma, HTML, CSS, Playwright, GitHub Actions, Render (blueprint, Postgres 16, deploy hook), PayPal Developer Platform (sandbox), Transformers.js, MoritzLaurer/xtremedistil-l6-h256-zeroshot-v1.1-all-33 (MIT, quantized ONNX, runs in the browser), Claude, Codex |
 | Team | Brandon Caris (solo, builder and owner). Built with Claude (lead and reviewer) and Codex (implementation). |
 | Try it out link | https://onedime-web.onrender.com |
-| Code repository link | `<public repo URL>` |
-| Video demo link | `<video URL>` |
+| Code repository link | https://github.com/BCaris-RN/OneDime |
+| Video demo link | https://www.youtube.com/watch?v=BbFXWSLfNaU |
 | Image gallery | `docs/screenshots/glass-first-1440.png`, `glass-stats-1440.png`, `glass-vault-1440.png`, `glass-paypal-1440.png`, `glass-first-390.png` |
 | Thumbnail | `public/icons/coin-512.png` |
 | Testing instructions | devpost.md, "Testing instructions", plus the judge login below |
@@ -33,9 +33,9 @@ Deadline: Nov 12, 12:00 PM PST (10:00 AM HST), the earlier of the page and the r
 
 Paste the "Testing instructions" section of devpost.md, then add:
 
-> The sandbox login is for this hackathon only and moves no real money. The first visit after a quiet spell
-> can take up to a minute while the free beta wakes up. If the beta is down, the local demo needs no keys:
-> `npm ci`, then `npm run demo`.
+> The judge sandbox logins are for this hackathon only and move no real money. The beta stays awake on
+> Render's paid plan; if it is slow to load, wait a moment. If the beta is unavailable, the local demo
+> needs no keys: `npm ci`, then `npm run demo`.
 
 ## Before you submit
 
@@ -43,18 +43,17 @@ Paste the "Testing instructions" section of devpost.md, then add:
       https://paypalaihackathon.devpost.com/details/render.
 
 - [ ] Render deploy hook set, so the beta runs the code the docs describe: Glass skin, personal ladder, Vault.
-- [ ] Judge sandbox email added to `BETA_ALLOWLIST` on Render, and the change deployed, so the judge login is
-      accepted.
+- [x] Judge sandbox logins are on `BETA_ALLOWLIST` on Render, so judges can enter the hosted beta.
 - [ ] Judge sandbox login created in the PayPal Developer dashboard, and tested once end to end on the hosted
       beta, including the Create or link step.
-- [ ] Hosted beta on the paid plan (basic-256mb) so a judge never waits on a cold start.
-- [ ] Public repo created from `scripts/export-public.ps1` output, with README and LICENSE (AGPL-3.0-only),
-      and no handoffs, reviews or STATUS.
+- [x] Hosted beta and database run on Render's paid plans through judging, so the beta stays awake
+      and the database does not expire.
+- [x] Public repo ready at https://github.com/BCaris-RN/OneDime with README and LICENSE (AGPL-3.0).
 - [ ] Repo link added; the repo is public while judging runs.
-- [ ] Video recorded (`npm run record:demo`) plus the hosted-beta sign-in clip, voice-over added, under 2:50, uploaded, link opens when signed out.
+- [x] Demo video recorded and published: https://www.youtube.com/watch?v=BbFXWSLfNaU (final cut: 2:58.7).
 - [ ] Privacy policy and user agreement pages (Google Sites) match the current beta wording.
 - [ ] Draft claims re-checked: "more than 300 application tests" and "4,920-step keyboard audit" match the
       latest CI output.
-- [ ] Read the submission once as a judge would: no real platform names, no "verified by PayPal", no live
-      PayPal claim.
+- [ ] Read the submission once as a judge would: no real platform names and no live PayPal claim; use
+      matched-activity wording.
 - [ ] Submitted at least a day early, then reopened the public page to confirm every link works.

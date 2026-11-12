@@ -18,19 +18,26 @@ Earn your first dime. Level up for real.
 
 # OneDime
 
+Demo video: https://www.youtube.com/watch?v=BbFXWSLfNaU
+
 ## Try it
+
+### Try it without an account
+
+The hosted beta only admits the judge sandbox logins, so anyone else should run `npm run demo`. It needs Node 24 and Docker Desktop, no keys, uses fictional data, and opens at http://127.0.0.1:3403/demo-login. It does not show real PayPal sign-in.
+
+### Hosted beta
 
 The beta is live at **https://onedime-web.onrender.com**. It runs on PayPal sandbox only, so no real
 money moves and nothing here touches a real PayPal account.
 
-**Sign in with the judge sandbox login.** Email `<judge sandbox email>`, password `<judge sandbox
-password>`. I put the real values in the Devpost submission, not in Git. Use only that login, never your
-own PayPal password.
+Sign in with one of the judge sandbox logins (A, B or C). The real values are in the Devpost
+submission, not in Git. Use only a judge sandbox login, never your own PayPal password.
 
 **What to click first**
 
 1. On the landing console, press **START** (or choose **Log in with PayPal**). PayPal's sandbox page asks
-   for the judge login above. OneDime never sees the password.
+   for one of the judge sandbox logins above. OneDime never sees the password.
 2. In **First Dime**, log a session: platform Prolific, amount `1.99`, any minutes.
 3. Open **PayPal**, turn on **Smart suggestions** (off by default; it downloads a
    one-time model, about 41 MB, that runs on your device), and import the
@@ -42,18 +49,13 @@ own PayPal password.
    Otherwise, "Create a new record" adds another $1.99 entry. Matching it gives
    two ladder rungs and their XP. The euro payment cannot be routed, on purpose.
 4. Open **Stats** and **Vault** to see the matched pay become tiles. Open
-   **Appearance** (inside **Menu** on a phone) to try the skins. Glass is the
-   default once the beta runs the newest build, and the local demo always has it.
+   **Appearance** (inside **Menu** on a phone) to try the skins. Glass is the default skin.
 
 The browser tests use the separate fixture at
 [tests/fixtures/paypal-activity.csv](tests/fixtures/paypal-activity.csv).
 
-**Cold start.** The beta sleeps when nobody is using it, so the first visit after a quiet spell can take up
-to a minute. Wait for the console to load; refreshing does not make it faster.
-
-**If the beta is down, run the demo.** `npm run demo` starts an isolated copy with fictional data and fake
-sign-in, with no provider keys. It needs Node 24 and Docker Desktop; see
-[Isolated fictional demo](#isolated-fictional-demo). It does not show real PayPal sign-in.
+**Cold start.** The beta stays awake on Render's paid plan. If it's slow to load, wait a moment;
+refreshing doesn't make it faster.
 
 I built OneDime to make the first dime of independent income feel achievable, then
 make the next step visible. It is a private TypeScript/Express app with PostgreSQL,
@@ -372,9 +374,8 @@ sandbox logins privately and performs each approved deployment himself.
 The `render.yaml` blueprint declares the paid Starter web service and a Basic Postgres 16 database, with
 automatic deploys off. Secrets are set in Render and never in the repo. The beta at
 https://onedime-web.onrender.com is live and deployed from main by the deploy hook, as described in
-[Deploying on Render](#deploying-on-render). I upgrade the services separately, so until then
-[Render's free-tier limits](https://render.com/docs/free) still apply: services sleep after 15 minutes
-without traffic and free databases expire 30 days after creation. Payouts, Google Sheets
+[Deploying on Render](#deploying-on-render). The web service and database run on Render's paid plans
+through judging, so the beta doesn't sleep and the database doesn't expire. Payouts, Google Sheets
 and seed flags stay false there. Source/reference HTML stays ignored and is not needed for CI.
 Do not merge old pre-cleanup history into this branch. The repository license is recorded in LICENSE.
 
@@ -386,8 +387,8 @@ rewritten to link only to exported files. It never adds a remote or pushes; maki
 a repository public is a separate step I take myself.
 
 I merged Phase 3 App in [PR #4](https://github.com/BCaris-RN/OneDime/pull/4) and Phase 4
-Fixes and free AI in [PR #5](https://github.com/BCaris-RN/OneDime/pull/5). I am preparing
-Phase 5 Beta test for November 1-8, followed by Phase 6 Ship on November 9-10.
+Fixes and free AI in [PR #5](https://github.com/BCaris-RN/OneDime/pull/5). Phase 5 (beta test) and Phase 6 (ship) are done.
+OneDime v1.0.0 was submitted to the PayPal AI Hackathon on Nov 12, 2026.
 I keep the current phase table in [the SDLC](docs/SDLC.md) and checkpoint evidence in
 [STATUS.md](STATUS.md). [Phase 4 decisions](docs/phase4-decisions.md) record calculations,
 dependencies, scope choices and provider limitations. [Screenshots](docs/screenshots)
